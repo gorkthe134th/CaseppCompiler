@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Case++Compiler": {
+      "commandName": "Project",
+      "commandLineArgs": "test.c++"
+    }
+  }
+}

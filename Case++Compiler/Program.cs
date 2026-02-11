@@ -1,30 +1,27 @@
-﻿using System.Runtime.InteropServices;
+﻿using CaseppCompiler.Tokens;
+
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-internal partial class Program
+namespace CaseppCompiler
 {
-    private static void Main(string[] args)
+    internal partial class Program
     {
-        //StreamReader reader = new("test.txt");
-        Regex regex = Number();
-        List<char> list = new(40);
+        private static void Main(string[] args)
+        {
+            if (args.Length < 1) throw new ArgumentException("At least one argument is required. Please provide the name of the file to compile.");
+            LexicalAnalyser lexicalAnalyser = new();
 
-        list.AddRange("1536asdf");
-        var span = CollectionsMarshal.AsSpan(list);
-        var e = regex.EnumerateMatches(span);
-        Console.WriteLine(e.MoveNext());
-        Console.WriteLine(span.Slice(e.Current.Index, e.Current.Length));
+            Stream inputStream = File.OpenRead(args[0]);
 
-        list.Insert(0, '-');
-        span = CollectionsMarshal.AsSpan(list);
-        e = regex.EnumerateMatches(span);
-        Console.WriteLine(e.MoveNext());
-        Console.WriteLine(span.Slice(e.Current.Index, e.Current.Length));
-
-        list.Insert(0, 'a');
-        Console.WriteLine(regex.IsMatch(CollectionsMarshal.AsSpan(list)));
+            try
+            {
+                foreach (Token token in lexicalAnalyser.Analyse(inputStream)) Console.WriteLine($"Line {token.Line}: {token.Text}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
     }
-
-    [GeneratedRegex(@"^[+-]?[0-9]+")]
-    private static partial Regex Number();
 }
