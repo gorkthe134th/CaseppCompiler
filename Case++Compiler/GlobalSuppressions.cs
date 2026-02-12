@@ -9,3 +9,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Style", "IDE0130:Namespace does not match folder structure", Justification = "Cannot use '+' in namespace", Scope = "namespace", Target = "~N:CaseppCompiler.LexicalAnalyser")]
 [assembly: SuppressMessage("Style", "IDE0130:Namespace does not match folder structure", Justification = "Cannot use '+' in namespace", Scope = "namespace", Target = "~N:CaseppCompiler.LexicalAnalyser.TokenTypes")]
 [assembly: SuppressMessage("Style", "IDE0130:Namespace does not match folder structure", Justification = "Cannot use '+' in namespace", Scope = "namespace", Target = "~N:CaseppCompiler.LexicalAnalyser.Tokens")]
+[assembly: SuppressMessage("Style", "IDE0130:Namespace does not match folder structure", Justification = "Cannot use '+' in namespace", Scope = "namespace", Target = "~N:CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens")]

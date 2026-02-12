@@ -95,6 +95,25 @@ namespace CaseppCompiler.LexicalAnalyser
 
         private enum CommentState { None, SingleLine, MultiLine, ExitingMultiLine }
 
+        public void Trim(Predicate<char> predicate, ref int line, ref int column)
+        {
+            char current;
+            while (true)
+            {
+                if (start == end)
+                {
+                    if (reader.EndOfStream) return;
+                    start = 0;
+                    end = reader.ReadBlock(buffer, 0, 2 * MAX_REGEX);
+                }
+                current = buffer[start];
+                if (!predicate(current)) return;
+                if (current == '\n') { line++; column = 0; }
+                start++;
+                column++;
+            }
+        }
+
         public bool TryMatchFirst(IEnumerable<Regex> regexes, out string text)
         {
             int available = end - start;

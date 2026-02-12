@@ -4,7 +4,7 @@
     {
         public ConstantToken(uint constant, int line, int column) : base(line, column)
         {
-            Constant = constant < 32767 ? constant :
+            Constant = constant <= 32767 ? constant :
                 throw new ArgumentException($"{base.ToString()} Constants must be in range [-32767, 32767]");
         }
 

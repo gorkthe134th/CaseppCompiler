@@ -6,7 +6,9 @@ namespace CaseppCompiler.LexicalAnalyser.TokenTypes
 {
     internal abstract class TokenType
     {
-        public abstract Regex Regex();
+        public abstract Regex Regex { get; }
+
+        public abstract Predicate<char>? Trim { get; }
 
         public abstract Token GenerateToken(string text, int line, int column);
     }

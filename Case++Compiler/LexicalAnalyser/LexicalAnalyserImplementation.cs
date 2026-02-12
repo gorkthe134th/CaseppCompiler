@@ -11,7 +11,8 @@ namespace CaseppCompiler.LexicalAnalyser
         {
             ConstantTokenType constantTokenType = new();
             OperatorTokenType operatorTokenType = new();
-            IdentifierTokenType identifierTokenType = new(operatorTokenType);
+            KeywordTokenType keywordTokenType = new();
+            IdentifierTokenType identifierTokenType = new(operatorTokenType, keywordTokenType);
 
             tokenTypes =
             [
@@ -31,10 +32,12 @@ namespace CaseppCompiler.LexicalAnalyser
                 inputStream.Trim(ref line, ref column);
                 if (inputStream.EndOfStream) yield break;
                 TokenType? matchedType = null;
-                if (inputStream.TryMatchFirst(tokenTypes.Select(type => (matchedType = type).Regex()), out string text) && matchedType != null)
+                if (inputStream.TryMatchFirst(tokenTypes.Select(type => (matchedType = type).Regex), out string text) && matchedType != null)
                 {
                     yield return matchedType.GenerateToken(text, line, column);
                     column += text.Length;
+                    Predicate<char>? trim = matchedType.Trim;
+                    if (trim != null) inputStream.Trim(trim, ref line, ref column);
                 }
                 else
                 {

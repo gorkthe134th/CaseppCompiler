@@ -1,21 +1,23 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace CaseppCompiler.LexicalAnalyser.TokenTypes
 {
-    internal partial class IdentifierTokenType(OperatorTokenType operatorTokenType) : TokenType
+    internal partial class IdentifierTokenType(OperatorTokenType operatorTokenType, KeywordTokenType keywordTokenType) : TokenType
     {
         [GeneratedRegex("^[A-Za-z0-9]{1,30}")]
-        public override partial Regex Regex();
+        public override partial Regex Regex { get; }
+
+        public override Predicate<char>? Trim => IsLetterOrDigit;
+
+        private static bool IsLetterOrDigit(char c) => 'A' <= c && c <= 'Z' || 'a' <= c && c <= 'z' || '0' <= c && c <= '9';
 
         public override Token GenerateToken(string text, int line, int column) =>
-            operatorTokenType.Regex().Match(text).Length == text.Length
-                ? new OperatorToken(text, line, column)
-                : new IdentifierToken(text, line, column);
+            operatorTokenType.Regex.Match(text).Length == text.Length
+                ? operatorTokenType.GenerateToken(text, line, column)
+                : keywordTokenType.Regex.Match(text).Length == text.Length
+                    ? keywordTokenType.GenerateToken(text, line, column)
+                    : new IdentifierToken(text, line, column);
     }
 }
