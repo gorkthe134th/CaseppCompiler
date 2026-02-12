@@ -45,11 +45,20 @@ namespace CaseppCompiler.LexicalAnalyser
                         column++;
                         break;
                     case CommentState.ExitingMultiLine:
-                        if (current == '/') commentState = CommentState.None;
-                        else
+                        switch (current)
                         {
-                            if (current == '\n') { line++; column = 0; }
-                            commentState = CommentState.MultiLine;
+                            case '\n':
+                                line++;
+                                column = 0;
+                                goto default;
+                            default:
+                                commentState = CommentState.MultiLine;
+                                break;
+                            case '/':
+                                commentState = CommentState.None;
+                                break;
+                            case '*':
+                                break;
                         }
                         start++;
                         column++;

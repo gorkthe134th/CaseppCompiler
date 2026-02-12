@@ -13,12 +13,24 @@ namespace CaseppCompiler.LexicalAnalyser
             OperatorTokenType operatorTokenType = new();
             KeywordTokenType keywordTokenType = new();
             IdentifierTokenType identifierTokenType = new(operatorTokenType, keywordTokenType);
+            AssignmentTokenType assignmentTokenType = new();
+            CaseStartTokenType caseStartTokenType = new();
+            BlockTokenType blockTokenType = new();
+            ParameterTokenType parameterTokenType = new();
+            CommaTokenType commaTokenType = new();
+            EndTokenType endTokenType = new();
 
             tokenTypes =
             [
                 constantTokenType,
                 identifierTokenType,
                 operatorTokenType,
+                assignmentTokenType,
+                caseStartTokenType,
+                blockTokenType,
+                parameterTokenType,
+                commaTokenType,
+                endTokenType,
             ];
         }
 

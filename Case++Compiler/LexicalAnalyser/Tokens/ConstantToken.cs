@@ -10,6 +10,6 @@
 
         public uint Constant { get; }
 
-        public override string ToString() => $"{base.ToString()} {Constant}";
+        public override string ToString() => $"{base.ToString()} Constant {Constant}";
     }
 }
