@@ -1,15 +1,18 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 
-using System.Text.RegularExpressions;
-
-namespace CaseppCompiler.LexicalAnalyser.TokenTypes
+namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
 {
-    internal partial class BlockTokenType : TokenType
+    internal class BlockTokenType : TokenType
     {
-        [GeneratedRegex(@"^[{}]")]
-        public override partial Regex Regex { get; }
+        public override IEnumerable<Func<char, bool?>> CharacterPredicates
+        {
+            get
+            {
+                yield return static c => c == '{' | c == '}';
+            }
+        }
 
-        public override Predicate<char>? Trim => null;
+        public override int Limit => 1;
 
         public override Token GenerateToken(string text, int line, int column) =>
             new BlockToken(

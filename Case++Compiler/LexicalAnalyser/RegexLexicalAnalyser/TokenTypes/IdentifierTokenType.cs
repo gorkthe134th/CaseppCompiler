@@ -2,7 +2,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace CaseppCompiler.LexicalAnalyser.TokenTypes
+namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 {
     internal partial class IdentifierTokenType(OperatorTokenType operatorTokenType, KeywordTokenType keywordTokenType) : TokenType
     {

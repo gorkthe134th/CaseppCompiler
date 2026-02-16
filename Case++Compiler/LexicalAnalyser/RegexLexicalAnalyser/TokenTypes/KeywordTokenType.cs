@@ -4,7 +4,7 @@ using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace CaseppCompiler.LexicalAnalyser.TokenTypes
+namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 {
     internal class KeywordTokenType : TokenType
     {

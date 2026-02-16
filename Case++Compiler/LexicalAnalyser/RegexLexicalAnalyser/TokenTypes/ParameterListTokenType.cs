@@ -2,9 +2,9 @@
 
 using System.Text.RegularExpressions;
 
-namespace CaseppCompiler.LexicalAnalyser.TokenTypes
+namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 {
-    internal partial class ParameterTokenType : TokenType
+    internal partial class ParameterListTokenType : TokenType
     {
         [GeneratedRegex(@"^[()]")]
         public override partial Regex Regex { get; }
@@ -12,7 +12,7 @@ namespace CaseppCompiler.LexicalAnalyser.TokenTypes
         public override Predicate<char>? Trim => null;
 
         public override Token GenerateToken(string text, int line, int column) =>
-            new ParameterToken(
+            new ParameterListToken(
                 text switch
                 {
                     "(" => RegionMarkType.Start,

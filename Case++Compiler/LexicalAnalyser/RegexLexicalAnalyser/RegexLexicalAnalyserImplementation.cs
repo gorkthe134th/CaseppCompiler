@@ -1,13 +1,13 @@
-﻿using CaseppCompiler.LexicalAnalyser.TokenTypes;
-using CaseppCompiler.LexicalAnalyser.Tokens;
+﻿using CaseppCompiler.LexicalAnalyser.Tokens;
+using CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes;
 
-namespace CaseppCompiler.LexicalAnalyser
+namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
 {
-    internal class LexicalAnalyserImplementation
+    internal class RegexLexicalAnalyserImplementation : ILexicalAnalyser
     {
         private static readonly TokenType[] tokenTypes;
 
-        static LexicalAnalyserImplementation()
+        static RegexLexicalAnalyserImplementation()
         {
             ConstantTokenType constantTokenType = new();
             OperatorTokenType operatorTokenType = new();
@@ -16,9 +16,9 @@ namespace CaseppCompiler.LexicalAnalyser
             AssignmentTokenType assignmentTokenType = new();
             CaseStartTokenType caseStartTokenType = new();
             BlockTokenType blockTokenType = new();
-            ParameterTokenType parameterTokenType = new();
+            ParameterListTokenType parameterTokenType = new();
             CommaTokenType commaTokenType = new();
-            EndTokenType endTokenType = new();
+            SemiColonTokenType endTokenType = new();
 
             tokenTypes =
             [

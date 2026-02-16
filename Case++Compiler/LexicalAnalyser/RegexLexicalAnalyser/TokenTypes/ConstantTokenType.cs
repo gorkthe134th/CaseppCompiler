@@ -2,16 +2,16 @@
 
 using System.Text.RegularExpressions;
 
-namespace CaseppCompiler.LexicalAnalyser.TokenTypes
+namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 {
-    internal partial class OperatorTokenType : TokenType
+    internal partial class ConstantTokenType : TokenType
     {
-        [GeneratedRegex(@"^(\+|-|\*|/|(<>)|(<=)|(>=)|=|<|>|(not)|(and)|(or))")]
+        [GeneratedRegex(@"^[0-9]+")]
         public override partial Regex Regex { get; }
 
         public override Predicate<char>? Trim => null;
 
         public override Token GenerateToken(string text, int line, int column) =>
-            new OperatorToken(text, line, column);
+            new ConstantToken(uint.Parse(text), line, column);
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    internal class ParameterToken(RegionMarkType type, int line, int column) : Token(line, column)
+    internal class ParameterListToken(RegionMarkType type, int line, int column) : Token(line, column)
     {
         public RegionMarkType Type { get; } = type;
 

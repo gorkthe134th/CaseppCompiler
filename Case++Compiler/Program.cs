@@ -8,8 +8,8 @@ namespace CaseppCompiler
         private static void Main(string[] args)
         {
             if (args.Length < 1) throw new ArgumentException("At least one argument is required. Please provide the name of the file to compile.");
-            LexicalAnalyserImplementation lexicalAnalyser = new();
-
+            
+            ILexicalAnalyser lexicalAnalyser = LexicalAnalyserFactory.Create(args.Length > 1 ? args[1] : "");
             Stream inputStream = File.OpenRead(args[0]);
 
             try

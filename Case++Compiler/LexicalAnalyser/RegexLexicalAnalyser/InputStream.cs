@@ -1,15 +1,15 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace CaseppCompiler.LexicalAnalyser
+namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
 {
     internal class InputStream(Stream byteStream, Encoding? encoding = null)
     {
         private const int MAX_REGEX = 30;
 
-        StreamReader reader = new(byteStream, encoding);
-        char[] buffer = new char[2 * MAX_REGEX];
-        int start = 0, end = 0;
+        private readonly StreamReader reader = new(byteStream, encoding);
+        private char[] buffer = new char[2 * MAX_REGEX];
+        private int start = 0, end = 0;
 
         public bool EndOfStream => start == end && reader.EndOfStream;
 
