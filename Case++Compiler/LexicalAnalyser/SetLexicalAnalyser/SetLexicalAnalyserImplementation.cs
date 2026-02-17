@@ -31,36 +31,55 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
             StringBuilder currentText = new();
             TokenType? lastMatchingType = null;
             Queue<char> addedOverflow = new();
-            int line = 1;
-            int column = 0;
+            int line = 1, column = 0;
+            int matchStartLine = 1, matchStartColumn = 1;
+            int matchEndLine = -1, matchEndColumn = -1;
 
-            // TODO: Do one final iteration with every predicate failing, to catch the last token
-            while (!reader.EndOfStream || overflow.Count > 0)
+            while (!reader.EndOfStream || overflow.Count > 0 || addedOverflow.Count > 0)
             {
-                if (!overflow.TryDequeue(out char character)) character = (char)reader.Read();
-                if (character == '\n') { line++; column = -1; }
-                column++;
+                char character;
+                bool eof = true;
 
-                bool lastMatchingTypeUpdated = false;
+                if (overflow.TryDequeue(out character)) eof = false;
+                else if (!reader.EndOfStream) { character = (char)reader.Read(); eof = false; }
+                if (!eof)
+                {
+                    if (character == '\n') { line++; column = -1; }
+                    column++;
+                }
+
+                bool updatedLastMatchingType = false;
                 foreach ((TokenType type, IEnumerator<Func<char, bool?>> predicates) in tokenTypePredicates)
                 {
                     if (!predicates.MoveNext())
                     {
                         lastMatchingType = type;
-                        lastMatchingTypeUpdated = true;
+                        updatedLastMatchingType = true;
+                        matchEndLine = line;
+                        matchEndColumn = column - 1;
                         addedOverflow.Clear();
-                        addedOverflow.Enqueue(character);
+                        if (!eof)
+                        {
+                            addedOverflow.Enqueue(character);
+                            if (character == '\n')
+                            {
+                                matchEndLine--;
+                                matchEndColumn = -1;
+                            }
+                        }
                         tokenTypePredicates.Remove(type);
                         continue;
                     }
-                    switch (predicates.Current(character))
+                    switch (eof ? false : predicates.Current(character))
                     {
                         case false:
                             tokenTypePredicates.Remove(type);
                             break;
                         case null:
                             lastMatchingType = type;
-                            lastMatchingTypeUpdated = true;
+                            updatedLastMatchingType = true;
+                            matchEndLine = line;
+                            matchEndColumn = column;
                             addedOverflow.Clear();
                             break;
                         case true:
@@ -68,46 +87,53 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                     }
                 }
 
-                if (!lastMatchingTypeUpdated) addedOverflow.Enqueue(character);
-
-                currentText.Append(character);
+                if (!eof)
+                {
+                    if (!updatedLastMatchingType) addedOverflow.Enqueue(character);
+                    currentText.Append(character);
+                }
 
                 if (tokenTypePredicates.Count == 0)
                 {
                     if (lastMatchingType == null)
                     {
-                        currentText.Append(character);
+                        if (!eof) currentText.Append(character);
                         throw new ArgumentException($"Line {line} Column {column}: Invalid Token \"{currentText}\"");
                     }
 
-                    int startOffset = currentText.Length - 1;
                     string text = currentText.Remove(currentText.Length - addedOverflow.Count, addedOverflow.Count).ToString();
-                    Token? token = lastMatchingType.GenerateToken(text, line, column - startOffset);
+                    Token? token = lastMatchingType.GenerateToken(text, matchStartLine, matchStartColumn);
                     if (token != null) yield return token;
 
                     lastMatchingType = null;
                     currentText.Clear();
 
-                    column -= addedOverflow.Count;
-                    while (addedOverflow.TryDequeue(out char c)) overflow.Enqueue(c);
+                    line = matchEndLine;
+                    column = matchEndColumn;
+
+                    while (addedOverflow.TryDequeue(out character)) overflow.Enqueue(character);
                     do
                     {
                         if (!overflow.TryDequeue(out character))
                         {
-                            if (reader.EndOfStream) break;
+                            if (reader.EndOfStream) goto exit;
                             character = (char)reader.Read();
                         }
                         if (character == '\n') { line++; column = -1; }
                         column++;
                     } while (char.IsWhiteSpace(character));
+
+                    matchStartLine = line;
+                    matchStartColumn = column;
+
                     overflow.Enqueue(character);
                     column--;
 
                     tokenTypePredicates = GetTypePredicates();
                 }
             }
-
-            yield return new EOFToken(line, column);
+        exit:
+            yield return new EOFToken(line, column + 1);
         }
 
         private static Dictionary<TokenType, IEnumerator<Func<char, bool?>>> GetTypePredicates()
