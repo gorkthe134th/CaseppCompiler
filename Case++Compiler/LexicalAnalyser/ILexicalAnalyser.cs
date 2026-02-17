@@ -6,7 +6,7 @@ namespace CaseppCompiler.LexicalAnalyser
 {
     internal interface ILexicalAnalyser
     {
-        IEnumerable<Token> Analyse(Stream input);
+        public IEnumerable<Token> Analyse(Stream input);
     }
 
     internal static class LexicalAnalyserFactory

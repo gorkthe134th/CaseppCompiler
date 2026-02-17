@@ -16,3 +16,7 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Style", "IDE0130:Namespace does not match folder structure", Justification = "Cannot use '+' in namespace", Scope = "namespace", Target = "~N:CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser")]
 [assembly: SuppressMessage("Style", "IDE0130:Namespace does not match folder structure", Justification = "Cannot use '+' in namespace", Scope = "namespace", Target = "~N:CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes")]
+
+[assembly: SuppressMessage("Style", "IDE0130:Namespace does not match folder structure", Justification = "Cannot use '+' in namespace", Scope = "namespace", Target = "~N:CaseppCompiler.SyntaxAnalyser")]
+[assembly: SuppressMessage("Style", "IDE0130:Namespace does not match folder structure", Justification = "Cannot use '+' in namespace", Scope = "namespace", Target = "~N:CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser")]
+[assembly: SuppressMessage("Style", "IDE0130:Namespace does not match folder structure", Justification = "Cannot use '+' in namespace", Scope = "namespace", Target = "~N:CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers")]
