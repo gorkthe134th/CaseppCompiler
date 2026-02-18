@@ -23,7 +23,7 @@ namespace CaseppCompiler.LexicalAnalyser.Tokens
             ["or" ] = OperationType.Or,
         };
 
-        private enum OperationType
+        public enum OperationType
         {
             Not,
             Add,
@@ -46,7 +46,7 @@ namespace CaseppCompiler.LexicalAnalyser.Tokens
                 throw new ArgumentException($"{base.ToString()} Invalid Operation \"{operation}\"");
         }
 
-        private OperationType Operation { get; }
+        public OperationType Operation { get; }
 
         public override string ToString() => $"{base.ToString()} {Operation}";
     }

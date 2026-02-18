@@ -17,10 +17,10 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
                             return true;
                         case '<':
                             additionalAllowedChapacters = ['=', '>'];
-                            return true;
+                            return null;
                         case '>':
                             additionalAllowedChapacters = ['='];
-                            return true;
+                            return null;
                         default:
                             return false;
                     };

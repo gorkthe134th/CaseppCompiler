@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 {
-    internal partial class ParameterListTokenType : TokenType
+    internal partial class ParenthesisTokenType : TokenType
     {
         [GeneratedRegex(@"^[()]")]
         public override partial Regex Regex { get; }
@@ -12,12 +12,12 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
         public override Predicate<char>? Trim => null;
 
         public override Token GenerateToken(string text, int line, int column) =>
-            new ParameterListToken(
+            new ParenthesisToken(
                 text switch
                 {
                     "(" => RegionMarkType.Start,
                     ")" => RegionMarkType.End,
-                    _   => throw new ArgumentException($"Line {line} Column {column}: Invalid Parameter Mark \"{text}\"")
+                    _   => throw new ArgumentException($"Line {line} Column {column}: Invalid Parenthesis \"{text}\"")
                 },
                 line, column);
     }

@@ -20,6 +20,9 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
             (TokenMatcher?)typeof(TypeTokenMatcher<>).MakeGenericType(type).GetConstructor([typeof(string)])?.Invoke([GenerateName()]) ??
             throw new InvalidOperationException("No suitable TypeTokenMatcher Constructor exists");
 
+        public static implicit operator TokenMatcher(OperatorToken.OperationType operation) =>
+            new OperatorTokenMatcher(GenerateName(), operation);
+
         public static TokenMatcher Create(ReadOnlySpan<TokenMatcher> matchers) =>
             new SequenceTokenMatcher(GenerateName(), matchers.ToArray());
 

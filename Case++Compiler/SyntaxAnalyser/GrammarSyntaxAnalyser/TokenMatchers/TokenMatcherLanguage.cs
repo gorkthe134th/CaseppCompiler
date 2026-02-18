@@ -16,9 +16,15 @@
                 new BlockTokenMatcher(name, matcher);
 
             public static TokenMatcher operator >(string name, TokenMatcher matcher) =>
-                new ParameterTokenMatcher(name, matcher);
+                new ParenthesesTokenMatcher(name, matcher);
 
             public static TokenMatcher operator <(string name, TokenMatcher matcher) =>
+                throw new InvalidOperationException();
+
+            public static TokenMatcher operator >=(string name, TokenMatcher matcher) =>
+                new SquareBracketTokenMatcher(name, matcher);
+
+            public static TokenMatcher operator <=(string name, TokenMatcher matcher) =>
                 throw new InvalidOperationException();
 
             public static TokenMatcher operator ^(string name, TokenMatcher matcher) =>

@@ -2,13 +2,13 @@
 
 namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
 {
-    internal partial class ParenthesisTokenType : TokenType
+    internal partial class SquareBracketTokenType : TokenType
     {
         public override IEnumerable<Func<char, bool?>> CharacterPredicates
         {
             get
             {
-                yield return static c => c == '(' | c == ')';
+                yield return static c => c == '[' | c == ']';
             }
         }
 
@@ -18,9 +18,9 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
             new ParenthesisToken(
                 text switch
                 {
-                    "(" => RegionMarkType.Start,
-                    ")" => RegionMarkType.End,
-                    _   => throw new ArgumentException($"Line {line} Column {column}: Invalid Parenthesis \"{text}\"")
+                    "[" => RegionMarkType.Start,
+                    "]" => RegionMarkType.End,
+                    _   => throw new ArgumentException($"Line {line} Column {column}: Invalid Bracket Mark \"{text}\"")
                 },
                 line, column);
     }
