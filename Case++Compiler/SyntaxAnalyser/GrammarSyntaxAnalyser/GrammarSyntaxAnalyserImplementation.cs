@@ -10,23 +10,103 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 
         static GrammarSyntaxAnalyserImplementation()
         {
-            TokenMatcher declarationsMatcher = new KleeneStarTokenMatcher(
-                "Variable Declarations",
-                new SequenceTokenMatcher(
-                    "Variable Declaration",
-                    [
-                        new TypeTokenMatcher<DeclareToken>("\"declare\" Keyword"),
-                        new TypeTokenMatcher<IdentifierToken>("Variable ID"),
-                        new TypeTokenMatcher<SemiColonToken>("Semi Colon"),
-                    ]));
+            TokenMatcher declarationsMatcher =
+                "Variable Declarations" * (
+                    "Variable Declaration" % [
+                        "\"declare\" Keyword" % typeof(DeclareToken),
+                        "Variable List" ^
+                            "Variable IDs" %
+                            [
+                                "Variable ID" % typeof(IdentifierToken),
+                                "More Variables" *
+                                [
+                                    "Comma" % typeof(CommaToken),
+                                    "Variable ID" % typeof(IdentifierToken),
+                                ],
+                            ],
+                        "Semi Colon" % typeof(SemiColonToken),
+                    ]);
 
-            superMatcher = new SequenceTokenMatcher(
-                "Program",
+            TokenMatcher formalParameterMatcher =
+                "Formal Parameter" |
                 [
-                    new TypeTokenMatcher<ProgramToken>("\"program\" Keyword"),
-                    new TypeTokenMatcher<IdentifierToken>("Program ID"),
-                    new BlockTokenMatcher("Program Body", declarationsMatcher),
-                ]);
+                    "In Parameter" %
+                    [
+                        "\"in\" Keyword" % typeof(InToken),
+                        "Parameter ID" % typeof(IdentifierToken),
+                    ],
+                    "Out Parameter" %
+                    [
+                        "\"out\" Keyword" % typeof(OutToken),
+                        "Parameter ID" % typeof(IdentifierToken),
+                    ],
+                    "InOut Parameter" %
+                    [
+                        "\"inout\" Keyword" % typeof(InOutToken),
+                        "Parameter ID" % typeof(IdentifierToken),
+                    ],
+                ];
+
+            UnresolvedTokenMatcher functionBody = new("Function Body");
+            TokenMatcher functionsMatcher =
+                "Functions" * (
+                    "Function" % [
+                        "\"function\" Keyword" % typeof(FunctionToken),
+                        "Function ID" % typeof(IdentifierToken),
+                        "Formal Parameter List" > (
+                            "Formal Parameters" ^
+                            [
+                                formalParameterMatcher,
+                                "More Parameters" *
+                                [
+                                    "Comma" % typeof(CommaToken),
+                                    formalParameterMatcher,
+                                ],
+                            ]),
+                        functionBody,
+                    ]);
+
+            TokenMatcher singleStatementMatcher =
+                "Statement" |
+                [
+                    // TODO : Create Statement Matchers
+                ];
+
+            TokenMatcher statementsMatcher =
+                "Statement Sequence" ^
+                    "Statements" %
+                    [
+                        singleStatementMatcher,
+                        "More Statements" *
+                        [
+                            "Semi Colon" % typeof(SemiColonToken),
+                            singleStatementMatcher,
+                        ],
+                        "Optional Semi Colon" ^
+                            "Semi Colon" % typeof(SemiColonToken),
+                    ];
+
+            functionBody.Resolve(
+                "Function Body" >>
+                    "Function Body Contents" %
+                    [
+                        declarationsMatcher,
+                        functionsMatcher,
+                    ]);
+
+            superMatcher =
+                "Program" %
+                [
+                    "\"program\" Keyword" % typeof(ProgramToken),
+                    "Program ID" % typeof(IdentifierToken),
+                    "Program Body" >>
+                        "Program Body Contents" %
+                        [
+                            declarationsMatcher,
+                            functionsMatcher,
+                        ],
+                    "EOF" % typeof(EOFToken),
+                ];
         }
 
         public void Analyse(IEnumerable<Token> input)
@@ -39,7 +119,6 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
             }
             if (!superMatcher.CanMatch(tokens.Current)) throw new ArgumentException($"Expected {superMatcher.Name}: {tokens.Current}");
             superMatcher.Match(tokens);
-            if (tokens.MoveNext()) throw new ArgumentException($"Expected End Of File: {tokens.Current}");
         }
     }
 }

@@ -8,6 +8,10 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 
         public override bool CanMatch(Token firstToken) => firstToken is Type;
 
-        public override void Match(IEnumerator<Token> tokens) { }
+        public override void Match(IEnumerator<Token> tokens)
+        {
+            if (!tokens.MoveNext() && !typeof(Type).IsSubclassOf(typeof(EOFToken)))
+                throw new ArgumentException($"Expected EOF Token");
+        }
     }
 }

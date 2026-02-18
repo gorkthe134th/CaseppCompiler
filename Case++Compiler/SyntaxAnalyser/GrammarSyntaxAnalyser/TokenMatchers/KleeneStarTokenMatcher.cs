@@ -14,11 +14,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 
         public override void Match(IEnumerator<Token> tokens)
         {
-            while (matcher.CanMatch(tokens.Current))
-            {
-                matcher.Match(tokens);
-                if (!tokens.MoveNext()) return;
-            }
+            while (matcher.CanMatch(tokens.Current)) matcher.Match(tokens);
         }
     }
 }

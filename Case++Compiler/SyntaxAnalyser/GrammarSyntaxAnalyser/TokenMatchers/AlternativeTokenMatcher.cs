@@ -2,7 +2,7 @@
 
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
-    internal class AlternativeTokenMatcher(string name, IEnumerable<TokenMatcher> matcherOptions) : TokenMatcher(name)
+    internal class AlternativeTokenMatcher(string name, TokenMatcher[] matcherOptions) : TokenMatcher(name)
     {
         public override bool CanMatchEmpty => matcherOptions.Any(m => m.CanMatchEmpty);
 
