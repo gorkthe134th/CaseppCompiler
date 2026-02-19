@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace CaseppCompiler.LexicalAnalyser.Tokens
+﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    internal class OperatorToken : Token
+    public class OperatorToken : Token
     {
         private static readonly Dictionary<string, OperationType> operationMap = new()
         {

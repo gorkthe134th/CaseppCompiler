@@ -1,6 +1,6 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    internal abstract class Token(int line, int column)
+    public abstract class Token(int line, int column)
     {
         public int Line { get; } = line;
 

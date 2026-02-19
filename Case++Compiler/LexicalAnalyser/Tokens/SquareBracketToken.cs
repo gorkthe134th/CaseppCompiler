@@ -1,6 +1,6 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    internal class SquareBracketToken(RegionMarkType type, int line, int column) : Token(line, column)
+    public class SquareBracketToken(RegionMarkType type, int line, int column) : Token(line, column)
     {
         public RegionMarkType Type { get; } = type;
 

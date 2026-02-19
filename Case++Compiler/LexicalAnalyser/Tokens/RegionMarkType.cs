@@ -1,6 +1,6 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    internal enum RegionMarkType
+    public enum RegionMarkType
     {
         Start,
         End,

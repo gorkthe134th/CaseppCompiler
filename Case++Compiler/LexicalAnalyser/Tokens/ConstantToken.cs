@@ -1,6 +1,6 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    internal class ConstantToken : Token
+    public class ConstantToken : Token
     {
         public ConstantToken(uint constant, int line, int column) : base(line, column)
         {

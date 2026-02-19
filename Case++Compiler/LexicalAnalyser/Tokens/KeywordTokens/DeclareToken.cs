@@ -1,6 +1,6 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    internal class DeclareToken(int line, int column) : Token(line, column)
+    public class DeclareToken(int line, int column) : Token(line, column)
     {
         public override string ToString() => $"{base.ToString()} Declare";
     }

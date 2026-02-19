@@ -1,6 +1,6 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    internal class BlockToken(RegionMarkType type, int line, int column) : Token(line, column)
+    public class BlockToken(RegionMarkType type, int line, int column) : Token(line, column)
     {
         public RegionMarkType Type { get; } = type;
 
