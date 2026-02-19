@@ -44,7 +44,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
             while (!inputStream.EndOfStream)
             {
                 inputStream.Trim(ref line, ref column);
-                if (inputStream.EndOfStream) yield break;
+                if (inputStream.EndOfStream) break;
                 TokenType? matchedType = null;
                 if (inputStream.TryMatchFirst(tokenTypes.Select(type => (matchedType = type).Regex), out string text) && matchedType != null)
                 {
@@ -58,6 +58,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                     throw new ArgumentException($"Line {line} Column {column}: Invalid Token");
                 }
             }
+            yield return new EOFToken(line, column);
         }
     }
 }

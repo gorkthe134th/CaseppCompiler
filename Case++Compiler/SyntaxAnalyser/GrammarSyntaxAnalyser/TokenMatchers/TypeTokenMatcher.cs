@@ -10,7 +10,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 
         public override void Match(IEnumerator<Token> tokens)
         {
-            if (!tokens.MoveNext() && !typeof(T).IsSubclassOf(typeof(EOFToken)))
+            if (!tokens.MoveNext() && !typeof(T).IsAssignableTo(typeof(EOFToken)))
                 throw new ArgumentException($"Expected EOF Token");
         }
     }

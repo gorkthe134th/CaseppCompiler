@@ -2,7 +2,7 @@
   "profiles": {
     "Case++Compiler": {
       "commandName": "Project",
-      "commandLineArgs": "test.c++"
+      "commandLineArgs": "test.c++ -l regex"
     }
   }
 }

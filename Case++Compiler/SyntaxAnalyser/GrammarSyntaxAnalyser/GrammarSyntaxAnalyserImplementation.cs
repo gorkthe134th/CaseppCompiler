@@ -13,17 +13,20 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
             TokenMatcher declarationsMatcher =
                 "Variable Declarations" * 
                 [
-                    "\"declare\" Keyword" % typeof(DeclareToken),
-                    "Variable List" ^
-                        "Variable IDs" %
-                        [
-                            "Variable ID" % typeof(IdentifierToken),
-                            "More Variables" *
+                    "Variable Declaration" ^
+                    [
+                        "\"declare\" Keyword" % typeof(DeclareToken),
+                        "Variable List" ^
+                            "Variable IDs" %
                             [
-                                "Comma" % typeof(CommaToken),
                                 "Variable ID" % typeof(IdentifierToken),
+                                "More Variables" *
+                                [
+                                    "Comma" % typeof(CommaToken),
+                                    "Variable ID" % typeof(IdentifierToken),
+                                ],
                             ],
-                        ],
+                    ],
                     "Semi Colon" % typeof(SemiColonToken),
                 ];
 
@@ -32,7 +35,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                 [
                     "In Parameter" %
                     [
-                        "\"in\" Keyword" % typeof(InToken),
+                        "Optional Keyword" ^
+                            "\"in\" Keyword" % typeof(InToken),
                         "Parameter ID" % typeof(IdentifierToken),
                     ],
                     "Out Parameter" %
@@ -200,13 +204,15 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
             UnresolvedTokenMatcher singleStatementMatcher = new("Single Statement");
 
             TokenMatcher controlBody =
-                "Single Statement of Block Body" |
+                "Control Body" |
                 [
                     "Single Statement" %
                     [
                         singleStatementMatcher,
-                        "Optional Semi Colon" ^
-                            "Semi Colon" % typeof(SemiColonToken),
+                        //"Optional Semi Colon" ^
+                        //    "Semi Colon" % typeof(SemiColonToken),
+                        // Cannot allow a semi colon here because it's ambiguous
+                        // whether a semi colon ends the control body or the whole statement (if, while, etc.)
                     ],
                     blockBodyMatcher,
                 ];
@@ -228,6 +234,10 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Optional Else" ^
                             "Else" %
                             [
+                                //"Optional Semi Colon" ^
+                                //    "Semi Colon" % typeof(SemiColonToken),
+                                // Cannot allow a semi colon here because it's ambiguous
+                                // whether a semi colon ends the main body or the whole if
                                 "\"else\" Keyword" % typeof(ElseToken),
                                 controlBody,
                             ],
@@ -240,6 +250,10 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Optional Else" ^
                             "Else" %
                             [
+                                //"Optional Semi Colon" ^
+                                //    "Semi Colon" % typeof(SemiColonToken),
+                                // Cannot allow a semi colon here because it's ambiguous
+                                // whether a semi colon ends the main body or the whole while
                                 "\"else\" Keyword" % typeof(ElseToken),
                                 controlBody,
                             ],
@@ -253,22 +267,108 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             conditionMatcher,
                             "Colon" % typeof(CaseStartToken),
                             controlBody,
+                            "Optional Semi Colon" ^
+                                "Semi Colon" % typeof(SemiColonToken),
                         ],
                         "\"default\" Keyword" % typeof(DefaultToken),
                         "Colon" % typeof(CaseStartToken),
                         controlBody,
                     ],
+                    "While Case" %
+                    [
+                        "\"whilecase\" Keyword" % typeof(WhileCaseToken),
+                        "Cases" *
+                        [
+                            "\"when\" Keyword" % typeof(WhenToken),
+                            conditionMatcher,
+                            "Colon" % typeof(CaseStartToken),
+                            controlBody,
+                            "Optional Semi Colon" ^
+                                "Semi Colon" % typeof(SemiColonToken),
+                        ],
+                        "\"default\" Keyword" % typeof(DefaultToken),
+                        "Colon" % typeof(CaseStartToken),
+                        controlBody,
+                    ],
+                    "In Case" %
+                    [
+                        "\"incase\" Keyword" % typeof(InCaseToken),
+                        "Cases" *
+                        [
+                            "\"when\" Keyword" % typeof(WhenToken),
+                            conditionMatcher,
+                            "Colon" % typeof(CaseStartToken),
+                            controlBody,
+                            //"Optional Semi Colon" ^
+                            //    "Semi Colon" % typeof(SemiColonToken),
+                            // Cannot allow a semi colon here because it's ambiguous
+                            // whether a semi colon ends the current case or the whole incase
+                        ],
+                    ],
+                    "For Case" %
+                    [
+                        "\"forcase\" Keyword" % typeof(ForCaseToken),
+                        "Iteration Identifier" % typeof(IdentifierToken),
+                        "Equals Sign" % OperatorToken.OperationType.EqualTo,
+                        expressionMatcher,
+                        "Cases" *
+                        [
+                            "\"when\" Keyword" % typeof(WhenToken),
+                            conditionMatcher,
+                            "Colon" % typeof(CaseStartToken),
+                            controlBody,
+                            //"Optional Semi Colon" ^
+                            //    "Semi Colon" % typeof(SemiColonToken),
+                            // Cannot allow a semi colon here because it's ambiguous
+                            // whether a semi colon ends the current case or the whole forcase
+                        ],
+                    ],
+                    "Until Case" %
+                    [
+                        "\"untilcase\" Keyword" % typeof(UntilCaseToken),
+                        "Cases" *
+                        [
+                            "\"when\" Keyword" % typeof(WhenToken),
+                            conditionMatcher,
+                            "Colon" % typeof(CaseStartToken),
+                            controlBody,
+                            "Optional Semi Colon" ^
+                                "Semi Colon" % typeof(SemiColonToken),
+                        ],
+                        "\"until\" Keyword" % typeof(UntilToken),
+                        conditionMatcher,
+                    ],
+                    "Return" %
+                    [
+                        "\"return\" Keyword" % typeof(ReturnToken),
+                        expressionMatcher,
+                    ],
+                    "Input" %
+                    [
+                        "\"input\" Keyword" % typeof(InputToken),
+                        "Variable ID" % typeof(IdentifierToken),
+                    ],
+                    "Print" %
+                    [
+                        "\"print\" Keyword" % typeof(PrintToken),
+                        expressionMatcher,
+                    ],
                 ]);
 
             UnresolvedTokenMatcher statementsMatcher = new("Statements");
             statementsMatcher.Resolve(
-                "Statements" ^
+                "Statements" %
                 [
-                    singleStatementMatcher,
+                    "NOP" * typeof(SemiColonToken),
                     "Continuation" ^
                     [
-                        "Semi Colon" % typeof(SemiColonToken),
-                        statementsMatcher,
+                        singleStatementMatcher,
+                        "Continuation" ^
+                        [
+                            "Semi Colon" % typeof(SemiColonToken),
+                            statementsMatcher,
+                        ],
+                        "NOP" * typeof(SemiColonToken), // This makes the grammar not LL(1), but it's NOP so it doesn't matter
                     ],
                 ]);
 
