@@ -4,12 +4,12 @@ using CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser;
 
 namespace CaseppCompiler.LexicalAnalyser
 {
-    internal interface ILexicalAnalyser
+    public interface ILexicalAnalyser
     {
         public IEnumerable<Token> Analyse(Stream input);
     }
 
-    internal static class LexicalAnalyserFactory
+    public static class LexicalAnalyserFactory
     {
         public static ILexicalAnalyser Create(string type) =>
             type switch
