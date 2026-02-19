@@ -21,7 +21,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
             }
         }
 
-        public override int Limit => 0;
+        public override int Limit => 2;
 
         public override Token? GenerateToken(string text, int line, int column) => null;
     }

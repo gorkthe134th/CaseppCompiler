@@ -50,6 +50,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                 }
 
                 bool updatedLastMatchingType = false;
+                int? limit = null;
                 foreach ((TokenType type, IEnumerator<Func<char, bool?>> predicates) in tokenTypePredicates)
                 {
                     if (!predicates.MoveNext())
@@ -79,11 +80,13 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                         case null:
                             lastMatchingType = type;
                             updatedLastMatchingType = true;
+                            if (limit == null || type.Limit > limit) limit = type.Limit;
                             matchEndLine = line;
                             matchEndColumn = column;
                             addedOverflow.Clear();
                             break;
                         case true:
+                            if (limit == null || type.Limit > limit) limit = type.Limit;
                             break;
                     }
                 }
@@ -92,6 +95,8 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                 {
                     if (!updatedLastMatchingType) addedOverflow.Enqueue(character);
                     currentText.Append(character);
+                    if (limit != null && currentText.Length > (int)limit)
+                        currentText.Remove((int)limit, currentText.Length - (int)limit);
                 }
 
                 if (tokenTypePredicates.Count == 0)
@@ -102,8 +107,8 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                         throw new ArgumentException($"Line {line} Column {column}: Invalid Token \"{currentText}\"");
                     }
 
-                    string text = currentText.Remove(currentText.Length - addedOverflow.Count, addedOverflow.Count).ToString();
-                    Token? token = lastMatchingType.GenerateToken(text, matchStartLine, matchStartColumn);
+                    currentText.Remove(currentText.Length - addedOverflow.Count, addedOverflow.Count);
+                    Token? token = lastMatchingType.GenerateToken(currentText.ToString(), matchStartLine, matchStartColumn);
                     if (token != null) yield return token;
 
                     lastMatchingType = null;
