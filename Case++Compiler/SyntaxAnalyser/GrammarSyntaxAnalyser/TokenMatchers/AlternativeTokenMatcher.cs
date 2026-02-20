@@ -6,7 +6,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
     {
         public override bool? TryMatch(IEnumerator<Token> tokens)
         {
-            bool? matchSoFar = null;
+            bool? matchSoFar = false;
             foreach (var matcher in matchers)
             {
                 bool? match = matcher.TryMatch(tokens);
