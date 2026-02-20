@@ -6,7 +6,7 @@
         {
             public static TokenMatcher operator ~(string name) => new ImpossibleTokenMatcher(name);
 
-            public static TokenMatcher operator -(string name) => new RequiredTokenMatcher(name);
+            public static TokenMatcher operator -(string name) => new AlwaysPassTokenMatcher(name);
 
             public static TokenMatcher operator %(string name, TokenMatcher matcher)
             {
