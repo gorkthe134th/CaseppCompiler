@@ -7,7 +7,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
         public override bool? TryMatch(IEnumerator<Token> tokens)
         {
             if (tokens.Current is not OperatorToken operatorToken ||
-                operatorToken.Operation == operation) return false;
+                operatorToken.Operation != operation) return false;
             MoveNext(tokens);
 
             return true;

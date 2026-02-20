@@ -7,7 +7,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
         public override bool? TryMatch(IEnumerator<Token> tokens)
         {
             if (tokens.Current is not ParenthesisToken startToken ||
-                startToken.Type == RegionMarkType.Start) return false;
+                startToken.Type != RegionMarkType.Start) return false;
             MoveNext(tokens);
 
             if (contentMatcher.TryMatch(tokens) == false) throw new ArgumentException($"Expected {Name}: {tokens.Current}");
