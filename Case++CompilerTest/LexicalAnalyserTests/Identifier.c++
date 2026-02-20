@@ -1,0 +1,4 @@
+﻿and not or program andnot ornot programnot
+2and2 2program2
+a23456789012345678901234567890irrelevant12345
+and

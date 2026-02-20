@@ -6,7 +6,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 {
     internal partial class OperatorTokenType : TokenType
     {
-        [GeneratedRegex(@"^(\+|-|\*|/|(<>)|(<=)|(>=)|=|<|>|(not)|(and)|(or))")]
+        [GeneratedRegex(@"^(\+|-|\*|/|(<>)|(<=)|(>=)|=|<|>|(not(?![A-Za-z]))|(and(?![A-Za-z]))|(or(?![A-Za-z])))")]
         public override partial Regex Regex { get; }
 
         public override Predicate<char>? Trim => null;

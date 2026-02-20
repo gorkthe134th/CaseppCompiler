@@ -12,7 +12,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
             ConstantTokenType constantTokenType = new();
             OperatorTokenType operatorTokenType = new();
             KeywordTokenType keywordTokenType = new();
-            IdentifierTokenType identifierTokenType = new(operatorTokenType, keywordTokenType);
+            IdentifierTokenType identifierTokenType = new(keywordTokenType);
             AssignmentTokenType assignmentTokenType = new();
             CaseStartTokenType caseStartTokenType = new();
             BlockTokenType blockTokenType = new();
@@ -24,8 +24,8 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
             tokenTypes =
             [
                 constantTokenType,
-                identifierTokenType,
                 operatorTokenType,
+                identifierTokenType,
                 assignmentTokenType,
                 caseStartTokenType,
                 blockTokenType,

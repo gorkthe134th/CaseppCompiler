@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="Case++Compiler/Case++Compiler.csproj" />
+  <Project Path="Case++CompilerTest/Case++CompilerTest.csproj" />
 </Solution>
