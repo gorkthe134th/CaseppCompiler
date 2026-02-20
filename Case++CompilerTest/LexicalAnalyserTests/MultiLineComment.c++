@@ -1,0 +1,2 @@
+﻿//* comment */ error
+/*/ comment * comment **//**/*/
