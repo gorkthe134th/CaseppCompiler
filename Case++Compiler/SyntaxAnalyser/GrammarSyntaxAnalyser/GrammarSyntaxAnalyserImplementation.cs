@@ -394,13 +394,9 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
         public void Analyse(IEnumerable<Token> input)
         {
             var tokens = input.GetEnumerator();
-            if (!tokens.MoveNext())
-            {
-                if(!superMatcher.CanMatchEmpty) throw new ArgumentException($"Expected {superMatcher.Name}");
-                return;
-            }
-            if (!superMatcher.CanMatch(tokens.Current)) throw new ArgumentException($"Expected {superMatcher.Name}: {tokens.Current}");
-            superMatcher.Match(tokens);
+            TokenMatcher.MoveNext(tokens);
+            if (superMatcher.TryMatch(tokens) == false)
+                throw new ArgumentException($"Expected {superMatcher.Name}: {tokens.Current}");
         }
     }
 }

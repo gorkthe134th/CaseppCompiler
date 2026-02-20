@@ -1,34 +1,22 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 
-using System.Diagnostics;
-
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
     internal class SequenceTokenMatcher(string name, TokenMatcher[] matchers) : TokenMatcher(name)
     {
-        public override bool CanMatchEmpty => matchers.All(m => m.CanMatchEmpty);
-
-        public override bool CanMatch(Token firstToken)
+        public override bool? TryMatch(IEnumerator<Token> tokens)
         {
+            bool? matchSoFar = null;
             foreach (var matcher in matchers)
             {
-                if (matcher.CanMatch(firstToken)) return true;
-                if (!matcher.CanMatchEmpty) return false;
+                bool? match = matcher.TryMatch(tokens);
+                if (match == false)
+                    return matchSoFar == true
+                        ? throw new ArgumentException($"Expected {matcher.Name}: {tokens.Current}")
+                        : false;
+                matchSoFar |= match;
             }
-            return false;
-        }
-
-        public override void Match(IEnumerator<Token> tokens)
-        {
-            foreach (var matcher in matchers)
-            {
-                if (matcher.CanMatch(tokens.Current))
-                {
-                    matcher.Match(tokens);
-                    continue;
-                }
-                if (!matcher.CanMatchEmpty) throw new ArgumentException($"Expected {matcher.Name}: {tokens.Current}");
-            }
+            return matchSoFar;
         }
     }
 }

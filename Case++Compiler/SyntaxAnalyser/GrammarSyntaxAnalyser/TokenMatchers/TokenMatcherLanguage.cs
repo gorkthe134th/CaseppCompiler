@@ -1,11 +1,9 @@
 ﻿namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
-    internal static class TokenMatcherLanguage
+    public static class TokenMatcherLanguage
     {
         extension(string matcherName)
         {
-            public TokenMatcher EmptyMatcher => new EmptyTokenMatcher(matcherName);
-
             public static TokenMatcher operator %(string name, TokenMatcher matcher)
             {
                 matcher.Name = name;

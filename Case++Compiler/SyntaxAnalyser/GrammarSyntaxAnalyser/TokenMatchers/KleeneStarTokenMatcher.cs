@@ -8,13 +8,11 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
     internal class KleeneStarTokenMatcher(string name, TokenMatcher matcher) : TokenMatcher(name)
     {
-        public override bool CanMatchEmpty => true;
-
-        public override bool CanMatch(Token firstToken) => matcher.CanMatch(firstToken);
-
-        public override void Match(IEnumerator<Token> tokens)
+        public override bool? TryMatch(IEnumerator<Token> tokens)
         {
-            while (matcher.CanMatch(tokens.Current)) matcher.Match(tokens);
+            bool? match = null;
+            while ((match |= matcher.TryMatch(tokens)) == true) ;
+            return match;
         }
     }
 }
