@@ -4,6 +4,10 @@
     {
         extension(string matcherName)
         {
+            public static TokenMatcher operator ~(string name) => new ImpossibleTokenMatcher(name);
+
+            public static TokenMatcher operator -(string name) => new RequiredTokenMatcher(name);
+
             public static TokenMatcher operator %(string name, TokenMatcher matcher)
             {
                 matcher.Name = name;
