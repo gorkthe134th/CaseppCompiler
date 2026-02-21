@@ -29,45 +29,15 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
             [  "inout"   ] = (line, column) => new InOutToken(line, column),
         };
 
-        private static readonly string[] operatorOverrides = ["not", "and", "or"];
+        private static readonly HashSet<string> operatorOverrides = ["not", "and", "or"];
 
         public override IEnumerable<Func<char, bool?>> CharacterPredicates
         {
             get
             {
-                bool[] operatorPossible = new bool[operatorOverrides.Length];
-                bool operatorFound = false;
-                yield return c =>
-                {
-                    if (!char.IsAsciiLetter(c)) return false;
-                    for (int o = 0; o < operatorOverrides.Length; o++) operatorPossible[o] = c == operatorOverrides[o][0];
-                    return null;
-                };
-                for (int i = 1; !operatorFound; i++)
-                {
-                    yield return c =>
-                    {
-                        if (!char.IsAsciiLetter(c) && !char.IsAsciiDigit(c)) return false;
-                        for (int o = 0; o < operatorOverrides.Length; o++)
-                        {
-                            if (operatorPossible[o])
-                            {
-                                if (i >= operatorOverrides[o].Length)
-                                {
-                                    if (char.IsAsciiLetter(c))
-                                    {
-                                        operatorPossible[o] = false;
-                                        continue;
-                                    }
-                                    operatorFound = true;
-                                    return false;
-                                }
-                                operatorPossible[o] = c == operatorOverrides[o][i];
-                            }
-                        }
-                        return null;
-                    };
-                }
+                yield return c => char.IsAsciiLetter(c) ? null : false;
+                while (true)
+                    yield return c => char.IsAsciiLetterOrDigit(c) ? null : false;
             }
         }
 
