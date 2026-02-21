@@ -26,7 +26,10 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <Content Include="LexicalAnalyserTests\*.c++">
+    <Content Include="LexicalAnalyserTests\Happy\*.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="LexicalAnalyserTests\Sad\*.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

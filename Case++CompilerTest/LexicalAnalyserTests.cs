@@ -10,7 +10,7 @@ namespace CaseppCompilerTest
     public class LexicalAnalyserTests(string type)
     {
         private ILexicalAnalyser analyser;
-        private static readonly object[] tests =
+        private static readonly object[] happyTests =
         [
             new object[] { "EmptyFile.c++",
                 "Matcher" %
@@ -18,9 +18,11 @@ namespace CaseppCompilerTest
                     "EOF" % typeof(EOFToken),
                 ]
             },
-            new object[] { "SingleLineCommentAtEnd.c++",
+            new object[] { "SingleLineComment.c++",
                 "Matcher" %
                 [ -"",
+                    "Divide" % OperatorToken.OperationType.Divide,
+                    "Divide" % OperatorToken.OperationType.Divide,
                     "EOF" % typeof(EOFToken),
                 ]
             },
@@ -53,18 +55,71 @@ namespace CaseppCompilerTest
                     "EOF" % typeof(EOFToken),
                 ]
             },
+            new object[] { "Keyword.c++",
+                "Matcher" %
+                [ -"",
+                    "Program" % typeof(ProgramToken),
+                    "Declare" % typeof(DeclareToken),
+                    "Function" % typeof(FunctionToken),
+                    "In" % typeof(InToken),
+                    "Out" % typeof(OutToken),
+                    "InOut" % typeof(InOutToken),
+                    "Return" % typeof(ReturnToken),
+                    "If" % typeof(IfToken),
+                    "Else" % typeof(ElseToken),
+                    "While" % typeof(WhileToken),
+                    "SwitchCase" % typeof(SwitchCaseToken),
+                    "InCase" % typeof(InCaseToken),
+                    "WhileCase" % typeof(WhileCaseToken),
+                    "UntilCase" % typeof(UntilCaseToken),
+                    "Until" % typeof(UntilToken),
+                    "ForCase" % typeof(ForCaseToken),
+                    "When" % typeof(WhenToken),
+                    "Default" % typeof(DefaultToken),
+                    "Input" % typeof(InputToken),
+                    "Print" % typeof(PrintToken),
+                    "EOF" % typeof(EOFToken),
+                ]
+            },
+            new object[] { "NoCarriageReturn.c++",
+                "Matcher" %
+                [ -"",
+                    new IdentifierTokenMatcher("a"),
+                    new ConstantTokenMatcher("1", 1),
+                    "+" % OperatorToken.OperationType.Add,
+                    ">" % OperatorToken.OperationType.GreaterThan,
+                    "}" % typeof(BlockToken),
+                    new IdentifierTokenMatcher("a23456789012345678901234567890"),
+                    new IdentifierTokenMatcher("a23456789012345678901234567890"),
+                    "EOF" % typeof(EOFToken),
+                ]
+            },
+        ];
+        private static readonly object[] sadTests =
+        [
+            new object[] { "InvalidCharacter.c++"  , typeof(ArgumentException), Does.StartWith("Line 1 Column 1: Invalid Token") },
+            new object[] { "ConstantOutOfRange.c++", typeof(ArgumentException), Is.EqualTo("Line 1 Column 1: Constants must be in range [-32767, 32767]") },
         ];
 
         [SetUp]
         public void Setup() => analyser = LexicalAnalyserFactory.Create(type);
 
-        [TestCaseSource(nameof(tests))]
-        public void Test(string file, TokenMatcher matcher)
+        [TestCaseSource(nameof(happyTests))]
+        public void HappyTest(string file, TokenMatcher matcher)
         {
-            string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\{file}");
+            string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Happy\{file}");
             var tokens = analyser.Analyse(File.OpenRead(path)).GetEnumerator();
             Assert.That(tokens.MoveNext(), Is.True);
             Assert.That(matcher.TryMatch(tokens), Is.True);
+        }
+
+        [TestCaseSource(nameof(sadTests))]
+        public void SadTest(string file, Type exceptionType, NUnit.Framework.Constraints.IResolveConstraint messageConstraint)
+        {
+            string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Sad\{file}");
+            var tokens = analyser.Analyse(File.OpenRead(path)).GetEnumerator();
+            var e = Assert.Throws(exceptionType, () => tokens.MoveNext(), $"Expected {exceptionType.Name}", []);
+            Assert.That(e.Message, messageConstraint);
         }
 
         private class IdentifierTokenMatcher(string name) : TokenMatcher(name)
