@@ -17,7 +17,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
                 {
                     "(" => RegionMarkType.Start,
                     ")" => RegionMarkType.End,
-                    _   => throw new ArgumentException($"Line {line} Column {column}: Invalid Parenthesis \"{text}\"")
+                    _   => throw new LexicalAnalyserException($"Line {line} Column {column}: Invalid Parenthesis \"{text}\"")
                 },
                 line, column);
     }

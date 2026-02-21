@@ -55,7 +55,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                 }
                 else
                 {
-                    throw new ArgumentException($"Line {line} Column {column}: Invalid Token");
+                    throw new LexicalAnalyserException($"Line {line} Column {column}: Invalid Token");
                 }
             }
             yield return new EOFToken(line, column);

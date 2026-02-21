@@ -97,8 +97,8 @@ namespace CaseppCompilerTest
         ];
         private static readonly object[] sadTests =
         [
-            new object[] { "InvalidCharacter.c++"  , typeof(ArgumentException), Does.StartWith("Line 1 Column 1: Invalid Token") },
-            new object[] { "ConstantOutOfRange.c++", typeof(ArgumentException), Is.EqualTo("Line 1 Column 1: Constants must be in range [-32767, 32767]") },
+            new object[] { "InvalidCharacter.c++"  , Does.StartWith("Line 1 Column 1: Invalid Token") },
+            new object[] { "ConstantOutOfRange.c++", Is.EqualTo("Line 1 Column 1: Constants must be in range [-32767, 32767]") },
         ];
 
         [SetUp]
@@ -114,11 +114,11 @@ namespace CaseppCompilerTest
         }
 
         [TestCaseSource(nameof(sadTests))]
-        public void SadTest(string file, Type exceptionType, NUnit.Framework.Constraints.IResolveConstraint messageConstraint)
+        public void SadTest(string file, NUnit.Framework.Constraints.IResolveConstraint messageConstraint)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Sad\{file}");
             var tokens = analyser.Analyse(File.OpenRead(path)).GetEnumerator();
-            var e = Assert.Throws(exceptionType, () => tokens.MoveNext(), $"Expected {exceptionType.Name}", []);
+            var e = Assert.Throws<LexicalAnalyserException>(() => tokens.MoveNext(), $"Expected LexicalAnalyserException");
             Assert.That(e.Message, messageConstraint);
         }
 
@@ -128,7 +128,7 @@ namespace CaseppCompilerTest
             {
                 if (tokens.Current is not IdentifierToken identifier || identifier.Name != Name) return false;
 
-                if (!tokens.MoveNext()) throw new ArgumentException($"Expected EOF Token");
+                if (!tokens.MoveNext()) throw new LexicalAnalyserException($"Expected EOF Token");
 
                 return true;
             }
@@ -140,7 +140,7 @@ namespace CaseppCompilerTest
             {
                 if (tokens.Current is not ConstantToken constant || constant.Constant != c) return false;
 
-                if (!tokens.MoveNext()) throw new ArgumentException($"Expected EOF Token");
+                if (!tokens.MoveNext()) throw new LexicalAnalyserException($"Expected EOF Token");
 
                 return true;
             }

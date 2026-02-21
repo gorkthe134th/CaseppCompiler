@@ -12,7 +12,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
                 bool? match = matcher.TryMatch(tokens);
                 if (match == false)
                     return matchSoFar == true
-                        ? throw new ArgumentException($"Expected {matcher.Name}: {tokens.Current}")
+                        ? throw new SyntaxAnalyserException($"Expected {matcher.Name}: {tokens.Current}")
                         : false;
                 matchSoFar |= match;
             }

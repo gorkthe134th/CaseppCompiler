@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using CaseppCompiler.SyntaxAnalyser;
+
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
@@ -139,7 +141,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                 if (e.MoveNext())
                 {
                     ValueMatch match = e.Current;
-                    if (match.Index != 0) throw new ArgumentException("Token regex should only match if at the beginning.");
+                    if (match.Index != 0) throw new LexicalAnalyserException("Token regex should only match if at the beginning.");
                     text = span[..match.Length].ToString();
                     start += match.Length;
                     return true;

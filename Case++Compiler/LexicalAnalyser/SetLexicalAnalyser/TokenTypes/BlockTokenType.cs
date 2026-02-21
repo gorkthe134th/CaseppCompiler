@@ -20,7 +20,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
                 {
                     "{" => RegionMarkType.Start,
                     "}" => RegionMarkType.End,
-                    _   => throw new ArgumentException($"Line {line} Column {column}: Invalid Block Mark \"{text}\"")
+                    _   => throw new LexicalAnalyserException($"Line {line} Column {column}: Invalid Block Mark \"{text}\"")
                 },
                 line, column);
     }

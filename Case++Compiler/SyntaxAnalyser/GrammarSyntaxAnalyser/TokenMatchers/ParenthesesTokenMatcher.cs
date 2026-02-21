@@ -10,10 +10,10 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
                 startToken.Type != RegionMarkType.Start) return false;
             MoveNext(tokens);
 
-            if (contentMatcher.TryMatch(tokens) == false) throw new ArgumentException($"Expected {Name}: {tokens.Current}");
+            if (contentMatcher.TryMatch(tokens) == false) throw new SyntaxAnalyserException($"Expected {Name}: {tokens.Current}");
 
             if (tokens.Current is not ParenthesisToken endToken ||
-                endToken.Type != RegionMarkType.End) throw new ArgumentException($"Expected Close Parenthesis Token: {tokens.Current}");
+                endToken.Type != RegionMarkType.End) throw new SyntaxAnalyserException($"Expected Close Parenthesis Token: {tokens.Current}");
             MoveNext(tokens);
 
             return true;

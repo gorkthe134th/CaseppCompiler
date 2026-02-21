@@ -1,5 +1,4 @@
 ﻿using CaseppCompiler.LexicalAnalyser;
-using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
 
 namespace CaseppCompiler
@@ -28,9 +27,13 @@ namespace CaseppCompiler
                 syntaxAnalyser.Analyse(lexicalAnalyser.Analyse(inputStream).Select(t => { Console.WriteLine(t); return t; }));
                 Console.WriteLine("OK");
             }
-            catch (Exception e)
+            catch (LexicalAnalyserException e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"Lexical Analyser Exception: {e.Message}");
+            }
+            catch (SyntaxAnalyserException e)
+            {
+                Console.WriteLine($"Syntax Analyser Exception: {e.Message}");
             }
         }
     }

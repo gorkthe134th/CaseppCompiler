@@ -9,7 +9,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
             if (tokens.Current is not T) return false;
 
             if (!tokens.MoveNext() && !typeof(T).IsAssignableTo(typeof(EOFToken)))
-                throw new ArgumentException($"Expected EOF Token");
+                throw new SyntaxAnalyserException($"Expected EOF Token");
 
             return true;
         }

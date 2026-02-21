@@ -39,7 +39,7 @@
         public OperatorToken(string operation, int line, int column) : base(line, column)
         {
             Operation = operationMap.TryGetValue(operation, out OperationType op) ? op :
-                throw new ArgumentException($"{base.ToString()} Invalid Operation \"{operation}\"");
+                throw new LexicalAnalyserException($"{base.ToString()} Invalid Operation \"{operation}\"");
         }
 
         public OperationType Operation { get; }

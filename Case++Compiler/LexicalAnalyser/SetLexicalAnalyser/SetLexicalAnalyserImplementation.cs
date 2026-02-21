@@ -131,7 +131,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                 } while (tokenTypePredicates.Count > 0);
 
                 if (longestMatchingType == null)
-                    throw new ArgumentException($"Line {line} Column {column}: Invalid Token \"{currentText}\"");
+                    throw new LexicalAnalyserException($"Line {line} Column {column}: Invalid Token \"{currentText}\"");
 
                 currentText.Remove(currentText.Length - addedOverflow.Count, addedOverflow.Count);
                 Token? token = longestMatchingType.GenerateToken(currentText.ToString(), matchStartLine, matchStartColumn);

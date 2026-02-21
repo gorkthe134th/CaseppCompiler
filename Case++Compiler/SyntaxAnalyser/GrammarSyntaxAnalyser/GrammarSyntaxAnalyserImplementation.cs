@@ -396,7 +396,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
             var tokens = input.GetEnumerator();
             TokenMatcher.MoveNext(tokens);
             if (superMatcher.TryMatch(tokens) == false)
-                throw new ArgumentException($"Expected {superMatcher.Name}: {tokens.Current}");
+                throw new SyntaxAnalyserException($"Expected {superMatcher.Name}: {tokens.Current}");
         }
     }
 }

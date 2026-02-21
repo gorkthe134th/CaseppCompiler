@@ -20,13 +20,13 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
         /// <c>true</c> if the match was successful,
         /// <c>false</c> if the match was not successful but it's possible to try a different <see cref="TokenMatcher"/>,
         /// <c>null</c> if the match was not successful but it's possible to skip this <see cref="TokenMatcher"/>.
-        /// Throws <see cref="ArgumentException"/> if the match was not successful and it's impossible to continue.
+        /// Throws <see cref="SyntaxAnalyserException"/> if the match was not successful and it's impossible to continue.
         /// </returns>
         public abstract bool? TryMatch(IEnumerator<Token> tokens);
 
         public static void MoveNext(IEnumerator<Token> tokens)
         {
-            if (!tokens.MoveNext()) throw new ArgumentException($"Expected EOF Token");
+            if (!tokens.MoveNext()) throw new SyntaxAnalyserException($"Expected EOF Token");
         }
 
         public static implicit operator TokenMatcher(Type type) =>
