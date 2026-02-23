@@ -13,7 +13,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
             if (contentMatcher.TryMatch(tokens) == false) throw new SyntaxAnalyserException($"Expected {Name}: {tokens.Current}");
 
             if (tokens.Current is not SquareBracketToken endToken ||
-                endToken.Type != RegionMarkType.End) throw new SyntaxAnalyserException($"Expected Close Parenthesis Token: {tokens.Current}");
+                endToken.Type != RegionMarkType.End) throw new SyntaxAnalyserException($"Expected Close Square Bracket Token: {tokens.Current}");
             MoveNext(tokens);
 
             return true;

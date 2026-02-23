@@ -1,0 +1,5 @@
+﻿program p
+{
+	if true { x:=9 };
+	if true { }
+}

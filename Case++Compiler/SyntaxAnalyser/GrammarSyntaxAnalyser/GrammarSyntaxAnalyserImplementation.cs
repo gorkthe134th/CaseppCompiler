@@ -207,10 +207,10 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
             TokenMatcher controlBody =
                 "Control Body" |
                 [
+                    blockBodyMatcher,
                     "Single Statement" ^ singleStatementMatcher,
                     // Cannot allow a semi colon here because it's ambiguous
                     // whether a semi colon ends the control body or the whole statement (if, while, etc.)
-                    blockBodyMatcher,
                 ];
 
             singleStatementMatcher.Resolve(
