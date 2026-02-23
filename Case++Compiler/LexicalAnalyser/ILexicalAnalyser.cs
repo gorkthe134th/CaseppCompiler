@@ -11,7 +11,7 @@ namespace CaseppCompiler.LexicalAnalyser
 
     public static class LexicalAnalyserFactory
     {
-        public static ILexicalAnalyser Create(string type) =>
+        public static ILexicalAnalyser Create(string type = "") =>
             type switch
             {
                 "regex" => new RegexLexicalAnalyserImplementation(),

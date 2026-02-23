@@ -51,27 +51,6 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     ],
                 ];
 
-            TokenMatcher actualParameterMatcher =
-                "Actual Parameter" |
-                [
-                    "In Parameter" %
-                    [
-                        "Optional Keyword" ^
-                            "\"in\" Keyword" % typeof(InToken),
-                        "Parameter ID" % typeof(IdentifierToken),
-                    ],
-                    "Out Parameter" %
-                    [
-                        "\"out\" Keyword" % typeof(OutToken),
-                        "Parameter ID" % typeof(IdentifierToken),
-                    ],
-                    "InOut Parameter" %
-                    [
-                        "\"inout\" Keyword" % typeof(InOutToken),
-                        "Parameter ID" % typeof(IdentifierToken),
-                    ],
-                ];
-
             UnresolvedTokenMatcher blockBodyMatcher = new("Block Body");
 
             TokenMatcher functionsMatcher =
@@ -93,6 +72,27 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                 ];
 
             UnresolvedTokenMatcher expressionMatcher = new("Expression");
+
+            TokenMatcher actualParameterMatcher =
+                "Actual Parameter" |
+                [
+                    "In Parameter" %
+                    [
+                        "Optional Keyword" ^
+                            "\"in\" Keyword" % typeof(InToken),
+                        expressionMatcher,
+                    ],
+                    "Out Parameter" %
+                    [
+                        "\"out\" Keyword" % typeof(OutToken),
+                        "Parameter ID" % typeof(IdentifierToken),
+                    ],
+                    "InOut Parameter" %
+                    [
+                        "\"inout\" Keyword" % typeof(InOutToken),
+                        "Parameter ID" % typeof(IdentifierToken),
+                    ],
+                ];
 
             TokenMatcher factorMatcher =
                 "Factor" |

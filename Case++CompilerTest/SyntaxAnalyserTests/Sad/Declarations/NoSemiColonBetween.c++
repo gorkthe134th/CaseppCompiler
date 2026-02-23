@@ -1,0 +1,5 @@
+﻿program p
+{
+	declare
+	declare;
+}
