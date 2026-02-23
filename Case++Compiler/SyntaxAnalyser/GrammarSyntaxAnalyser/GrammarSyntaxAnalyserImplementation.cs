@@ -157,6 +157,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
             TokenMatcher boolFactorMatcher =
                 "Bool Factor" |
                 [
+                    "Constant" % typeof(BoolConstantToken),
                     "Inverted Sub-Condition" %
                     [
                         "\"not\" Keyword" % OperatorToken.OperationType.Not,
@@ -206,14 +207,9 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
             TokenMatcher controlBody =
                 "Control Body" |
                 [
-                    "Single Statement" %
-                    [
-                        singleStatementMatcher,
-                        //"Optional Semi Colon" ^
-                        //    "Semi Colon" % typeof(SemiColonToken),
-                        // Cannot allow a semi colon here because it's ambiguous
-                        // whether a semi colon ends the control body or the whole statement (if, while, etc.)
-                    ],
+                    "Single Statement" ^ singleStatementMatcher,
+                    // Cannot allow a semi colon here because it's ambiguous
+                    // whether a semi colon ends the control body or the whole statement (if, while, etc.)
                     blockBodyMatcher,
                 ];
 

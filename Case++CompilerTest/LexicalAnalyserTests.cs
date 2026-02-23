@@ -78,6 +78,8 @@ namespace CaseppCompilerTest
                     "Default" % typeof(DefaultToken),
                     "Input" % typeof(InputToken),
                     "Print" % typeof(PrintToken),
+                    new BoolConstantTokenMatcher("True", true),
+                    new BoolConstantTokenMatcher("False", false),
                     "EOF" % typeof(EOFToken),
                 ]
             },
@@ -139,6 +141,18 @@ namespace CaseppCompilerTest
             public override bool? TryMatch(IEnumerator<Token> tokens)
             {
                 if (tokens.Current is not ConstantToken constant || constant.Constant != c) return false;
+
+                if (!tokens.MoveNext()) throw new LexicalAnalyserException($"Expected EOF Token");
+
+                return true;
+            }
+        }
+
+        private class BoolConstantTokenMatcher(string name, bool c) : TokenMatcher(name)
+        {
+            public override bool? TryMatch(IEnumerator<Token> tokens)
+            {
+                if (tokens.Current is not BoolConstantToken constant || constant.Constant != c) return false;
 
                 if (!tokens.MoveNext()) throw new LexicalAnalyserException($"Expected EOF Token");
 

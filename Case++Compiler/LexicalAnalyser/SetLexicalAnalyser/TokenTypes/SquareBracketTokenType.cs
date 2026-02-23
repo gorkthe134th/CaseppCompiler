@@ -15,7 +15,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
         public override int Limit => 1;
 
         public override Token GenerateToken(string text, int line, int column) =>
-            new ParenthesisToken(
+            new SquareBracketToken(
                 text switch
                 {
                     "[" => RegionMarkType.Start,

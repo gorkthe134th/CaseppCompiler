@@ -18,3 +18,5 @@ when
 default
 input
 print
+true
+false

@@ -18,6 +18,7 @@ namespace CaseppCompilerTest
             new object[] { @"Functions\FunctionParameters.c++" },
             new object[] { @"Functions\NestedFunctions.c++" },
             new object[] { @"Expressions\Expression.c++" },
+            new object[] { @"Conditions\Condition.c++" },
             new object[] { @"Statements\Assignment\SimpleAssignment.c++" },
             new object[] { @"Statements\OptionalSemiColon.c++" },
         ];

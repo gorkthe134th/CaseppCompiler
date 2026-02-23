@@ -1,6 +1,8 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
 
+using System.Collections.Frozen;
+
 namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
 {
     internal class IdentifierTokenType : TokenType
@@ -27,9 +29,11 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
             [    "in"    ] = (line, column) => new InToken(line, column),
             [   "out"    ] = (line, column) => new OutToken(line, column),
             [  "inout"   ] = (line, column) => new InOutToken(line, column),
+            [   "true"   ] = (line, column) => new BoolConstantToken(true, line, column),
+            [  "false"   ] = (line, column) => new BoolConstantToken(false, line, column),
         };
 
-        private static readonly HashSet<string> operatorOverrides = ["not", "and", "or"];
+        private static readonly FrozenSet<string> operatorOverrides = ["not", "and", "or"];
 
         public override IEnumerable<Func<char, bool?>> CharacterPredicates
         {
@@ -44,8 +48,8 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
         public override int Limit => 30;
 
         public override Token GenerateToken(string text, int line, int column) =>
-            operatorOverrides.Contains(text) ? new OperatorToken(text, line, column) :
             keywordMap.TryGetValue(text, out var token) ? token(line, column) :
+            operatorOverrides.Contains(text) ? new OperatorToken(text, line, column) :
             new IdentifierToken(text, line, column);
     }
 }

@@ -30,6 +30,8 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
             [    "in"    ] = (line, column) => new InToken(line, column),
             [   "out"    ] = (line, column) => new OutToken(line, column),
             [  "inout"   ] = (line, column) => new InOutToken(line, column),
+            [   "true"   ] = (line, column) => new BoolConstantToken(true, line, column),
+            [  "false"   ] = (line, column) => new BoolConstantToken(false, line, column),
         };
 
         private static readonly Regex regex;
