@@ -1,0 +1,4 @@
+﻿program p
+{
+	input x;
+}

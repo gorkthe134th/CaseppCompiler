@@ -351,22 +351,16 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     ],
                 ]);
 
-            UnresolvedTokenMatcher statementsMatcher = new("Statements");
-            statementsMatcher.Resolve(
+            TokenMatcher statementsMatcher =
                 "Statements" %
                 [
-                    "NOP" * typeof(SemiColonToken),
-                    "Continuation" ^
+                    "Statement" ^ singleStatementMatcher,
+                    "Continuation" *
                     [
-                        singleStatementMatcher,
-                        "Continuation" ^
-                        [
-                            "Semi Colon" % typeof(SemiColonToken),
-                            statementsMatcher,
-                        ],
-                        "NOP" * typeof(SemiColonToken), // This makes the grammar not LL(1), but it's NOP so it doesn't matter
+                        "Semi Colon" % typeof(SemiColonToken),
+                        "Statement" ^ singleStatementMatcher,
                     ],
-                ]);
+                ];
 
             blockBodyMatcher.Resolve(
                 "Body" >>

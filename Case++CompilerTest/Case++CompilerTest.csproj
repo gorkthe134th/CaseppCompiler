@@ -62,6 +62,45 @@
     <Content Include="SyntaxAnalyserTests\Happy\Program\EmptyProgram.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\Input\SimpleInput.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\Print\SimplePrint.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\Return\SimpleReturn.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\ForCase\ManyCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\ForCase\NoCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\InCase\ManyCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\InCase\NoCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\UntilCase\ManyCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\UntilCase\NoCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\WhileCase\ManyCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\WhileCase\NoCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\SwitchCase\ManyCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\SwitchCase\NoCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Statements\While\BlockWhileBlockElse.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -236,6 +275,75 @@
     <Content Include="SyntaxAnalyserTests\Sad\Statements\Assignment\NoID.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\Input\Expression.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\Input\NoID.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\Print\NoExpression.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\Return\NoExpression.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\UntilCase\NoUntil.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\UntilCase\NoWhenColon.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\UntilCase\NoWhenCondition.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\UntilCase\NoUntilCondition.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\ForCase\NoExpression.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\ForCase\NoEquals.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\ForCase\NoID.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\ForCase\NoColon.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\ForCase\NoCondition.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\ForCase\SemiColonBetween.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\InCase\NoCondition.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\InCase\SemiColonBetween.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\InCase\NoColon.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\WhileCase\NoCondition.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\WhileCase\NoDefault.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\WhileCase\NoDefaultColon.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\WhileCase\NoWhenColon.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\SwitchCase\NoWhenColon.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\SwitchCase\NoDefaultColon.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SyntaxAnalyserTests\Sad\Statements\While\BlockSemiColonBetween.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -246,6 +354,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Sad\Statements\If\SemiColonBetween.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\SwitchCase\NoCondition.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\SwitchCase\NoDefault.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

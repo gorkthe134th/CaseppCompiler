@@ -7,7 +7,16 @@ namespace CaseppCompiler
     {
         private static void Main(string[] args)
         {
-            if (args.Length < 1) throw new ArgumentException("At least one argument is required. Please provide the name of the file to compile.");
+            if (args.Length < 1)
+            {
+                Console.Write(
+                    "At least one argument is required. Please provide the name of the file to compile.\n" +
+                    "You may also use -l and -s to control the type of analysers to use. The available options are:\n" +
+                    "-l [set | regex] (default is \"set\")\n" +
+                    "-s [grammar] (default is \"grammar\")\n" +
+                    "Example: Case++Compiler.exe program.c++ -l regex\n");
+                return;
+            }
             
             Stream inputStream = File.OpenRead(args[0]);
 
@@ -15,8 +24,17 @@ namespace CaseppCompiler
             string syntaxAnalyserType  = "";
             for (int i = 1; i < args.Length - 1; i++)
             {
-                if (args[i].StartsWith("-l")) { lexicalAnalyserType = args[i + 1]; i++; continue; }
-                if (args[i].StartsWith("-s")) { syntaxAnalyserType  = args[i + 1]; i++; continue; }
+                switch (args[i])
+                {
+                    case "-l":
+                        lexicalAnalyserType = args[++i];
+                        break;
+                    case "-s":
+                        syntaxAnalyserType = args[++i];
+                        break;
+                    default:
+                        break;
+                }
             }
 
             ILexicalAnalyser lexicalAnalyser = LexicalAnalyserFactory.Create(lexicalAnalyserType);

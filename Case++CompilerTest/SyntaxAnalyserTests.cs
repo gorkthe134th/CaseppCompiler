@@ -45,6 +45,19 @@ namespace CaseppCompilerTest
             new object[] { @"Statements\While\BlockWhileEmptyElse.c++" },
             new object[] { @"Statements\While\BlockWhileSingleElse.c++" },
             new object[] { @"Statements\While\BlockWhileBlockElse.c++" },
+            new object[] { @"Statements\SwitchCase\NoCases.c++" },
+            new object[] { @"Statements\SwitchCase\ManyCases.c++" },
+            new object[] { @"Statements\WhileCase\NoCases.c++" },
+            new object[] { @"Statements\WhileCase\ManyCases.c++" },
+            new object[] { @"Statements\InCase\NoCases.c++" },
+            new object[] { @"Statements\InCase\ManyCases.c++" },
+            new object[] { @"Statements\ForCase\NoCases.c++" },
+            new object[] { @"Statements\ForCase\ManyCases.c++" },
+            new object[] { @"Statements\UntilCase\NoCases.c++" },
+            new object[] { @"Statements\UntilCase\ManyCases.c++" },
+            new object[] { @"Statements\Return\SimpleReturn.c++" },
+            new object[] { @"Statements\Input\SimpleInput.c++" },
+            new object[] { @"Statements\Print\SimplePrint.c++" },
         ];
         private static readonly object[] sadTests =
         [
@@ -92,6 +105,37 @@ namespace CaseppCompilerTest
 
             new object[] { @"Statements\While\SemiColonBetween.c++", Is.EqualTo("Expected Block End Token: Line 3 Column 19: Else") },
             new object[] { @"Statements\While\BlockSemiColonBetween.c++", Is.EqualTo("Expected Block End Token: Line 3 Column 18: Else") },
+
+            new object[] { @"Statements\SwitchCase\NoDefault.c++", Is.EqualTo("Expected \"default\" Keyword: Line 5 Column 1: Block End") },
+            new object[] { @"Statements\SwitchCase\NoDefaultColon.c++", Is.EqualTo("Expected Colon: Line 5 Column 10: Identifier \"x\"") },
+            new object[] { @"Statements\SwitchCase\NoWhenColon.c++", Is.EqualTo("Expected Colon: Line 4 Column 13: Block Start") },
+            new object[] { @"Statements\SwitchCase\NoCondition.c++", Is.EqualTo("Expected Condition: Line 4 Column 6: Case Start") },
+
+            new object[] { @"Statements\WhileCase\NoDefault.c++", Is.EqualTo("Expected \"default\" Keyword: Line 5 Column 1: Block End") },
+            new object[] { @"Statements\WhileCase\NoDefaultColon.c++", Is.EqualTo("Expected Colon: Line 5 Column 10: Identifier \"x\"") },
+            new object[] { @"Statements\WhileCase\NoWhenColon.c++", Is.EqualTo("Expected Colon: Line 4 Column 13: Block Start") },
+            new object[] { @"Statements\WhileCase\NoCondition.c++", Is.EqualTo("Expected Condition: Line 4 Column 6: Case Start") },
+
+            new object[] { @"Statements\InCase\NoColon.c++", Is.EqualTo("Expected Colon: Line 4 Column 13: Block Start") },
+            new object[] { @"Statements\InCase\NoCondition.c++", Is.EqualTo("Expected Condition: Line 4 Column 6: Case Start") },
+            new object[] { @"Statements\InCase\SemiColonBetween.c++", Is.EqualTo("Expected Block End Token: Line 5 Column 2: When") },
+
+            new object[] { @"Statements\ForCase\NoID.c++", Is.EqualTo("Expected Iteration Identifier: Line 3 Column 10: EqualTo") },
+            new object[] { @"Statements\ForCase\NoEquals.c++", Is.EqualTo("Expected Equals Sign: Line 3 Column 12: Constant 1") },
+            new object[] { @"Statements\ForCase\NoExpression.c++", Is.EqualTo("Expected Expression: Line 4 Column 2: When") },
+            new object[] { @"Statements\ForCase\NoColon.c++", Is.EqualTo("Expected Colon: Line 4 Column 13: Block Start") },
+            new object[] { @"Statements\ForCase\NoCondition.c++", Is.EqualTo("Expected Condition: Line 4 Column 6: Case Start") },
+            new object[] { @"Statements\ForCase\SemiColonBetween.c++", Is.EqualTo("Expected Block End Token: Line 5 Column 2: When") },
+
+            new object[] { @"Statements\UntilCase\NoUntil.c++", Is.EqualTo("Expected \"until\" Keyword: Line 5 Column 1: Block End") },
+            new object[] { @"Statements\UntilCase\NoUntilCondition.c++", Is.EqualTo("Expected Condition: Line 6 Column 1: Block End") },
+            new object[] { @"Statements\UntilCase\NoWhenCondition.c++", Is.EqualTo("Expected Condition: Line 4 Column 6: Case Start") },
+            new object[] { @"Statements\UntilCase\NoWhenColon.c++", Is.EqualTo("Expected Colon: Line 4 Column 13: Block Start") },
+
+            new object[] { @"Statements\Return\NoExpression.c++", Is.EqualTo("Expected Expression: Line 4 Column 1: Block End") },
+            new object[] { @"Statements\Input\NoID.c++", Is.EqualTo("Expected Variable ID: Line 4 Column 1: Block End") },
+            new object[] { @"Statements\Input\Expression.c++", Is.EqualTo("Expected Block End Token: Line 3 Column 10: Subtract") },
+            new object[] { @"Statements\Print\NoExpression.c++", Is.EqualTo("Expected Expression: Line 4 Column 1: Block End") },
         ];
 
         [SetUp]
