@@ -15,6 +15,7 @@ namespace CaseppCompilerTest
             new object[] { @"Declarations\SingleDeclaration.c++" },
             new object[] { @"Declarations\MultiDeclaration.c++" },
             new object[] { @"Functions\EmptyFunction.c++" },
+            new object[] { @"Functions\SingleSatementFunction.c++" },
             new object[] { @"Functions\FunctionParameters.c++" },
             new object[] { @"Functions\NestedFunctions.c++" },
             new object[] { @"Expressions\Expression.c++" },
@@ -58,6 +59,7 @@ namespace CaseppCompilerTest
             new object[] { @"Statements\Return\SimpleReturn.c++" },
             new object[] { @"Statements\Input\SimpleInput.c++" },
             new object[] { @"Statements\Print\SimplePrint.c++" },
+            new object[] { @"Statements\BlockAnywhere.c++" },
         ];
         private static readonly object[] sadTests =
         [
@@ -65,6 +67,7 @@ namespace CaseppCompilerTest
 
             new object[] { @"Program\NoKeyword.c++", Is.EqualTo("Expected Program: Line 1 Column 1: Identifier \"progra\"") },
             new object[] { @"Program\NoID.c++", Is.EqualTo("Expected Program ID: Line 1 Column 9: Block Start") },
+            new object[] { @"Program\NoBody.c++", Is.EqualTo("Expected Program Body: Line 1 Column 10: EOF") },
             new object[] { @"Program\NoBlockEnd.c++", Is.EqualTo("Expected Block End Token: Line 1 Column 17: EOF") },
 
             new object[] { @"Declarations\NoSemiColon.c++", Is.EqualTo("Expected Semi Colon: Line 4 Column 1: Block End") },
@@ -73,7 +76,7 @@ namespace CaseppCompilerTest
 
             new object[] { @"Functions\NoID.c++", Is.EqualTo("Expected Function ID: Line 3 Column 11: Parenthesis Start") },
             new object[] { @"Functions\NoParameters.c++", Is.EqualTo("Expected Formal Parameter List: Line 3 Column 13: Block Start") },
-            new object[] { @"Functions\NoBody.c++", Is.EqualTo("Expected Body: Line 4 Column 1: Block End") },
+            new object[] { @"Functions\NoBody.c++", Is.EqualTo("Expected Function Body: Line 4 Column 1: Block End") },
             new object[] { @"Functions\Parameters\NoIDIn.c++", Is.EqualTo("Expected Parameter ID: Line 3 Column 15: Parenthesis End") },
             new object[] { @"Functions\Parameters\NoIDOut.c++", Is.EqualTo("Expected Parameter ID: Line 3 Column 16: Parenthesis End") },
             new object[] { @"Functions\Parameters\NoIDInOut.c++", Is.EqualTo("Expected Parameter ID: Line 3 Column 18: Parenthesis End") },

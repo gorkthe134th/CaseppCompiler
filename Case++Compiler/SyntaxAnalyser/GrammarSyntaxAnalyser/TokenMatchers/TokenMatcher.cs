@@ -8,6 +8,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
     [CollectionBuilder(typeof(TokenMatcher), "Create")]
     public abstract class TokenMatcher(string name)
     {
+        public bool IsGenerated { get; set; } = false;
+
         public virtual string Name { get; set; } = name;
 
         /// <summary>
@@ -29,15 +31,19 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
             if (!tokens.MoveNext()) throw new SyntaxAnalyserException($"Expected EOF Token");
         }
 
-        public static implicit operator TokenMatcher(Type type) =>
-            (TokenMatcher?)typeof(TypeTokenMatcher<>).MakeGenericType(type).GetConstructor([typeof(string)])?.Invoke([GenerateName()]) ??
-            throw new InvalidOperationException("No suitable TypeTokenMatcher Constructor exists");
+        public static implicit operator TokenMatcher(Type type)
+        {
+            TokenMatcher tokenMatcher = (TokenMatcher?)typeof(TypeTokenMatcher<>).MakeGenericType(type).GetConstructor([typeof(string)])?.Invoke([GenerateName()]) ??
+                throw new InvalidOperationException("No suitable TypeTokenMatcher Constructor exists");
+            tokenMatcher.IsGenerated = true;
+            return tokenMatcher;
+        }
 
         public static implicit operator TokenMatcher(OperatorToken.OperationType operation) =>
-            new OperatorTokenMatcher(GenerateName(), operation);
+            new OperatorTokenMatcher(GenerateName(), operation) { IsGenerated = true };
 
         public static TokenMatcher Create(ReadOnlySpan<TokenMatcher> matchers) =>
-            new SequenceTokenMatcher(GenerateName(), matchers.ToArray());
+            new SequenceTokenMatcher(GenerateName(), matchers.ToArray()) { IsGenerated = true };
 
         private static int id = 0;
         private static string GenerateName() => $"Matcher{++id}";

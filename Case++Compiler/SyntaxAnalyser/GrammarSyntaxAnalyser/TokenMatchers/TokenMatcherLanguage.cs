@@ -10,8 +10,12 @@
 
             public static TokenMatcher operator %(string name, TokenMatcher matcher)
             {
-                matcher.Name = name;
-                return matcher;
+                if (matcher.IsGenerated)
+                {
+                    matcher.Name = name;
+                    return matcher;
+                }
+                return new RenameTokenMatcher(name, matcher);
             }
 
             public static TokenMatcher operator >>(string name, TokenMatcher matcher) =>
