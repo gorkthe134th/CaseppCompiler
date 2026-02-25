@@ -13,7 +13,7 @@ The input file encoding is also currently restricted to UTF-8.<br>
 
 ## Case++ Documentation
 
-Case++ is an imperative procedural programming language, with C-like syntax, created for the purpose of this exercise.<br>
+Case++ is an imperative procedural programming language, with C-like syntax, designed to fit this exercise.<br>
 It only supports a single integer type (no floating point or data structures) and limited control structures.<br>
 The syntax is also limited in order to ensure that the grammar of the language is LL(1).<br>
 Case++ files are recommended to have a "c++" file extension, without that being necessary.<br>
@@ -333,9 +333,9 @@ function h(in a, out b, inout c)
 The meaning of each parameter type is as follows:
 * "in" parameters are a copy of the result of the expression that was used to call the function.
 * "out" parameters can only be assigned to a value and cannot be used in an expression. The value assigned to an out parameter is assigned to the variable whose id was used to call the function.
-* "inout" parameters give full access to the variable that was used to call the the function.
-<br>
-Every function has an integer return value. By default the return value is "0", but it can be changed using the "return" keyword.<br>
+* "inout" parameters give full access to the variable that was used to call the the function.<br>
+
+Every function has an integer return value. By default the return value is "0", but it can be changed using a "return" statement, consisting of the "return" keyword, followed by any expression.<br>
 ```
 function factorial(n)
 {
