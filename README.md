@@ -92,7 +92,7 @@ program Blocks
 	x := x + 1;
 }
 ```
-Blocks, like any other statement, must be separated by a semi-colon from it's succeeding statement.<br>
+Blocks, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
 
 ### Assignment
 
@@ -153,7 +153,7 @@ Comparisons are allowed to use the six basic operations (=,>,<,<>,<=,>=), betwee
 
 #### If
 
-When the program is executed, the condition after the "if" keyword will be checked and the subsequent statement will only be executed if the condition is true.<br>
+When this statement is executed, the condition after the "if" keyword will be checked and the subsequent statement will only be executed if the condition is true.<br>
 ```
 if x > 10 x := x - 10
 ```
@@ -178,11 +178,11 @@ else
 	x:=3*x+1; // Required
 print x
 ```
-The whole if statement, like any other statement, must be separated by a semi-colon from it's succeeding statement.<br>
+The whole if statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
 
 #### While
 
-When the program is executed, the condition after the "while" keyword will be checked and the subsequent statement will only be executed if the condition is true.<br>
+When this statement is executed, the condition after the "while" keyword will be checked and the subsequent statement will only be executed if the condition is true.<br>
 If the condition was true, it will be checked again, after the statement is executed, and, if it is still true, the statement will be executed again.<br>
 This process repeats while the condition is true.<br>
 ```
@@ -197,11 +197,11 @@ while x < 100
 	x := y * y;
 }
 ```
-The whole while statement, like any other statement, must be separated by a semi-colon from it's succeeding statement.<br>
+The whole while statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
 
 #### Switchcase
 
-When the program is executed, the condition after each "when" keyword between the "switchcase" and "default" keywords will be checked and the statement after the first condition that was true will only be executed.<br>
+When this statement is executed, the condition after each "when" keyword between the "switchcase" and "default" keywords will be checked, in order, and only the statement after the first condition that is true will be executed.<br>
 If none of the conditions are true, the statement after the "default" keyword is executed.<br>
 ```
 switchcase
@@ -210,3 +210,162 @@ switchcase
 default: print 89
 ```
 Every statement must be preceded by a colon and may be succeeded by a semi-colon.<br>
+Conditions after the first one that was true are not evaluated.<br>
+The whole switchcase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+
+#### Whilecase
+
+When this statement is executed, the condition after each "when" keyword between the "whilecase" and "default" keywords will be checked, in order, and only the statement after the first condition that is true will be executed.<br>
+After a statement is executed, the conditions are checked again, in the same order, repeating while at least one condition is true. When no conditions are true, the execution of the program is continued normally from the statement after the "default" keyword.<br>
+```
+whilecase
+	when x > 10:
+	{
+		x := x - 10;
+		c := c + 1
+	};
+	when x < 0 :
+	{
+		x := x + 10;
+		c := c + 1;
+	}
+default: print x
+```
+Every statement must be preceded by a colon and may be succeeded by a semi-colon.<br>
+Conditions after the first one that was true are not evaluated for that iteration.<br>
+The whole whilecase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+
+#### Incase
+
+When this statement is executed, the condition after each "when" keyword will be checked, in order, and the statement after EVERY condition that is true will be executed.<br>
+```
+incase
+	when x < 0: x := 0
+	when y < 0: y := 0;
+print x + y;
+```
+Every statement must be preceded by a colon and must NOT be succeeded by a semi-colon, except for the last one.<br>
+The whole incase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+
+#### Untilcase
+
+When this statement is executed, the condition after each "when" keyword will be checked, in order, and the statement after EVERY condition that is true will be executed.<br>
+After all conditions are checked, the condition after the "until" keyword is checked, with the execution of the program continuing after the untilcase statement if it is true.<br>
+If it is false, all conditions are checked again, in the same order, repeating until the "until" condition is true.<br>
+```
+x := 0;
+y := 0;
+untilcase
+	when x = y:
+	{
+		input x;
+		input y;
+	};
+	when x < 0: x := 0;
+	when y < 0: y := 0;
+	when x < y:
+	{
+		y := y - x;
+		print y;
+	}
+	when y < x:
+	{
+		x := x - y;
+		print x;
+	}
+until x = 0 and y = 0
+```
+Every statement must be preceded by a colon and may be succeeded by a semi-colon.<br>
+The whole untilcase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+
+#### Forcase
+
+When this statement is executed, the expression after the equals sign is evaluated and the following steps will be repeated that many times:<br>
+* The specified variable will be set to current iteration number, i.e. "1" for the first iteration, "2" for the second, etc.
+* The conditions after each "when" keyword will be checked, in order, and the statement after EVERY condition that is true will be executed.
+* Repeat
+```
+input x;
+input y;
+forcase i = 100
+	when true: print i
+	when i/x*x=i: print x
+	when i/y*y=i: print y
+```
+The expression that determines the number of iterations is only evaluated once, before any iterations are performed.<br>
+The conditions are not required to contain the iteration variable.<br>
+Every statement must be preceded by a colon and must NOT be succeeded by a semi-colon, except for the last one.<br>
+The whole forcase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+
+### Functions
+
+Functions are declared using the keyword "function", the function id, any number of parameters in parentheses, and a block of Declarations, Sub-Functions, and / or Statements, enclosed by curly brackets.<br>
+```
+function f()
+{
+	declare a;
+	input a;
+	print a*a;
+}
+```
+Similarly to blocks, any variables declared in a function can only be used inside that function.<br>
+Function declarations are NOT separated by semi-colons.<br>
+<br>
+Functions can have parameters, which are declared by listing their ids separated by commas.<br>
+Parameters don't need to be declared using the "declare" keyword.<br>
+```
+function g(a, b, c)
+{
+	print 2*a + b - c
+}
+```
+Parameters can be used as input, output or both. Each parameter can declare it's purpose using "in", "out" or "inout" before its id.<br>
+If no keyword is added before a parameter id, the parameter is assumed to be an input.<br>
+```
+function h(in a, out b, inout c)
+{
+	b := 2*a + c;
+	c := c - a;
+}
+```
+In parameters are a copy of the result of the expression that was used to call the function.<br>
+Out parameters can only be assigned to a value and cannot be used in an expression. The value assigned to an out parameter is assigned to the variable whose id was used to call the function.<br>
+Inout parameters give full access to the variable that was used to call the the function.<br>
+<br>
+Every function has an integer return value. By default the return value is "0", but it can be changed using the "return" keyword.<br>
+```
+function factorial(n)
+{
+	declare result;
+	result := 1;
+	forcase i = n
+		when true: result := result * i;
+	return result;
+}
+```
+When a return statement is executed, the execution of the function is stopped and the return value can be used immediately.<br>
+Before executing a return statement, all out parameters must have been assigned a value at least once.<br>
+```
+function factorial(n)
+{
+	if n <= 0 return 1;
+	return n * factorial(n - 1);
+}
+```
+A function can only be called as part of an expression, but it can be used freely in said expression.<br>
+```
+x := f();
+y := g(g(1,2,3),g(1,2,3),g(1,2,3));
+z := h(in 5*5, out x, inout y);
+if factorial(x)/factorial(y)/factorial(x-y) < 10
+	print 70;
+```
+When a function appears many times, even if the parameters are the same or there are no parameters, the whole function will be executed each time the expression is evaluated.<br>
+If a function takes out or inout parameters, the appropriate keyword must be used before the variable id.<br>
+The "in" keyword can also be used when specifying an in parameter, but it is not required.<br>
+If a function can be implemented using only a single statement, the function can be defined without curly brackets.<br>
+```
+function g(a, b, c) print 2*a + b - c
+function square(x) return x*x
+```
+Such functions must not end with a semi-colon.<br>
