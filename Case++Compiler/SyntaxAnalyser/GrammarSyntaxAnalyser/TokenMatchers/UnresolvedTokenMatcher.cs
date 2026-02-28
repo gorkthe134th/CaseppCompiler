@@ -1,9 +1,5 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
     internal class UnresolvedTokenMatcher(string temporaryName) : TokenMatcher(temporaryName)

@@ -1,6 +1,5 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 
-using System.Collections;
 using System.Runtime.CompilerServices;
 
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
