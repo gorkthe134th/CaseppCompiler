@@ -4,8 +4,6 @@ using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstructions;
 
-using System.Diagnostics;
-
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 {
     internal class GrammarSyntaxAnalyserImplementation : ISyntaxAnalyser
@@ -137,28 +135,44 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             ],
                             factorMatcher,
                         ] | (p => {
-                            object operand2ID = p.PopVariable();
+                            object operand2 = p.PopVariable();
                             OperatorToken.OperationType operation = (OperatorToken.OperationType)p.PopVariable();
-                            object operand1ID = p.PopVariable();
-                            string tempID = p.GenerateTemp();
+                            object operand1 = p.PopVariable();
+                            string temp = p.GenerateTemp();
                             p.AddInstruction(
                                 typeof(OperationInstruction),
                                 [typeof(OperatorToken.OperationType), typeof(object), typeof(object), typeof(string)],
-                                [operation, operand1ID, operand2ID, tempID]);
-                            p.PushVariable(tempID);
+                                [operation, operand1, operand2, temp]);
+                            p.PushVariable(temp);
                         })),
                 ];
 
             expressionMatcher.Resolve(
                 "Expression" %
                 [
-                    "Optional Sign" ^ (
-                        "Sign" |
+                    "First Term" |
+                    [
+                        "Signed Term" %
                         [
-                            "Plus" % OperatorToken.OperationType.Add,
-                            "Minus" % OperatorToken.OperationType.Subtract,
-                        ] | (p => _ = p.PopVariable() /* Temporarily Ignore */ )),
-                    termMatcher,
+                            "Sign" |
+                            [
+                                "Plus" % OperatorToken.OperationType.Add,
+                                "Minus" % OperatorToken.OperationType.Subtract,
+                            ],
+                            termMatcher,
+                            -"$apply sign" | (p => {
+                                object term = p.PopVariable();
+                                OperatorToken.OperationType sign = (OperatorToken.OperationType)p.PopVariable();
+                                string temp = p.GenerateTemp();
+                                p.AddInstruction(
+                                    typeof(OperationInstruction),
+                                    [typeof(OperatorToken.OperationType), typeof(object), typeof(object), typeof(string)],
+                                    [sign, 0, term, temp]);
+                                p.PushVariable(temp);
+                            }),
+                        ],
+                        "Unsigned Term" % termMatcher,
+                    ],
                     "More Terms" * (
                         "Operation" %
                         [
@@ -169,15 +183,15 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             ],
                             termMatcher,
                         ] | (p => {
-                            object operand2ID = p.PopVariable();
+                            object operand2 = p.PopVariable();
                             OperatorToken.OperationType operation = (OperatorToken.OperationType)p.PopVariable();
-                            object operand1ID = p.PopVariable();
-                            string tempID = p.GenerateTemp();
+                            object operand1 = p.PopVariable();
+                            string temp = p.GenerateTemp();
                             p.AddInstruction(
                                 typeof(OperationInstruction),
                                 [typeof(OperatorToken.OperationType), typeof(object), typeof(object), typeof(string)],
-                                [operation, operand1ID, operand2ID, tempID]);
-                            p.PushVariable(tempID);
+                                [operation, operand1, operand2, temp]);
+                            p.PushVariable(temp);
                         })),
                 ]);
 
@@ -204,7 +218,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Sub-Condition" >= conditionMatcher,
                     ] | (p => {
                         JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
-                        _ = p.PopVariable();
+                        _ = p.PopVariable(); // Ignore Variable; it will always be Not.
                         p.PushVariable(new JumpBlockInfo(info.FalseOriginList, info.TrueOriginList, info.Start));
                     }),
                     "Sub-Condition" >= conditionMatcher,
@@ -243,7 +257,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             boolFactorMatcher,
                         ] | (p => {
                             JumpBlockInfo info2 = (JumpBlockInfo)p.PopVariable();
-                            _ = p.PopVariable();
+                            _ = p.PopVariable(); // Ignore Variable; it will always be And.
                             JumpBlockInfo info1 = (JumpBlockInfo)p.PopVariable();
 
                             p.CurrentFunction.SetJumpTargets(info1.TrueOriginList, info2.Start);
@@ -263,7 +277,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             boolTermMatcher,
                         ] | (p => {
                             JumpBlockInfo info2 = (JumpBlockInfo)p.PopVariable();
-                            _ = p.PopVariable();
+                            _ = p.PopVariable(); // Ignore Variable; it will always be Or.
                             JumpBlockInfo info1 = (JumpBlockInfo)p.PopVariable();
 
                             p.CurrentFunction.SetJumpTargets(info1.FalseOriginList, info2.Start);
@@ -449,27 +463,6 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             }),
                         ],
                     ],
-                    "For Case" %
-                    [
-                        "\"forcase\" Keyword" % typeof(ForCaseToken),
-                        "Iteration Identifier" % typeof(IdentifierToken) | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
-                        "Equals Sign" % OperatorToken.OperationType.EqualTo | (p => {
-                            _ = p.PopVariable(); // Ignore Variable; it will always be an Equals Sign.
-                        }),
-                        expressionMatcher,
-                        -"" | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
-                        "Cases" *
-                        [
-                            "\"when\" Keyword" % typeof(WhenToken),
-                            conditionMatcher,
-                            -"" | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
-                            "Colon" % typeof(CaseStartToken),
-                            "When Body" ^ statementMatcher,
-                            // "Optional Semi Colon" ^ typeof(SemiColonToken),
-                            // Cannot allow a semi colon here because it's ambiguous
-                            // whether a semi colon ends the current case or the whole forcase
-                        ],
-                    ],
                     "Until Case" %
                     [
                         "\"untilcase\" Keyword" % typeof(UntilCaseToken),
@@ -504,21 +497,42 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             p.CurrentFunction.SetJumpTargets(info.FalseOriginList, start);
                         }),
                     ],
+                    "For Case" %
+                    [
+                        "\"forcase\" Keyword" % typeof(ForCaseToken),
+                        "Iteration Identifier" % typeof(IdentifierToken) | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
+                        "Equals Sign" % OperatorToken.OperationType.EqualTo | (p => {
+                            _ = p.PopVariable(); // Ignore Variable; it will always be an Equals Sign.
+                        }),
+                        expressionMatcher,
+                        -"" | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
+                        "Cases" *
+                        [
+                            "\"when\" Keyword" % typeof(WhenToken),
+                            conditionMatcher,
+                            -"" | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
+                            "Colon" % typeof(CaseStartToken),
+                            "When Body" ^ statementMatcher,
+                            // "Optional Semi Colon" ^ typeof(SemiColonToken),
+                            // Cannot allow a semi colon here because it's ambiguous
+                            // whether a semi colon ends the current case or the whole forcase
+                        ],
+                    ],
                     "Return" %
                     [
                         "\"return\" Keyword" % typeof(ReturnToken),
                         expressionMatcher,
-                    ],
+                    ] | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
                     "Input" %
                     [
                         "\"input\" Keyword" % typeof(InputToken),
                         "Variable ID" % typeof(IdentifierToken),
-                    ],
+                    ] | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
                     "Print" %
                     [
                         "\"print\" Keyword" % typeof(PrintToken),
                         expressionMatcher,
-                    ],
+                    ] | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
                 ]);
 
             TokenMatcher statementsMatcher =
