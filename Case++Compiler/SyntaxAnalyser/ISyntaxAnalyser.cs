@@ -1,11 +1,12 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
 namespace CaseppCompiler.SyntaxAnalyser
 {
     public interface ISyntaxAnalyser
     {
-        public void Analyse(IEnumerable<Token> input);
+        public IntermediateProgram Analyse(IEnumerable<Token> input);
     }
 
     public static class SyntaxAnalyserFactory

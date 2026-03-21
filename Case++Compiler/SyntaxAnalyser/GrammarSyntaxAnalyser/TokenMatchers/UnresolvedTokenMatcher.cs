@@ -1,4 +1,5 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
@@ -16,10 +17,10 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
             }
         }
 
-        public override bool? TryMatch(IEnumerator<Token> tokens)
+        public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
         {
             if (matcher == null) throw new InvalidOperationException($"Matcher \"{Name}\" is Unresolved");
-            return matcher.TryMatch(tokens);
+            return matcher.TryMatch(tokens, program);
         }
 
         public void Resolve(TokenMatcher matcher) => this.matcher = matcher;

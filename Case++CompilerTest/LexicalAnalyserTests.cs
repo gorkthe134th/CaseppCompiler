@@ -2,6 +2,7 @@
 using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
 namespace CaseppCompilerTest
 {
@@ -112,7 +113,7 @@ namespace CaseppCompilerTest
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Happy\{file}");
             var tokens = analyser.Analyse(File.OpenRead(path)).GetEnumerator();
             Assert.That(tokens.MoveNext(), Is.True);
-            Assert.That(matcher.TryMatch(tokens), Is.True);
+            Assert.That(matcher.TryMatch(tokens, null), Is.True);
         }
 
         [TestCaseSource(nameof(sadTests))]
@@ -126,7 +127,7 @@ namespace CaseppCompilerTest
 
         private class IdentifierTokenMatcher(string name) : TokenMatcher(name)
         {
-            public override bool? TryMatch(IEnumerator<Token> tokens)
+            public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
             {
                 if (tokens.Current is not IdentifierToken identifier || identifier.Name != Name) return false;
 
@@ -138,7 +139,7 @@ namespace CaseppCompilerTest
 
         private class ConstantTokenMatcher(string name, int c) : TokenMatcher(name)
         {
-            public override bool? TryMatch(IEnumerator<Token> tokens)
+            public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
             {
                 if (tokens.Current is not ConstantToken constant || constant.Constant != c) return false;
 
@@ -150,7 +151,7 @@ namespace CaseppCompilerTest
 
         private class BoolConstantTokenMatcher(string name, bool c) : TokenMatcher(name)
         {
-            public override bool? TryMatch(IEnumerator<Token> tokens)
+            public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
             {
                 if (tokens.Current is not BoolConstantToken constant || constant.Constant != c) return false;
 

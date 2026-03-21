@@ -1,15 +1,16 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
     internal class AlternativeTokenMatcher(string name, TokenMatcher[] matchers) : TokenMatcher(name)
     {
-        public override bool? TryMatch(IEnumerator<Token> tokens)
+        public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
         {
             bool? matchSoFar = false;
             foreach (var matcher in matchers)
             {
-                bool? match = matcher.TryMatch(tokens);
+                bool? match = matcher.TryMatch(tokens, program);
                 if (match == true) return true;
                 matchSoFar |= match;
             }

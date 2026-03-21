@@ -1,8 +1,10 @@
-﻿namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
+﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
+
+namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
     public static class TokenMatcherLanguage
     {
-        extension(string matcherName)
+        extension(string)
         {
             public static TokenMatcher operator ~(string name) => new ImpossibleTokenMatcher(name);
 
@@ -41,6 +43,15 @@
 
             public static TokenMatcher operator |(string name, TokenMatcher[] matcherSequence) =>
                 new AlternativeTokenMatcher(name, matcherSequence);
+        }
+
+        extension(TokenMatcher)
+        {
+            public static TokenMatcher operator |(TokenMatcher matcher, Action<IntermediateProgram> finalAction)
+            {
+                matcher.FinalAction = finalAction;
+                return matcher;
+            }
         }
     }
 }

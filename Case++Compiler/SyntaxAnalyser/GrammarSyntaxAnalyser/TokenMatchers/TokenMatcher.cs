@@ -1,4 +1,5 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
 using System.Runtime.CompilerServices;
 
@@ -11,11 +12,16 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 
         public virtual string Name { get; set; } = name;
 
+        public Action<IntermediateProgram>? FinalAction { get; set; } = null;
+
         /// <summary>
         /// Tries to match the specified sequence.
         /// </summary>
         /// <param name="tokens">
         /// The sequence to match.
+        /// </param>
+        /// <param name="program">
+        /// The program that will be affected by this match, if it was successful.
         /// </param>
         /// <returns>
         /// <c>true</c> if the match was successful,
@@ -23,7 +29,18 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
         /// <c>null</c> if the match was not successful but it's possible to skip this <see cref="TokenMatcher"/>.
         /// Throws <see cref="SyntaxAnalyserException"/> if the match was not successful and it's impossible to continue.
         /// </returns>
-        public abstract bool? TryMatch(IEnumerator<Token> tokens);
+        public bool? TryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
+        {
+            bool? result = BaseTryMatch(tokens, program);
+            if (result == true && program != null && FinalAction != null)
+            {
+                program.SetLineAndColumn(tokens.Current);
+                FinalAction.Invoke(program);
+            }
+            return result;
+        }
+
+        public abstract bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program);
 
         public static void MoveNext(IEnumerator<Token> tokens)
         {
