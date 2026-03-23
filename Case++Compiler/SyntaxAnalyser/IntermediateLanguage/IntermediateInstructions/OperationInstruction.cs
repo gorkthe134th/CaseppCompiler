@@ -3,7 +3,7 @@
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstructions
 {
     internal class OperationInstruction(int line, int column,
-        OperatorToken.OperationType operation, object operand1ID, object operand2ID, string tempID)
+        OperatorToken.OperationType operation, object operand1, object operand2, string tempID)
         : Instruction(line, column)
     {
         private static readonly Dictionary<OperatorToken.OperationType, string> operationMap = new()
@@ -14,6 +14,6 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstruc
             [OperatorToken.OperationType.Divide  ] = "/",
         };
 
-        public override string ToString() => $"{operationMap[operation]}, {operand1ID}, {operand2ID}, {tempID}";
+        public override string ToString() => $"{operationMap[operation]}, {operand1}, {operand2}, {tempID}";
     }
 }

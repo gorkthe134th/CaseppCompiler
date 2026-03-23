@@ -86,17 +86,29 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Optional Keyword" ^
                             "\"in\" Keyword" % typeof(InToken),
                         expressionMatcher,
-                    ] | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
+                    ] | (p => {
+                        ExpressionBlockInfo info = (ExpressionBlockInfo)p.PopVariable();
+                        var parameters = (List<(object, ParameterInstruction.ParameterType)>)p.PeekVariable();
+                        parameters.Add((info.Result, ParameterInstruction.ParameterType.In));
+                    }),
                     "Out Parameter" %
                     [
                         "\"out\" Keyword" % typeof(OutToken),
                         "Parameter ID" % typeof(IdentifierToken),
-                    ] | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
+                    ] | (p => {
+                        object result = p.PopVariable();
+                        var parameters = (List<(object, ParameterInstruction.ParameterType)>)p.PeekVariable();
+                        parameters.Add((result, ParameterInstruction.ParameterType.Out));
+                    }),
                     "InOut Parameter" %
                     [
                         "\"inout\" Keyword" % typeof(InOutToken),
                         "Parameter ID" % typeof(IdentifierToken),
-                    ] | (p => _ = p.PopVariable() /* Temporarily Ignore */ ),
+                    ] | (p => {
+                        object result = p.PopVariable();
+                        var parameters = (List<(object, ParameterInstruction.ParameterType)>)p.PeekVariable();
+                        parameters.Add((result, ParameterInstruction.ParameterType.InOut));
+                    }),
                 ];
 
             TokenMatcher factorMatcher =
@@ -110,7 +122,9 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Name" % typeof(IdentifierToken) | (p =>
                             p.PushVariable(new ExpressionBlockInfo(p.PopVariable(), p.CurrentFunction.CurrentPosition))),
                         "Optional Parameters" ^
-                            "Actual Parameter List" > (
+                            "Actual Parameter List" >
+                            [
+                                -"$list" | (p => p.PushVariable((List<(object, ParameterInstruction.ParameterType)>)[])),
                                 "Actual Parameters" ^
                                 [
                                     actualParameterMatcher,
@@ -119,7 +133,24 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                         "Comma" % typeof(CommaToken),
                                         actualParameterMatcher,
                                     ],
-                                ]),
+                                ],
+                                -"call" | (p => {
+                                    var parameters = (List<(object value, ParameterInstruction.ParameterType type)>)p.PopVariable();
+                                    ExpressionBlockInfo info = (ExpressionBlockInfo)p.PopVariable();
+                                    string result = p.GenerateTemp();
+                                    foreach ((var parameter, var type) in parameters)
+                                        p.AddInstruction(
+                                            typeof(ParameterInstruction),
+                                            [typeof(object), typeof(ParameterInstruction.ParameterType)],
+                                            [parameter, type]);
+                                    p.AddInstruction(
+                                        typeof(ParameterInstruction),
+                                        [typeof(object), typeof(ParameterInstruction.ParameterType)],
+                                        [result, ParameterInstruction.ParameterType.Out]);
+                                    p.AddInstruction(typeof(CallInstruction), [typeof(string)], [info.Result]);
+                                    p.PushVariable(new ExpressionBlockInfo(result, info.Start));
+                                }),
+                            ],
                     ]
                 ];
 

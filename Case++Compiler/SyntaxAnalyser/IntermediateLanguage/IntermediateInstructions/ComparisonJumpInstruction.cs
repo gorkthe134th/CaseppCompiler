@@ -3,7 +3,7 @@
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstructions
 {
     internal class ComparisonJumpInstruction(int line, int column,
-        OperatorToken.OperationType operation, object operand1ID, object operand2ID)
+        OperatorToken.OperationType operation, object operand1, object operand2)
         : JumpInstruction(line, column)
     {
         private static readonly Dictionary<OperatorToken.OperationType, string> operationMap = new()
@@ -16,6 +16,6 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstruc
             [OperatorToken.OperationType.GreaterThanOrEqualTo] = ">=",
         };
 
-        public override string ToString() => $"{operationMap[operation]}, {operand1ID}, {operand2ID}, {base.ToString()}";
+        public override string ToString() => $"{operationMap[operation]}, {operand1}, {operand2}, {base.ToString()}";
     }
 }

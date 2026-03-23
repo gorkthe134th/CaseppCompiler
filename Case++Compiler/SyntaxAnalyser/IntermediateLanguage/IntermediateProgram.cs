@@ -77,6 +77,8 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal object PopVariable() => currentVariables.Pop();
 
+        internal object PeekVariable() => currentVariables.Peek();
+
         internal string GenerateTemp() => $"_T{lastTemp++}";
 
         public void WriteToFile(StreamWriter writer)

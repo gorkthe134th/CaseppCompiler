@@ -44,7 +44,7 @@ namespace CaseppCompiler
             {
                 var tokens = lexicalAnalyser.Analyse(inputStream);
                 var intermediateProgram = syntaxAnalyser.Analyse(tokens);
-                using StreamWriter writer = new(File.OpenWrite("a.il++"));
+                using StreamWriter writer = new("a.il++", false);
                 intermediateProgram.WriteToFile(writer);
             }
             catch (LexicalAnalyserException e)
