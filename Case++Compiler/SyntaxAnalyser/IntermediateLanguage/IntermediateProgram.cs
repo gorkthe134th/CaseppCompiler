@@ -1,6 +1,7 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstructions;
 
+using System.Collections.Immutable;
 using System.Reflection;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
@@ -34,10 +35,18 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void FinalizeFunction()
         {
-            if (currentFunctionStack.Count <= 1) { finalFunctions.Add(currentFunctionStack.Pop()); return; }
+            CurrentFunction.SetAllBreakTargets();
+
+            if (currentFunctionStack.Count <= 1)
+            {
+                finalFunctions.Add(currentFunctionStack.Pop());
+                return;
+            }
+
             string functionName = string.Join('_', currentFunctionStack.Take(currentFunctionStack.Count - 1).Select(f => f.Name));
             Function function = currentFunctionStack.Pop();
             function.Name = functionName;
+
             finalFunctions.Add(function);
         }
 
@@ -48,14 +57,20 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             CurrentFunction.AddInstruction((Instruction)constructor.Invoke([currentLine, currentColumn, ..parameters]));
         }
 
-        internal void AddJumpInstructions(Type type, IEnumerable<Type> parameterTypes, IEnumerable<object> parameters)
+        internal void AddJumpInstructions(Type type, IEnumerable<Type> parameterTypes, IEnumerable<object> parameters, int start)
         {
-            int start = CurrentFunction.CurrentPosition;
-            List<int> trueList = [start];
+            List<int> trueList = [CurrentFunction.CurrentPosition];
             AddInstruction(type, parameterTypes, parameters);
             List<int> falseList = [CurrentFunction.CurrentPosition];
             CurrentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn));
             currentVariables.Push(new JumpBlockInfo(trueList, falseList, start));
+        }
+
+        internal void AddBreakInstruction(uint count)
+        {
+            Function currentFunction = CurrentFunction;
+            currentFunction.AddBreak(count);
+            currentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn));
         }
 
         internal void PushVariable(object variable) => currentVariables.Push(variable);
