@@ -1,4 +1,4 @@
-﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstructions;
+﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
@@ -9,6 +9,8 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         private Dictionary<int, uint> breakOrigins = [];
 
         public int CurrentPosition => instructions.Count;
+
+        public int Length => instructions.Count;
 
         public void AddInstruction(Instruction instruction) => instructions.Add(instruction);
 
@@ -45,16 +47,15 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             breakOrigins.Clear();
         }
 
-        public void WriteToFile(StreamWriter writer, ref int offset)
+        public IEnumerable<(string?, string?, string?, string?)> ToQuads(int offset)
         {
-            int start = offset;
-            writer.WriteLine($"begin_block, {Name}, _, _");
+            yield return ("begin_block", Name, null, null);
             foreach (var instruction in instructions)
             {
-                if (instruction is JumpInstruction jump) jump.Target = start + jump.Target;
-                writer.WriteLine($"{offset++}: {instruction}");
+                if (instruction is JumpInstruction jump) jump.Target = offset + jump.Target;
+                yield return instruction.ToQuad();
             }
-            writer.WriteLine($"end_block, {Name}, _, _");
+            yield return ("end_block", Name, null, null);
         }
     }
 }

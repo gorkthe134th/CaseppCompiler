@@ -1,7 +1,6 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
-using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstructions;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
-using System.Collections.Immutable;
 using System.Reflection;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
@@ -81,10 +80,15 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal string GenerateTemp() => $"_T{lastTemp++}";
 
-        public void WriteToFile(StreamWriter writer)
+        public IEnumerable<(string?, string?, string?, string?)> ToQuads()
         {
             int i = 0;
-            foreach (var function in finalFunctions) function.WriteToFile(writer, ref i);
+            return finalFunctions.SelectMany(function =>
+            {
+                var ret = function.ToQuads(i);
+                i += function.Length;
+                return ret;
+            });
         }
     }
 }

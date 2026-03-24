@@ -15,6 +15,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
                 if (matcher.IsGenerated)
                 {
                     matcher.Name = name;
+                    matcher.IsGenerated = false;
                     return matcher;
                 }
                 return new RenameTokenMatcher(name, matcher);

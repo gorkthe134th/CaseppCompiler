@@ -7,6 +7,8 @@ namespace CaseppCompiler.SyntaxAnalyser
     public interface ISyntaxAnalyser
     {
         public IntermediateProgram Analyse(IEnumerable<Token> input);
+
+        public void Validate(IEnumerable<Token> input);
     }
 
     public static class SyntaxAnalyserFactory

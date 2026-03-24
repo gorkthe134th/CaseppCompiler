@@ -2,7 +2,7 @@
 using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
-using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstructions;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 {
@@ -606,18 +606,25 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     "\"program\" Keyword" % typeof(ProgramToken),
                     "Program ID" % typeof(IdentifierToken) | (p => p.Main.Name = (string)p.PopVariable()),
                     "Program Body" % blockBodyMatcher,
-                    "EOF" % typeof(EOFToken),
+                    "EOF" % typeof(EOFToken) | (p => p.AddInstruction(typeof(HaltInstruction), [], [])),
                 ] | (p => p.FinalizeFunction());
         }
 
         public IntermediateProgram Analyse(IEnumerable<Token> input)
         {
             IntermediateProgram program = new();
+            TryMatch(input, program);
+            return program;
+        }
+
+        public void Validate(IEnumerable<Token> input) => TryMatch(input, null);
+
+        private static void TryMatch(IEnumerable<Token> input, IntermediateProgram? program)
+        {
             var tokens = input.GetEnumerator();
             TokenMatcher.MoveNext(tokens);
             if (superMatcher.TryMatch(tokens, program) == false)
                 throw new SyntaxAnalyserException($"Expected {superMatcher.Name}: {tokens.Current}");
-            return program;
         }
     }
 }

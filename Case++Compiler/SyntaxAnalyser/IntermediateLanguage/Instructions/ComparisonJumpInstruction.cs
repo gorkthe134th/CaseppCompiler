@@ -1,6 +1,6 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 
-namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstructions
+namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
     internal class ComparisonJumpInstruction(int line, int column,
         OperatorToken.OperationType operation, object operand1, object operand2)
@@ -16,6 +16,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstruc
             [OperatorToken.OperationType.GreaterThanOrEqualTo] = ">=",
         };
 
-        public override string ToString() => $"{operationMap[operation]}, {operand1}, {operand2}, {base.ToString()}";
+        public override (string?, string?, string?, string?) ToQuad() =>
+            (operationMap[operation], operand1.ToString(), operand2.ToString(), Target.ToString());
     }
 }

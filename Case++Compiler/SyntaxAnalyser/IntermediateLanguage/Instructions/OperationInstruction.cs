@@ -1,6 +1,6 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 
-namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstructions
+namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
     internal class OperationInstruction(int line, int column,
         OperatorToken.OperationType operation, object operand1, object operand2, string tempID)
@@ -14,6 +14,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstruc
             [OperatorToken.OperationType.Divide  ] = "/",
         };
 
-        public override string ToString() => $"{operationMap[operation]}, {operand1}, {operand2}, {tempID}";
+        public override (string?, string?, string?, string?) ToQuad() =>
+            (operationMap[operation], operand1.ToString(), operand2.ToString(), tempID);
     }
 }

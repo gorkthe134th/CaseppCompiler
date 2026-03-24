@@ -35,6 +35,15 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <Content Include="IntermediateLanguageTests\Functions\EmptyFunction.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Functions\NestedFunctions.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Program\EmptyProgram.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Conditions\Condition.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

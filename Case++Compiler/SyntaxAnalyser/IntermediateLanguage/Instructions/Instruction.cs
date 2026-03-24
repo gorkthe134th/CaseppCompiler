@@ -1,4 +1,4 @@
-﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.IntermediateInstructions
+﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
     internal abstract class Instruction(int line, int column)
     {
@@ -6,6 +6,6 @@
 
         public int Column { get; } = column;
 
-        public override string ToString() => "$Invalid Instruction$";
+        public abstract (string?, string?, string?, string?) ToQuad();
     }
 }

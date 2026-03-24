@@ -159,7 +159,7 @@ namespace CaseppCompilerTest
         public void SadTest(string file, NUnit.Framework.Constraints.IResolveConstraint messageConstraint)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"SyntaxAnalyserTests\Sad\{file}");
-            var e = Assert.Throws<SyntaxAnalyserException>(() => syntaxAnalyser.Analyse(lexicalAnalyser.Analyse(File.OpenRead(path))), $"Expected SyntaxAnalyserException");
+            var e = Assert.Throws<SyntaxAnalyserException>(() => syntaxAnalyser.Validate(lexicalAnalyser.Analyse(File.OpenRead(path))), $"Expected SyntaxAnalyserException");
             Assert.That(e.Message, messageConstraint);
         }
     }
