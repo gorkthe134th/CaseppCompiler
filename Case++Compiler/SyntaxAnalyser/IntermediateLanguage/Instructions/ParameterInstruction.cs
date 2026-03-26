@@ -4,9 +4,9 @@
     {
         private static readonly Dictionary<ParameterType, string> typeMap = new()
         {
-            [ParameterType.In   ] = "in",
+            [ParameterType.In   ] = "cv",
             [ParameterType.Out  ] = "ret",
-            [ParameterType.InOut] = "inout",
+            [ParameterType.InOut] = "ref",
         };
 
         public enum ParameterType { In, Out, InOut };

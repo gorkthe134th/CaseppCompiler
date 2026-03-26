@@ -10,7 +10,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         public int CurrentPosition => instructions.Count;
 
-        public int Length => instructions.Count;
+        public int QuadCount => instructions.Count + 2;
 
         public void AddInstruction(Instruction instruction) => instructions.Add(instruction);
 
@@ -57,7 +57,15 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             yield return ("begin_block", Name, null, null);
             foreach (var instruction in instructions)
             {
-                if (instruction is JumpInstruction jump) jump.Target = offset + jump.Target;
+                if (instruction is JumpInstruction jump)
+                {
+                    var localTarget = jump.Target;
+                    jump.Target = localTarget + offset + 1;
+                    (string?, string?, string?, string?) quad = jump.ToQuad();
+                    jump.Target = localTarget;
+                    yield return quad;
+                    continue;
+                }
                 yield return instruction.ToQuad();
             }
             yield return ("end_block", Name, null, null);

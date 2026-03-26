@@ -43,7 +43,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                 return;
             }
 
-            string functionName = string.Join('_', currentFunctionStack.Take(currentFunctionStack.Count - 1).Select(f => f.Name));
+            string functionName = string.Join('_', currentFunctionStack.Reverse().Select(f => f.Name));
             Function function = currentFunctionStack.Pop();
             function.Name = functionName;
 
@@ -87,7 +87,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             return finalFunctions.SelectMany(function =>
             {
                 var ret = function.ToQuads(i);
-                i += function.Length;
+                i += function.QuadCount;
                 return ret;
             });
         }
