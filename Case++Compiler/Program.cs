@@ -45,8 +45,10 @@ namespace CaseppCompiler
                 var tokens = lexicalAnalyser.Analyse(inputStream);
                 var intermediateProgram = syntaxAnalyser.Analyse(tokens);
                 using StreamWriter writer = new("a.il++", false);
+                int line = 0;
                 foreach (var quad in intermediateProgram.ToQuads())
-                    writer.WriteLine(string.Join(", ", quad.Item1 ?? "_", quad.Item2 ?? "_", quad.Item3 ?? "_", quad.Item4 ?? "_"));
+                    writer.WriteLine((quad.Item1?.Contains("block") == false ? line++ + ": " : "") +
+                        string.Join(", ", quad.Item1 ?? "_", quad.Item2 ?? "_", quad.Item3 ?? "_", quad.Item4 ?? "_"));
             }
             catch (LexicalAnalyserException e)
             {

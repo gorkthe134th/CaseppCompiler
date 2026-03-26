@@ -18,6 +18,7 @@ namespace CaseppCompilerTest
             } },
             new object[] { @"Functions\EmptyFunction.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "f", null, null),
+                ("retv", "0", null, null),
                 ("end_block", "f", null, null),
                 ("begin_block", "p", null, null),
                 ("halt", null, null, null),
@@ -25,10 +26,13 @@ namespace CaseppCompilerTest
             } },
             new object[] { @"Functions\NestedFunctions.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "h_g_f", null, null),
+                ("retv", "0", null, null),
                 ("end_block", "h_g_f", null, null),
                 ("begin_block", "g_f", null, null),
+                ("retv", "0", null, null),
                 ("end_block", "g_f", null, null),
                 ("begin_block", "f", null, null),
+                ("retv", "0", null, null),
                 ("end_block", "f", null, null),
                 ("begin_block", "p", null, null),
                 ("halt", null, null, null),

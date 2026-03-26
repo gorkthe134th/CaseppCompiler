@@ -27,6 +27,11 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             breakOrigins.Add(CurrentPosition, count);
         }
 
+        internal void IncreaseAllBreaks(uint count)
+        {
+            foreach (var kvp in breakOrigins) breakOrigins[kvp.Key] = kvp.Value + count;
+        }
+
         internal void SetBreakTargets()
         {
             IList<int> breaksToSet = [];

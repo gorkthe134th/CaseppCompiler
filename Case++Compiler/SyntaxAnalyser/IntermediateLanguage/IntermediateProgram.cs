@@ -32,9 +32,10 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal Function CurrentFunction => currentFunctionStack.Peek();
 
-        internal void FinalizeFunction()
+        internal void FinalizeFunction(Type finalInstructionType, IEnumerable<Type> finalInstructionParameterTypes, IEnumerable<object> finalInstructionParameters)
         {
             CurrentFunction.SetAllBreakTargets();
+            AddInstruction(finalInstructionType, finalInstructionParameterTypes, finalInstructionParameters);
 
             if (currentFunctionStack.Count <= 1)
             {

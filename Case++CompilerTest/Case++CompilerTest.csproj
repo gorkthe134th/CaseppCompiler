@@ -74,6 +74,9 @@
     <Content Include="SyntaxAnalyserTests\Happy\Program\EmptyProgram.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Program\SingleSatementProgram.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Statements\Input\SimpleInput.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

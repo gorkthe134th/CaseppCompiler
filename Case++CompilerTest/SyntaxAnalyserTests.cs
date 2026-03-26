@@ -11,6 +11,7 @@ namespace CaseppCompilerTest
         private static readonly object[] happyTests =
         [
             new object[] { @"Program\EmptyProgram.c++" },
+            new object[] { @"Program\SingleSatementProgram.c++" },
             new object[] { @"Declarations\EmptyDeclaration.c++" },
             new object[] { @"Declarations\SingleDeclaration.c++" },
             new object[] { @"Declarations\MultiDeclaration.c++" },
@@ -152,7 +153,7 @@ namespace CaseppCompilerTest
         public void HappyTest(string file)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"SyntaxAnalyserTests\Happy\{file}");
-            syntaxAnalyser.Analyse(lexicalAnalyser.Analyse(File.OpenRead(path)));
+            syntaxAnalyser.Validate(lexicalAnalyser.Analyse(File.OpenRead(path)));
         }
 
         [TestCaseSource(nameof(sadTests))]
