@@ -68,6 +68,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void AddBreakInstruction(uint count)
         {
+            if (count == 0) return;
             Function currentFunction = CurrentFunction;
             currentFunction.AddBreak(count);
             currentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn));

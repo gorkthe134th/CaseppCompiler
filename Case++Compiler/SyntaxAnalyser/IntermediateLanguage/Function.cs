@@ -21,11 +21,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                 else throw new InvalidOperationException($"Instruction {p} is not a jump instruction.");
         }
 
-        internal void AddBreak(uint count)
-        {
-            if (count == 0) return;
-            breakOrigins.Add(CurrentPosition, count);
-        }
+        internal void AddBreak(uint count) => breakOrigins.Add(CurrentPosition, count);
 
         internal void IncreaseAllBreaks(uint count)
         {

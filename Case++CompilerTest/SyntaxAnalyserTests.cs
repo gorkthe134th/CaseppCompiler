@@ -60,6 +60,7 @@ namespace CaseppCompilerTest
             new object[] { @"Statements\Return\SimpleReturn.c++" },
             new object[] { @"Statements\Input\SimpleInput.c++" },
             new object[] { @"Statements\Print\SimplePrint.c++" },
+            new object[] { @"Statements\Break\SimpleBreak.c++" },
             new object[] { @"Statements\BlockAnywhere.c++" },
         ];
         private static readonly object[] sadTests =
