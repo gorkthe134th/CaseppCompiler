@@ -566,15 +566,10 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 
                             // Increment
 
-                            string temp = p.GenerateTemp();
                             p.AddInstruction(
                                 typeof(OperationInstruction),
                                 [typeof(OperatorToken.OperationType), typeof(object), typeof(object), typeof(string)],
-                                [OperatorToken.OperationType.Add, iterationID, 1, temp]);
-                            p.AddInstruction(
-                                typeof(AssignmentInstruction),
-                                [typeof(string), typeof(object)],
-                                [iterationID, temp]);
+                                [OperatorToken.OperationType.Add, iterationID, 1, iterationID]);
                         }),
                         "Cases" *
                         [

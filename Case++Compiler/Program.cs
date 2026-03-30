@@ -44,10 +44,10 @@ namespace CaseppCompiler
             {
                 var tokens = lexicalAnalyser.Analyse(inputStream);
                 var intermediateProgram = syntaxAnalyser.Analyse(tokens);
-                using StreamWriter writer = new("a.il++", false);
+                using StreamWriter writer = new("a.int", false);
                 int line = 0;
                 foreach (var quad in intermediateProgram.ToQuads())
-                    writer.WriteLine($"{line++}: {quad.Item1 ?? "_"} {quad.Item2 ?? "_"} {quad.Item3 ?? "_"} {quad.Item4 ?? "_"}");
+                    writer.WriteLine($"{line++}: {quad.Item1 ?? "_"}, {quad.Item2 ?? "_"}, {quad.Item3 ?? "_"}, {quad.Item4 ?? "_"}");
             }
             catch (LexicalAnalyserException e)
             {

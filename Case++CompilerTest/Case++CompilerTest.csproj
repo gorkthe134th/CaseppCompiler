@@ -65,6 +65,12 @@
     <Content Include="IntermediateLanguageTests\Statements\Break\BreakProgram.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Statements\ForCase\ManyCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Statements\ForCase\NoCases.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Statements\InCase\ManyCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
