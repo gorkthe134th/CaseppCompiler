@@ -1,10 +1,16 @@
 ﻿using CaseppCompiler.LexicalAnalyser;
+using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
+
+using System.Collections.Concurrent;
 
 namespace CaseppCompiler
 {
     internal class Program
     {
+        private record CompilationTask(Task Task, string ErrorMessagePrefix);
+
         private static void Main(string[] args)
         {
             if (args.Length < 1)
@@ -18,7 +24,7 @@ namespace CaseppCompiler
                 return;
             }
             
-            Stream inputStream = File.OpenRead(args[0]);
+            Stream input = File.OpenRead(args[0]);
 
             string lexicalAnalyserType = "";
             string syntaxAnalyserType  = "";
@@ -40,23 +46,32 @@ namespace CaseppCompiler
             ILexicalAnalyser lexicalAnalyser = LexicalAnalyserFactory.Create(lexicalAnalyserType);
             ISyntaxAnalyser  syntaxAnalyser  = SyntaxAnalyserFactory .Create(syntaxAnalyserType );
 
-            try
+            using BlockingCollection<Token> tokens = new(new ConcurrentQueue<Token>(), boundedCapacity: 128);
+            using IntermediateProgram program = new(functionCapacity: 4);
+
+            IList<CompilationTask> compilationTasks = [
+                new(Task.Run(() => lexicalAnalyser.Analyse(input , tokens )), "Lexical Analyser Exception"),
+                new(Task.Run(() => syntaxAnalyser .Analyse(tokens, program)),  "Syntax Analyser Exception"),
+            ];
+
+            while (compilationTasks.Count > 0)
             {
-                var tokens = lexicalAnalyser.Analyse(inputStream);
-                var intermediateProgram = syntaxAnalyser.Analyse(tokens);
-                using StreamWriter writer = new("a.int", false);
-                int line = 0;
-                foreach (var quad in intermediateProgram.ToQuads())
-                    writer.WriteLine($"{line++}: {quad.Item1 ?? "_"}, {quad.Item2 ?? "_"}, {quad.Item3 ?? "_"}, {quad.Item4 ?? "_"}");
+                int finishedTaskIndex = Task.WaitAny([.. compilationTasks.Select(ct => ct.Task)]);
+                CompilationTask finishedTask = compilationTasks[finishedTaskIndex];
+                compilationTasks.RemoveAt(finishedTaskIndex);
+                AggregateException? aggregateException = finishedTask.Task.Exception;
+                if (aggregateException != null)
+                {
+                    foreach (var exception in aggregateException.InnerExceptions)
+                        Console.WriteLine($"{finishedTask.ErrorMessagePrefix}: {exception.Message}");
+                    return;
+                }
             }
-            catch (LexicalAnalyserException e)
-            {
-                Console.WriteLine($"Lexical Analyser Exception: {e.Message}");
-            }
-            catch (SyntaxAnalyserException e)
-            {
-                Console.WriteLine($"Syntax Analyser Exception: {e.Message}");
-            }
+
+            using StreamWriter writer = new("a.int", false);
+            int line = 0;
+            foreach (var quad in program.ToQuads())
+                writer.WriteLine($"{line++}: {quad.Item1 ?? "_"}, {quad.Item2 ?? "_"}, {quad.Item3 ?? "_"}, {quad.Item4 ?? "_"}");
         }
     }
 }

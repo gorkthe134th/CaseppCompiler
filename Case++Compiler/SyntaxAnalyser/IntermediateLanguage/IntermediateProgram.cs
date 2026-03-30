@@ -1,25 +1,25 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
-    public class IntermediateProgram
+    public class IntermediateProgram : IDisposable
     {
-        internal Function Main { get; }
-        private readonly IList<Function> finalFunctions = [];
+        internal BlockingCollection<Function> Functions { get; }
 
         private int currentLine = 0;
         private int currentColumn = 0;
-        private readonly Stack<Function> currentFunctionStack;
+        private readonly Stack<Function> currentFunctionStack = new();
         private readonly Stack<object> currentVariables = [];
-        private int lastTemp = 0;
+        private int nextTempIndex = 0;
 
-        public IntermediateProgram()
+        public IntermediateProgram(int? functionCapacity = null)
         {
-            Main = new();
-            currentFunctionStack = new([Main]);
+            ConcurrentQueue<Function> queue = new();
+            Functions = functionCapacity == null ? new(queue) : new(queue, (int)functionCapacity);
         }
 
         internal void SetLineAndColumn(Token token)
@@ -39,7 +39,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
             if (currentFunctionStack.Count <= 1)
             {
-                finalFunctions.Add(currentFunctionStack.Pop());
+                Functions.Add(currentFunctionStack.Pop());
                 return;
             }
 
@@ -47,7 +47,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             Function function = currentFunctionStack.Pop();
             function.Name = functionName;
 
-            finalFunctions.Add(function);
+            Functions.Add(function);
         }
 
         internal void AddInstruction(Type type, IEnumerable<Type> parameterTypes, IEnumerable<object> parameters)
@@ -80,17 +80,19 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal object PeekVariable() => currentVariables.Peek();
 
-        internal string GenerateTemp() => $"_T{lastTemp++}";
+        internal string GenerateTemp() => $"_T{nextTempIndex++}";
 
         public IEnumerable<(string?, string?, string?, string?)> ToQuads()
         {
             int i = 0;
-            return finalFunctions.SelectMany(function =>
+            return Functions.SelectMany(function =>
             {
                 var ret = function.ToQuads(i);
                 i += function.QuadCount;
                 return ret;
             });
         }
+
+        public void Dispose() => Functions.Dispose();
     }
 }

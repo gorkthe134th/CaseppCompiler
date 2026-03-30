@@ -4,6 +4,8 @@ using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
+using System.Collections.Concurrent;
+
 namespace CaseppCompilerTest
 {
     [TestFixture("regex")]
@@ -111,7 +113,11 @@ namespace CaseppCompilerTest
         public void HappyTest(string file, TokenMatcher matcher)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Happy\{file}");
-            var tokens = analyser.Analyse(File.OpenRead(path)).GetEnumerator();
+            using BlockingCollection<Token> tokenQueue = [];
+
+            analyser.Analyse(File.OpenRead(path), tokenQueue);
+
+            var tokens = ((IEnumerable<Token>)tokenQueue).GetEnumerator();
             Assert.That(tokens.MoveNext(), Is.True);
             Assert.That(matcher.TryMatch(tokens, null), Is.True);
         }
@@ -120,8 +126,8 @@ namespace CaseppCompilerTest
         public void SadTest(string file, NUnit.Framework.Constraints.IResolveConstraint messageConstraint)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Sad\{file}");
-            var tokens = analyser.Analyse(File.OpenRead(path)).GetEnumerator();
-            var e = Assert.Throws<LexicalAnalyserException>(() => tokens.MoveNext(), $"Expected LexicalAnalyserException");
+
+            var e = Assert.Throws<LexicalAnalyserException>(() => analyser.Analyse(File.OpenRead(path)), $"Expected LexicalAnalyserException");
             Assert.That(e.Message, messageConstraint);
         }
 

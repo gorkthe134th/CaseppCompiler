@@ -4,6 +4,8 @@ using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
+using System.Collections.Concurrent;
+
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 {
     internal class GrammarSyntaxAnalyserImplementation : ISyntaxAnalyser
@@ -650,27 +652,18 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
             superMatcher =
                 "Program" %
                 [
-                    "\"program\" Keyword" % typeof(ProgramToken),
-                    "Program ID" % typeof(IdentifierToken) | (p => p.Main.Name = (string)p.PopVariable()),
+                    "\"program\" Keyword" % typeof(ProgramToken) | (p => p.CreateFunction()),
+                    "Program ID" % typeof(IdentifierToken) | (p => p.CurrentFunction.Name = (string)p.PopVariable()),
                     "Program Body" % statementMatcher,
                     "EOF" % typeof(EOFToken),
                 ] | (p => p.FinalizeFunction(typeof(HaltInstruction), [], []));
         }
 
-        public IntermediateProgram Analyse(IEnumerable<Token> input)
+        public void Analyse(BlockingCollection<Token> input, IntermediateProgram? output = null)
         {
-            IntermediateProgram program = new();
-            TryMatch(input, program);
-            return program;
-        }
-
-        public void Validate(IEnumerable<Token> input) => TryMatch(input, null);
-
-        private static void TryMatch(IEnumerable<Token> input, IntermediateProgram? program)
-        {
-            var tokens = input.GetEnumerator();
+            var tokens = input.GetConsumingEnumerable().GetEnumerator();
             TokenMatcher.MoveNext(tokens);
-            if (superMatcher.TryMatch(tokens, program) == false)
+            if (superMatcher.TryMatch(tokens, output) == false)
                 throw new SyntaxAnalyserException($"Expected {superMatcher.Name}: {tokens.Current}");
         }
     }

@@ -1,6 +1,9 @@
 ﻿using CaseppCompiler.LexicalAnalyser;
+using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
+
+using System.Collections.Concurrent;
 
 namespace CaseppCompilerTest
 {
@@ -559,7 +562,12 @@ namespace CaseppCompilerTest
         public void Test(string file, (string?, string?, string?, string?)[] expectedQuads)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"IntermediateLanguageTests\{file}");
-            IntermediateProgram program = syntaxAnalyser.Analyse(lexicalAnalyser.Analyse(File.OpenRead(path)));
+            using BlockingCollection<Token> tokenQueue = [];
+            using IntermediateProgram program = new();
+
+            lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
+            syntaxAnalyser.Analyse(tokenQueue, program);
+
             var ep = program.ToQuads().GetEnumerator();
             var ee = expectedQuads.GetEnumerator();
             while (true)

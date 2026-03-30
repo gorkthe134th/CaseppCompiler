@@ -1,6 +1,7 @@
 ﻿using CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes;
 using CaseppCompiler.LexicalAnalyser.Tokens;
 
+using System.Collections.Concurrent;
 using System.Text;
 
 namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
@@ -23,7 +24,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
             new MultiLineCommentTokenType(),
         ];
 
-        public IEnumerable<Token> Analyse(Stream input)
+        public void Analyse(Stream input, BlockingCollection<Token>? output = null)
         {
             StreamReader reader = new(input);
             Queue<char> overflow = new();
@@ -72,7 +73,15 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                 {
                     eof = true;
                     if (overflow.TryDequeue(out character)) eof = false;
-                    else if (!reader.EndOfStream) { character = (char)reader.Read(); eof = false; }
+                    else
+                    { 
+                        int readResult = reader.Read();
+                        if (readResult != -1)
+                        {
+                            character = (char)readResult;
+                            eof = false;
+                        }
+                    }
                     if (!eof)
                     {
                         if (character == '\n') { line++; column = -1; }
@@ -135,7 +144,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
 
                 currentText.Remove(currentText.Length - addedOverflow.Count, addedOverflow.Count);
                 Token? token = longestMatchingType.GenerateToken(currentText.ToString(), matchStartLine, matchStartColumn);
-                if (token != null) yield return token;
+                if (token != null) output?.Add(token);
 
                 currentText.Clear();
 
@@ -144,7 +153,8 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
 
                 while (addedOverflow.TryDequeue(out character)) overflow.Enqueue(character);
             }
-            yield return new EOFToken(line, column + 1);
+            output?.Add(new EOFToken(line, column + 1));
+            output?.CompleteAdding();
         }
     }
 }

@@ -2,13 +2,13 @@
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
+using System.Collections.Concurrent;
+
 namespace CaseppCompiler.SyntaxAnalyser
 {
     public interface ISyntaxAnalyser
     {
-        public IntermediateProgram Analyse(IEnumerable<Token> input);
-
-        public void Validate(IEnumerable<Token> input);
+        public void Analyse(BlockingCollection<Token> input, IntermediateProgram? output = null);
     }
 
     public static class SyntaxAnalyserFactory

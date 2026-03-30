@@ -1,5 +1,8 @@
-﻿using CaseppCompiler.SyntaxAnalyser;
-using CaseppCompiler.LexicalAnalyser;
+﻿using CaseppCompiler.LexicalAnalyser;
+using CaseppCompiler.LexicalAnalyser.Tokens;
+using CaseppCompiler.SyntaxAnalyser;
+
+using System.Collections.Concurrent;
 
 namespace CaseppCompilerTest
 {
@@ -154,14 +157,24 @@ namespace CaseppCompilerTest
         public void HappyTest(string file)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"SyntaxAnalyserTests\Happy\{file}");
-            syntaxAnalyser.Validate(lexicalAnalyser.Analyse(File.OpenRead(path)));
+            using BlockingCollection<Token> tokenQueue = [];
+
+            lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
+            syntaxAnalyser.Analyse(tokenQueue);
         }
 
         [TestCaseSource(nameof(sadTests))]
         public void SadTest(string file, NUnit.Framework.Constraints.IResolveConstraint messageConstraint)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"SyntaxAnalyserTests\Sad\{file}");
-            var e = Assert.Throws<SyntaxAnalyserException>(() => syntaxAnalyser.Validate(lexicalAnalyser.Analyse(File.OpenRead(path))), $"Expected SyntaxAnalyserException");
+
+            var e = Assert.Throws<SyntaxAnalyserException>(() =>
+            {
+                using BlockingCollection<Token> tokenQueue = [];
+                lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
+                syntaxAnalyser.Analyse(tokenQueue);
+            },
+            $"Expected SyntaxAnalyserException");
             Assert.That(e.Message, messageConstraint);
         }
     }

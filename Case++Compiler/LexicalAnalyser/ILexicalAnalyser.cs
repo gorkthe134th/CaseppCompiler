@@ -2,11 +2,13 @@
 using CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser;
 using CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser;
 
+using System.Collections.Concurrent;
+
 namespace CaseppCompiler.LexicalAnalyser
 {
     public interface ILexicalAnalyser
     {
-        public IEnumerable<Token> Analyse(Stream input);
+        public void Analyse(Stream input, BlockingCollection<Token>? output = null);
     }
 
     public static class LexicalAnalyserFactory

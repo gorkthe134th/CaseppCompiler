@@ -1,5 +1,7 @@
-﻿using CaseppCompiler.LexicalAnalyser.Tokens;
-using CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes;
+﻿using CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes;
+using CaseppCompiler.LexicalAnalyser.Tokens;
+
+using System.Collections.Concurrent;
 
 namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
 {
@@ -36,7 +38,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
             ];
         }
 
-        public IEnumerable<Token> Analyse(Stream input)
+        public void Analyse(Stream input, BlockingCollection<Token>? output = null)
         {
             InputStream inputStream = new(input);
             int line = 1;
@@ -48,7 +50,8 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                 TokenType? matchedType = null;
                 if (inputStream.TryMatchFirst(tokenTypes.Select(type => (matchedType = type).Regex), out string text) && matchedType != null)
                 {
-                    yield return matchedType.GenerateToken(text, line, column);
+                    var token = matchedType.GenerateToken(text, line, column);
+                    output?.Add(token);
                     column += text.Length;
                     Predicate<char>? trim = matchedType.Trim;
                     if (trim != null) inputStream.Trim(trim, ref line, ref column);
@@ -58,7 +61,8 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                     throw new LexicalAnalyserException($"Line {line} Column {column}: Invalid Token");
                 }
             }
-            yield return new EOFToken(line, column);
+            output?.Add(new EOFToken(line, column));
+            output?.CompleteAdding();
         }
     }
 }
