@@ -478,30 +478,6 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Default Body" ^ statementMatcher,
                         -"end" | (p => p.CurrentFunction.SetBreakTargets()),
                     ],
-                    "In Case" %
-                    [
-                        "\"incase\" Keyword" % typeof(InCaseToken) | (p => p.CurrentFunction.IncreaseAllBreaks(1)),
-                        "Cases" *
-                        [
-                            "\"when\" Keyword" % typeof(WhenToken),
-                            conditionMatcher,
-                            "Colon" % typeof(CaseStartToken),
-                            -"$true target" | (p => {
-                                JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
-                                p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
-                                p.PushVariable(info);
-                            }),
-                            "When Body" ^ statementMatcher,
-                            // "Optional Semi Colon" ^ typeof(SemiColonToken),
-                            // Cannot allow a semi colon here because it's ambiguous
-                            // whether a semi colon ends the current case or the whole incase
-                            -"$false target" | (p => {
-                                JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
-                                p.CurrentFunction.SetJumpTargets(info.FalseOriginList, p.CurrentFunction.CurrentPosition);
-                            }),
-                        ],
-                        -"end" | (p => p.CurrentFunction.SetBreakTargets()),
-                    ],
                     "Until Case" %
                     [
                         "\"untilcase\" Keyword" % typeof(UntilCaseToken) | (p => p.CurrentFunction.IncreaseAllBreaks(1)),
@@ -534,6 +510,53 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 
                             int start = (int)p.PopVariable();
                             p.CurrentFunction.SetJumpTargets(info.FalseOriginList, start);
+
+                            p.CurrentFunction.SetBreakTargets();
+                        }),
+                    ],
+                    "In Case" %
+                    [
+                        "\"incase\" Keyword" % typeof(InCaseToken) | (p => p.CurrentFunction.IncreaseAllBreaks(1)),
+                        -"initialize" | (p => {
+                            int start = p.CurrentFunction.CurrentPosition;
+                            p.PushVariable(start);
+
+                            string exitFlag = p.GenerateTemp();
+                            p.PushVariable(exitFlag);
+                            p.AddInstruction(typeof(AssignmentInstruction), [typeof(string), typeof(object)], [exitFlag, 0]);
+                        }),
+                        "Cases" *
+                        [
+                            "\"when\" Keyword" % typeof(WhenToken),
+                            conditionMatcher,
+                            "Colon" % typeof(CaseStartToken),
+                            -"$true target" | (p => {
+                                JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
+                                p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
+                                p.PushVariable(info);
+                            }),
+                            "When Body" ^ statementMatcher,
+                            // "Optional Semi Colon" ^ typeof(SemiColonToken),
+                            // Cannot allow a semi colon here because it's ambiguous
+                            // whether a semi colon ends the current case or the whole incase
+                            -"$false target" | (p => {
+                                JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
+                                string exitFlag = (string)p.PeekVariable();
+
+                                p.AddInstruction(typeof(AssignmentInstruction), [typeof(string), typeof(object)], [exitFlag, 1]);
+                                p.CurrentFunction.SetJumpTargets(info.FalseOriginList, p.CurrentFunction.CurrentPosition);
+                            }),
+                        ],
+                        -"end" | (p =>
+                        {
+                            string exitFlag = (string)p.PopVariable();
+                            int start = (int)p.PopVariable();
+                            int end = p.CurrentFunction.CurrentPosition;
+                            p.AddInstruction(
+                                typeof(ComparisonJumpInstruction),
+                                [typeof(OperatorToken.OperationType), typeof(object), typeof(object)],
+                                [OperatorToken.OperationType.NotEqualTo, exitFlag, 0]);
+                            p.CurrentFunction.SetJumpTargets([end], start);
 
                             p.CurrentFunction.SetBreakTargets();
                         }),
