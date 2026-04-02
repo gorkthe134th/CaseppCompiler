@@ -64,6 +64,7 @@ namespace CaseppCompilerTest
             new object[] { @"Statements\Input\SimpleInput.c++" },
             new object[] { @"Statements\Print\SimplePrint.c++" },
             new object[] { @"Statements\Break\SimpleBreak.c++" },
+            new object[] { @"Statements\Repeat\SimpleRepeat.c++" },
             new object[] { @"Statements\BlockAnywhere.c++" },
         ];
         private static readonly object[] sadTests =
@@ -144,6 +145,8 @@ namespace CaseppCompilerTest
             new object[] { @"Statements\Input\NoID.c++", Is.EqualTo("Expected Variable ID: Line 4 Column 1: Block End") },
             new object[] { @"Statements\Input\Expression.c++", Is.EqualTo("Expected Block End Token: Line 3 Column 10: Subtract") },
             new object[] { @"Statements\Print\NoExpression.c++", Is.EqualTo("Expected Expression: Line 4 Column 1: Block End") },
+            new object[] { @"Statements\Break\NoCount.c++", Is.EqualTo("Expected Break Count: Line 4 Column 1: Block End") },
+            new object[] { @"Statements\Repeat\NoIndex.c++", Is.EqualTo("Expected Repeat Index: Line 4 Column 1: Block End") },
         ];
 
         [SetUp]

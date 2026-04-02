@@ -7,14 +7,15 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         public string Name { get; set; } = "$Invalid Name$";
         private readonly IList<Instruction> instructions = [];
         private Dictionary<int, uint> breakOrigins = [];
+        private Stack<int> repeatTargets = [];
 
         public int CurrentPosition => instructions.Count;
 
         public int QuadCount => instructions.Count + 2;
 
-        public void AddInstruction(Instruction instruction) => instructions.Add(instruction);
+        internal void AddInstruction(Instruction instruction) => instructions.Add(instruction);
 
-        public void SetJumpTargets(IEnumerable<int> positions, int target)
+        internal void SetJumpTargets(IEnumerable<int> positions, int target)
         {
             foreach (int p in positions)
                 if (instructions[p] is JumpInstruction jump) jump.Target = target;
@@ -23,13 +24,24 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void AddBreak(uint count) => breakOrigins.Add(CurrentPosition, count);
 
-        internal void IncreaseAllBreaks(uint count)
+        internal int GetRepeatPoint(uint index)
         {
-            foreach (var kvp in breakOrigins) breakOrigins[kvp.Key] = kvp.Value + count;
+            int target = 0; // Default to 0 when repeatTargets is empty. Meaning, when there are no blocks or loops, jump to the start of the function.
+            var e = repeatTargets.GetEnumerator();
+            while (index-- > 0 && e.MoveNext()) target = e.Current;
+            return target;
         }
 
-        internal void SetBreakTargets()
+        internal void SetRepeatPoint()
         {
+            repeatTargets.Push(CurrentPosition);
+            foreach (var kvp in breakOrigins) breakOrigins[kvp.Key]++;
+        }
+
+        internal void SetBreakPoint()
+        {
+            repeatTargets.Pop();
+
             IList<int> breaksToSet = [];
 
             breakOrigins = breakOrigins.Where(kvp =>

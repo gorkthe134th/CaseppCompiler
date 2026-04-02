@@ -3,8 +3,8 @@
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
     internal class ComparisonJumpInstruction(int line, int column,
-        OperatorToken.OperationType operation, object operand1, object operand2)
-        : JumpInstruction(line, column)
+        OperatorToken.OperationType operation, object operand1, object operand2, int? target)
+        : JumpInstruction(line, column, target)
     {
         private static readonly Dictionary<OperatorToken.OperationType, string> operationMap = new()
         {

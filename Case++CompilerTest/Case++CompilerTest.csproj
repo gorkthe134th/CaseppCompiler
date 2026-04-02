@@ -56,6 +56,15 @@
     <Content Include="IntermediateLanguageTests\Functions\NestedFunctions.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Statements\Repeat\RepeatBlock.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Statements\Repeat\RepeatFunction.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Statements\Repeat\RepeatProgram.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Statements\Break\BreakBlock.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -165,6 +174,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Program\SingleSatementProgram.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\Statements\Repeat\SimpleRepeat.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Statements\Break\SimpleBreak.c++">
@@ -389,6 +401,9 @@
     <Content Include="SyntaxAnalyserTests\Sad\Statements\Assignment\NoID.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\Repeat\NoIndex.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SyntaxAnalyserTests\Sad\Statements\Input\Expression.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -396,6 +411,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Sad\Statements\Print\NoExpression.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\Statements\Break\NoCount.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Sad\Statements\Return\NoExpression.c++">

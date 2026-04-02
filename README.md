@@ -237,18 +237,6 @@ Every statement must be preceded by a colon and may be succeeded by a semi-colon
 Conditions after the first one that was true are not evaluated for that iteration.<br>
 The whole whilecase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
 
-#### Incase
-
-When this statement is executed, the conditions after each "when" keyword will be checked, in order, and the statement after EVERY condition that is true will be executed.<br>
-```
-incase
-	when x < 0: x := 0
-	when y < 0: y := 0;
-print x + y;
-```
-Every statement must be preceded by a colon and must NOT be succeeded by a semi-colon, except for the last one.<br>
-The whole incase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
-
 #### Untilcase
 
 When this statement is executed, the conditions after each "when" keyword will be checked, in order, and the statement after EVERY condition that is true will be executed.<br>
@@ -280,6 +268,21 @@ until x = 0 and y = 0
 Every statement must be preceded by a colon and may be succeeded by a semi-colon.<br>
 The whole untilcase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
 
+#### Incase
+
+When this statement is executed, the conditions after each "when" keyword will be checked, in order, and the statement after EVERY condition that is true will be executed.<br>
+In case AT LEAST ONE condition was true, the conditions are checked again, in the same order, repeating until no condition is true.<br>
+```
+input x;
+input y;
+incase
+	when x > y: x := x - y
+	when x < y: y := y - x;
+print x;
+```
+Every statement must be preceded by a colon and must NOT be succeeded by a semi-colon, except for the last one.<br>
+The whole incase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+
 #### Forcase
 
 When this statement is executed, the expression after the equals sign is evaluated and the following steps will be repeated that many times:<br>
@@ -297,6 +300,20 @@ The expression that determines the number of iterations is only evaluated once, 
 The conditions are not required to contain the iteration variable.<br>
 Every statement must be preceded by a colon and must NOT be succeeded by a semi-colon, except for the last one.<br>
 The whole forcase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+
+#### Break
+
+When this statement is executed, the program exits the specified number of loops and the execution is continued normally from the statement after the exited loops.<br>
+```
+while y > 0
+{
+	input x;
+	if x = 0 break 2;
+	y := y / x;
+	print y;
+}
+```
+The break statement can also be used to break any block
 
 ### Functions
 

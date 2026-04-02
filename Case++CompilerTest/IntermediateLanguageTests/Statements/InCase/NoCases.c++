@@ -4,4 +4,5 @@
 	x := 9;
 	incase;
 	x := 9;
+	repeat 1;
 }

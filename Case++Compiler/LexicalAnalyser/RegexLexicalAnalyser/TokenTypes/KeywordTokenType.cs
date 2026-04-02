@@ -24,6 +24,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
             [ "default"  ] = (line, column) => new DefaultToken(line, column),
             [  "until"   ] = (line, column) => new UntilToken(line, column),
             [  "break"   ] = (line, column) => new BreakToken(line, column),
+            [  "repeat"  ] = (line, column) => new RepeatToken(line, column),
             [  "return"  ] = (line, column) => new ReturnToken(line, column),
             [  "print"   ] = (line, column) => new PrintToken(line, column),
             [  "input"   ] = (line, column) => new InputToken(line, column),

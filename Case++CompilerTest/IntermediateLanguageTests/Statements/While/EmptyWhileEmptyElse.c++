@@ -4,4 +4,5 @@
 	x := 9;
 	while x=9 else ;
 	x := 9;
+	repeat 1;
 }

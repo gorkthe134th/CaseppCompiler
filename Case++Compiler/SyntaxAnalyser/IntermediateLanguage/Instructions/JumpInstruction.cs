@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
-    internal abstract class JumpInstruction(int line, int column) : Instruction(line, column)
+    internal abstract class JumpInstruction(int line, int column, int? target) : Instruction(line, column)
     {
-        public int? Target { get; set; } = null;
+        public int? Target { get; set; } = target;
     }
 }

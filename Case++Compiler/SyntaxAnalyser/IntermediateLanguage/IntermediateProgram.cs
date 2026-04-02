@@ -62,7 +62,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             List<int> trueList = [CurrentFunction.CurrentPosition];
             AddInstruction(type, parameterTypes, parameters);
             List<int> falseList = [CurrentFunction.CurrentPosition];
-            CurrentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn));
+            CurrentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn, null));
             currentVariables.Push(new JumpBlockInfo(trueList, falseList, start));
         }
 
@@ -71,7 +71,14 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             if (count == 0) return;
             Function currentFunction = CurrentFunction;
             currentFunction.AddBreak(count);
-            currentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn));
+            currentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn, null));
+        }
+
+        internal void AddRepeatInstruction(uint index)
+        {
+            if (index == 0) return;
+            Function currentFunction = CurrentFunction;
+            currentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn, currentFunction.GetRepeatPoint(index)));
         }
 
         internal void PushVariable(object variable) => currentVariables.Push(variable);

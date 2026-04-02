@@ -5,4 +5,5 @@
 	untilcase
 	until i = 1;
 	x := 9;
+	repeat 1;
 }
