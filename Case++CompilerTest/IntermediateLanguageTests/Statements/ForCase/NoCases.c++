@@ -1,8 +1,14 @@
 ﻿program p
 {
-	break 1;
-	x := 9;
-	forcase i=0;
-	x := 9;
-	repeat 1;
+	break 1; // expect a jump to the end of the program (the halt instruction)
+	x := 9; // buffer 1
+	forcase i=x-9; /* expect
+	- an instruction initializing i to 0
+	- an instruction subtracting 9 from x
+	- a comparison jump skipping the next instruction if i is less than the result
+	- a jump to after the end of the forcase (buffer 2)
+	- an instruction incrementing i
+	- a jump to the subtraction*/
+	x := 9; // buffer 2
+	repeat 1; // expect a jump to the start of the program (the first break)
 }

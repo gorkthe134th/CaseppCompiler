@@ -1,4 +1,4 @@
 ﻿program p
 {
-	print 0;
+	print 5+4;
 }

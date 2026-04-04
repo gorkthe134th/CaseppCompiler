@@ -559,8 +559,6 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             // TODO: Add variable to symbol table
                             string iterationID = (string)p.PeekVariable();
                             p.AddInstruction(typeof(AssignmentInstruction), [typeof(string), typeof(object)], [iterationID, 0]);
-
-                            p.CurrentFunction.SetRepeatPoint();
                         }),
                         "Equals Sign" % OperatorToken.OperationType.EqualTo | (p => {
                             _ = p.PopVariable(); // Ignore Variable; it will always be an Equals Sign.
@@ -587,6 +585,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 typeof(OperationInstruction),
                                 [typeof(OperatorToken.OperationType), typeof(object), typeof(object), typeof(string)],
                                 [OperatorToken.OperationType.Add, iterationID, 1, iterationID]);
+
+                            p.CurrentFunction.SetRepeatPoint();
                         }),
                         "Cases" *
                         [

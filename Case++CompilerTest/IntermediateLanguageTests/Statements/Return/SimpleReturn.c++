@@ -1,4 +1,4 @@
 ﻿program p
 {
-	return 0;
+	return 5+4;
 }

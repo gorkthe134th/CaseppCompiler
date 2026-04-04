@@ -35,7 +35,13 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <Content Include="IntermediateLanguageTests\Conditions\Condition.c++">
+    <Content Include="IntermediateLanguageTests\Conditions\InvertedCondition.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Conditions\CompositeCondition.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Conditions\SimpleCondition.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="IntermediateLanguageTests\Expressions\SimpleExpression.c++">

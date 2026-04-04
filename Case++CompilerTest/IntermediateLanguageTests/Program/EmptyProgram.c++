@@ -1,1 +1,1 @@
-﻿program p {}
+﻿program p {} // expect a "p" block with a single halt instruction
