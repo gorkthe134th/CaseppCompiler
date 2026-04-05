@@ -49,7 +49,7 @@ namespace CaseppCompilerTest
             } },
             new object[] { @"Statements\Input\SimpleInput.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p", null, null),
-                ("inp", "x", null, null),
+                ("in", "x", null, null),
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
             } },
