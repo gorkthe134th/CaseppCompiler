@@ -346,9 +346,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "\"if\" Keyword" % typeof(IfToken),
                         conditionMatcher,
                         -"$true target" | (p => {
-                            JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
+                            JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                             p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
-                            p.PushVariable(info);
                         }),
                         "If Body" ^ statementMatcher,
                         "Optional Else" ^
@@ -387,9 +386,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             conditionMatcher,
                             "Colon" % typeof(CaseStartToken),
                             -"$true target" | (p => {
-                                JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
+                                JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                                 p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
-                                p.PushVariable(info);
                             }),
                             "When Body" ^ statementMatcher,
                             "Optional Semi Colon" ^ typeof(SemiColonToken),
@@ -417,9 +415,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "\"while\" Keyword" % typeof(WhileToken) | (p => p.CurrentFunction.SetRepeatPoint()),
                         conditionMatcher,
                         -"$true target" | (p => {
-                            JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
+                            JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                             p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
-                            p.PushVariable(info);
                         }),
                         "While Body" ^ statementMatcher,
                         -"$repeat" | (p => {
@@ -451,9 +448,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             conditionMatcher,
                             "Colon" % typeof(CaseStartToken),
                             -"$true target" | (p => {
-                                JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
+                                JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                                 p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
-                                p.PushVariable(info);
                             }),
                             "When Body" ^ statementMatcher,
                             "Optional Semi Colon" ^ typeof(SemiColonToken),
@@ -482,9 +478,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             conditionMatcher,
                             "Colon" % typeof(CaseStartToken),
                             -"$true target" | (p => {
-                                JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
+                                JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                                 p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
-                                p.PushVariable(info);
                             }),
                             "When Body" ^ statementMatcher,
                             "Optional Semi Colon" ^ typeof(SemiColonToken),
@@ -522,9 +517,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             conditionMatcher,
                             "Colon" % typeof(CaseStartToken),
                             -"$true target" | (p => {
-                                JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
+                                JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                                 p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
-                                p.PushVariable(info);
                             }),
                             "When Body" ^ statementMatcher,
                             // "Optional Semi Colon" ^ typeof(SemiColonToken),
@@ -593,9 +587,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             conditionMatcher,
                             "Colon" % typeof(CaseStartToken),
                             -"$true target" | (p => {
-                                JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
+                                JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                                 p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
-                                p.PushVariable(info);
                             }),
                             "When Body" ^ statementMatcher,
                             // "Optional Semi Colon" ^ typeof(SemiColonToken),
