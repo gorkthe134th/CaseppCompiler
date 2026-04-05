@@ -12,7 +12,7 @@
 	when x = 9: break 2 // expect similar instructions to above, but jumping to after the end of the forcase (buffer 2)
 	when x <> 9: repeat 2 // expect similar instructions to above, but jumping to the start of the forcase (the instruction initializing i to 0)
 	when x < 9: repeat 1; // expect similar instructions to above, but jumping to the start of the current iteration (the first comparison)
-	// expect a jump to the instruction adding 9 to x
+	// expect a jump to the first comparison
 	x := 9; // buffer 2
 	repeat 1; // expect a jump to the start of the program (the first break)
 }

@@ -567,7 +567,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 typeof(ComparisonJumpInstruction),
                                 [typeof(OperatorToken.OperationType), typeof(object), typeof(object), typeof(int?)],
                                 [OperatorToken.OperationType.LessThan, iterationID, count.Result, null],
-                                count.Start);
+                                p.CurrentFunction.CurrentPosition);
 
                             JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                             p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
