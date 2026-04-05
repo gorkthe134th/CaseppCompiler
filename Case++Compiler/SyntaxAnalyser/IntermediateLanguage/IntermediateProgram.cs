@@ -1,5 +1,4 @@
-﻿using CaseppCompiler.LexicalAnalyser.Tokens;
-using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
+﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
 using System.Collections.Concurrent;
 using System.Reflection;
@@ -10,9 +9,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
     {
         internal BlockingCollection<Function> Functions { get; }
 
-        private int currentLine = 0;
-        private int currentColumn = 0;
-        private readonly Stack<Function> currentFunctionStack = new();
+        private Function? currentFunction = null;
         private readonly Stack<object> currentVariables = [];
         private int nextTempIndex = 0;
 
@@ -22,47 +19,37 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             Functions = functionCapacity == null ? new(queue) : new(queue, (int)functionCapacity);
         }
 
-        internal void SetLineAndColumn(Token token)
-        {
-            currentLine = token.Line;
-            currentColumn = token.Column;
-        }
+        internal int CurrentLine { private get; set; } = 0;
 
-        internal void CreateFunction() => currentFunctionStack.Push(new());
+        internal int CurrentColumn { private get; set; } = 0;
 
-        internal Function CurrentFunction => currentFunctionStack.Peek();
+        internal void CreateFunction() => currentFunction = new Function(parent: currentFunction);
+
+        internal Function CurrentFunction => currentFunction ?? throw new InvalidOperationException("No available functions.");
 
         internal void FinalizeFunction(Type finalInstructionType, IEnumerable<Type> finalInstructionParameterTypes, IEnumerable<object> finalInstructionParameters)
         {
-            CurrentFunction.SetAllBreakTargets();
+            Function function = CurrentFunction;
+            function.SetAllBreakTargets();
             AddInstruction(finalInstructionType, finalInstructionParameterTypes, finalInstructionParameters);
-
-            if (currentFunctionStack.Count <= 1)
-            {
-                Functions.Add(currentFunctionStack.Pop());
-                return;
-            }
-
-            string functionName = string.Join('_', currentFunctionStack.Reverse().Select(f => f.Name));
-            Function function = currentFunctionStack.Pop();
-            function.Name = functionName;
-
             Functions.Add(function);
+            currentFunction = function.Parent;
         }
 
         internal void AddInstruction(Type type, IEnumerable<Type> parameterTypes, IEnumerable<object> parameters)
         {
             ConstructorInfo constructor = type.GetConstructor([typeof(int), typeof(int), ..parameterTypes])
                 ?? throw new ArgumentException($"Cannot create {type} using parameter types \"{string.Concat(parameterTypes)}\"");
-            CurrentFunction.AddInstruction((Instruction)constructor.Invoke([currentLine, currentColumn, ..parameters]));
+            CurrentFunction.AddInstruction((Instruction)constructor.Invoke([CurrentLine, CurrentColumn, ..parameters]));
         }
 
         internal void AddJumpInstructions(Type type, IEnumerable<Type> parameterTypes, IEnumerable<object> parameters, int start)
         {
-            List<int> trueList = [CurrentFunction.CurrentPosition];
+            Function currentFunction = CurrentFunction;
+            List<int> trueList = [currentFunction.CurrentPosition];
             AddInstruction(type, parameterTypes, parameters);
-            List<int> falseList = [CurrentFunction.CurrentPosition];
-            CurrentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn, null));
+            List<int> falseList = [currentFunction.CurrentPosition];
+            currentFunction.AddInstruction(new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, null));
             currentVariables.Push(new JumpBlockInfo(trueList, falseList, start));
         }
 
@@ -71,14 +58,14 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             if (count == 0) return;
             Function currentFunction = CurrentFunction;
             currentFunction.AddBreak(count);
-            currentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn, null));
+            currentFunction.AddInstruction(new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, null));
         }
 
         internal void AddRepeatInstruction(uint index)
         {
             if (index == 0) return;
             Function currentFunction = CurrentFunction;
-            currentFunction.AddInstruction(new UnconditionalJumpInstruction(currentLine, currentColumn, currentFunction.GetRepeatPoint(index)));
+            currentFunction.AddInstruction(new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, currentFunction.GetRepeatPoint(index)));
         }
 
         internal void PushVariable(object variable) => currentVariables.Push(variable);

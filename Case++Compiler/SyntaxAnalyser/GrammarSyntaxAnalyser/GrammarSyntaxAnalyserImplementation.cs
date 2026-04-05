@@ -136,7 +136,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                         actualParameterMatcher,
                                     ],
                                 ],
-                                -"call" | (p => {
+                                -"$call" | (p => {
                                     var parameters = (List<(object value, ParameterInstruction.ParameterType type)>)p.PopVariable();
                                     ExpressionBlockInfo info = (ExpressionBlockInfo)p.PopVariable();
                                     string result = p.GenerateTemp();
@@ -400,9 +400,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
                                 p.CurrentFunction.SetJumpTargets(info.FalseOriginList, p.CurrentFunction.CurrentPosition);
 
-                                List<int> exitJumps = (List<int>)p.PopVariable();
+                                List<int> exitJumps = (List<int>)p.PeekVariable();
                                 exitJumps.Add(whenExit);
-                                p.PushVariable(exitJumps);
                             }),
                         ],
                         "\"default\" Keyword" % typeof(DefaultToken),
@@ -423,7 +422,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             p.PushVariable(info);
                         }),
                         "While Body" ^ statementMatcher,
-                        -"repeat" | (p => {
+                        -"$repeat" | (p => {
                             JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
                             p.AddInstruction(typeof(UnconditionalJumpInstruction), [typeof(int?)], [info.Start]);
                             p.CurrentFunction.SetJumpTargets(info.FalseOriginList, p.CurrentFunction.CurrentPosition);
@@ -437,7 +436,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 "\"else\" Keyword" % typeof(ElseToken),
                                 "Else Body" ^ statementMatcher,
                             ],
-                        -"end" | (p => p.CurrentFunction.SetBreakPoint()),
+                        -"$end" | (p => p.CurrentFunction.SetBreakPoint()),
                     ],
                     "While Case" %
                     [
@@ -458,7 +457,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             }),
                             "When Body" ^ statementMatcher,
                             "Optional Semi Colon" ^ typeof(SemiColonToken),
-                            -"$false target" | (p => {
+                            -"$repeat & false target" | (p => {
                                 JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
                                 int start = (int)p.PeekVariable();
                                 p.AddInstruction(typeof(UnconditionalJumpInstruction), [typeof(int?)], [start]);
@@ -468,7 +467,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "\"default\" Keyword" % typeof(DefaultToken),
                         "Colon" % typeof(CaseStartToken),
                         "Default Body" ^ statementMatcher,
-                        -"end" | (p => p.CurrentFunction.SetBreakPoint()),
+                        -"$end" | (p => p.CurrentFunction.SetBreakPoint()),
                     ],
                     "Until Case" %
                     [
@@ -509,7 +508,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     "In Case" %
                     [
                         "\"incase\" Keyword" % typeof(InCaseToken) | (p => p.CurrentFunction.SetRepeatPoint()),
-                        -"initialize" | (p => {
+                        -"$initialize" | (p => {
                             int start = p.CurrentFunction.CurrentPosition;
                             p.PushVariable(start);
 
@@ -539,7 +538,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 p.CurrentFunction.SetJumpTargets(info.FalseOriginList, p.CurrentFunction.CurrentPosition);
                             }),
                         ],
-                        -"end" | (p =>
+                        -"$end" | (p =>
                         {
                             string exitFlag = (string)p.PopVariable();
                             int start = (int)p.PopVariable();
@@ -555,7 +554,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     [
                         "\"forcase\" Keyword" % typeof(ForCaseToken) | (p => p.CurrentFunction.SetRepeatPoint()),
                         "Iteration Identifier" % typeof(IdentifierToken),
-                        -"initialize" | (p => {
+                        -"$initialize" | (p => {
                             // TODO: Add variable to symbol table
                             string iterationID = (string)p.PeekVariable();
                             p.AddInstruction(typeof(AssignmentInstruction), [typeof(string), typeof(object)], [iterationID, 0]);
@@ -564,7 +563,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             _ = p.PopVariable(); // Ignore Variable; it will always be an Equals Sign.
                         }),
                         expressionMatcher,
-                        -"condition & increment" | (p =>
+                        -"$condition & increment" | (p =>
                         {
                             // Condition
 
@@ -607,7 +606,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 p.CurrentFunction.SetJumpTargets(info.FalseOriginList, p.CurrentFunction.CurrentPosition);
                             }),
                         ],
-                        -"end" | (p => {
+                        -"$end" | (p => {
                             p.CurrentFunction.SetBreakPoint();
 
                             JumpBlockInfo info = (JumpBlockInfo)p.PopVariable();
@@ -659,11 +658,11 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                 "Body" >>
                     "Body Contents" %
                     [
-                        -"start" | (p => p.CurrentFunction.SetRepeatPoint()),
+                        -"$start" | (p => p.CurrentFunction.SetRepeatPoint()),
                         declarationsMatcher,
                         functionsMatcher,
                         statementsMatcher,
-                        -"end"   | (p => p.CurrentFunction.SetBreakPoint()),
+                        -"$end"   | (p => p.CurrentFunction.SetBreakPoint()),
                     ]);
 
             superMatcher =

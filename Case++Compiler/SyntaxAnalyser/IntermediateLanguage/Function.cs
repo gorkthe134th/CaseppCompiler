@@ -2,12 +2,17 @@
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
-    internal class Function
+    internal class Function(Function? parent = null)
     {
-        public string Name { get; set; } = "$Invalid Name$";
         private readonly IList<Instruction> instructions = [];
         private Dictionary<int, uint> breakOrigins = [];
-        private Stack<int> repeatTargets = [];
+        private readonly Stack<int> repeatTargets = [];
+
+        public string Name { get => Parent != null ? Parent.Name + "_" + field : field; set => field = value; } = "$Invalid Name$";
+
+        public Function? Parent { get; } = parent;
+
+        public IReadOnlyList<Instruction> Instructions => instructions.AsReadOnly();
 
         public int CurrentPosition => instructions.Count;
 
@@ -42,16 +47,12 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         {
             repeatTargets.Pop();
 
-            IList<int> breaksToSet = [];
+            var lookup = breakOrigins
+                .Select(kvp => new KeyValuePair<int, uint>(kvp.Key, kvp.Value - 1))
+                .ToLookup(kvp => kvp.Value > 0);
 
-            breakOrigins = breakOrigins.Where(kvp =>
-            {
-                if (kvp.Value > 1) return true;
-                breaksToSet.Add(kvp.Key);
-                return false;
-            }).Select(kvp => new KeyValuePair<int, uint>(kvp.Key, kvp.Value - 1)).ToDictionary();
-
-            SetJumpTargets(breaksToSet, CurrentPosition);
+            breakOrigins = lookup[true].ToDictionary();
+            SetJumpTargets(lookup[false].Select(kvp => kvp.Key), CurrentPosition);
         }
 
         internal void SetAllBreakTargets()

@@ -34,7 +34,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
             bool? result = BaseTryMatch(tokens, program);
             if (result == true && program != null && FinalAction != null)
             {
-                program.SetLineAndColumn(tokens.Current);
+                program.CurrentLine = tokens.Current.Line;
+                program.CurrentColumn = tokens.Current.Column;
                 FinalAction.Invoke(program);
             }
             return result;
