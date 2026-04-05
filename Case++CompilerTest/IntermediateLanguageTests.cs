@@ -587,6 +587,12 @@ namespace CaseppCompilerTest
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
             } },
+            new object[] { @"Statements\Break\BreakZero.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                (":=", "9", null, "x"),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
             new object[] { @"Statements\Repeat\RepeatProgram.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p", null, null),
                 (":=", "9", null, "x"),
@@ -620,6 +626,12 @@ namespace CaseppCompilerTest
                 ("jump", null, null, "3"),
                 (":=", "9", null, "x"),
                 ("jump", null, null, "1"),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+            new object[] { @"Statements\Repeat\RepeatZero.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                (":=", "9", null, "x"),
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
             } },

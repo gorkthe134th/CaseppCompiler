@@ -62,6 +62,12 @@
     <Content Include="IntermediateLanguageTests\Functions\NestedFunctions.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Statements\Break\BreakZero.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Statements\Repeat\RepeatZero.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Statements\Repeat\RepeatBlock.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
