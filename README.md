@@ -226,7 +226,7 @@ whilecase
 		x := x - 10;
 		c := c + 1
 	};
-	when x < 0 :
+	when x < 0:
 	{
 		x := x + 10;
 		c := c + 1;
@@ -303,17 +303,139 @@ The whole forcase statement, like any other statement, must be separated by a se
 
 #### Break
 
-When this statement is executed, the program exits the specified number of loops and the execution is continued normally from the statement after the exited loops.<br>
+When this statement is executed, the program exits the specified number of loops and the execution is continued normally from the statement after the exited loop.<br>
 ```
-while y > 0
+sum := 0;
+untilcase
+	when true: input x;
+	when x = 0: break 1;
+	when x < 0: sum := sum - x*x;
+	when x > 0: sum := sum + x*x;
+until x = a;
+print sum;
+```
+The break statement can also be used to break any block.<br>
+This provides a safe way to jump to the end of any block of code.<br>
+Beware that this also means a higher break count is required when a loop consists of a block of code.<br>
+```
 {
-	input x;
-	if x = 0 break 2;
-	y := y / x;
-	print y;
+	input power;
+	if power <= 0 break 1;
+	
+	sum := 0;
+	while true
+	{
+		input x;
+		if x = 0 break 2;
+		term := 1;
+		forcase i = power
+			when true: term := term * x;
+		sum := sum + term;
+	};
+	print sum;
 }
 ```
-The break statement can also be used to break any block
+The break statement cannot jump to the end of an if or switchcase statement. When determining the target of a break, if and switchcase statements are ignored.<br>
+The break statement ignores any loops or blocks on the same level as itself or the if or switchcase statement it is contained within.<br>
+Any break statements with a count of "0" are ignored.<br>
+
+#### Repeat
+
+When this statement is executed, the program repeats the statements within a target loop. The loop to repeat is determined by the provided index.<br>
+When specifying an index of "x", the target loop is the one containing the repeat statement and starting x levels outside of the level of the repeat statement.<br>
+In other words, if "1" is specified, the target loop is the current loop, if "2" is specified, it is the loop that contains the current loop, etc.<br>
+```
+a := 42;
+untilcase
+	when true: input x;
+	when x <= 0: repeat 1;
+	when x < a: print -1;
+	when x > a: print 1;
+until x = a;
+print 89;
+```
+The repeat statement can also be used to repeat any block.<br>
+This provides a safe way to jump to the beginning of any block of code.<br>
+Beware that this also means a higher repeat index is required when a loop consists of a block of code.<br>
+```
+{
+	sum := 0;
+	budget := 20;
+	
+	while budget > 0
+	{
+		print sum;
+		print budget;
+		
+		// Assume a Rumdom Number Generator is defined in a different part of the program
+		x := random(1, 6); 
+		print x;
+		
+		input c;
+		if c = 0
+		{
+			sum := sum + x;
+			budget := budget - 1;
+			repeat 3;
+		};
+		
+		y := random(0, 10);
+		if y = 0
+		{
+			print 70;
+			repeat 4;
+		};
+		
+		sum := sum + x*x;
+		budget := budget - x/2;
+		// Let's call the fact that the budget can become negative "Intentional Game Design"
+	};
+	
+	print sum;
+}
+```
+
+#### Break & Repeat Points
+
+For most control structures, the point a break or repeat jumps to is the beginning or end of the whole statement, respectively.<br>
+Many of them also offer a way to insert code that can only be executed if the loop is not broken.<br>
+```
+while x > 0 {
+	break 2; // break skips the else statement and jumps to "print x"
+	repeat 2; // repeat jumps to the condition check
+} else y := 1; // This statement will be executed when the loop ends normally, but not when broken
+print x;
+
+whilecase
+	when x > 0: break 1; // break skips the default statement and jumps to "print x"
+	when x < 0: repeat 1; // repeat jumps to the first condition check, "x > 0"
+default: y := 1; // This statement will be executed when the loop ends normally, but not when broken
+print x;
+
+untilcase
+	when x > 0: break 1; // break skips the until condition and jumps to "print x"
+	when x < 0: repeat 1; // repeat jumps to the first condition check, "x > 0"
+until x = 0;
+print x;
+
+incase
+	when x > 0: break 1 // break jumps to "print x"
+	when x < 0: repeat 1; // repeat jumps to the first condition check, "x > 0"
+print x;
+```
+The Forcase statement offers two break points and two repeat points, to allow finer control of the program execution.<br>
+One set of break and repeat points behaves similarly to the break and repeat points of other control structures, ending or restarting the whole statement.<br>
+This set allows for the iteration variable to be reset or for the loop to end prematurely.<br>
+The other set of break and repeat points controls the current iteration, ending or restarting only the checking of the conditions within the forcase statement.<br>
+This set allows rechecking all conditions without resetting the iteration variable or starting the next iteration without checking subsequent conditions.<br>
+```
+forcase i = 100
+	when x > 0: break 2 // break 2 jumps to "print x"
+	when x = 0: repeat 2 // repeat 2 jumps to the resetting of i at the start of the statement
+	when x <> 0: break 1 // break 1 jumps to the incrementation and check of i
+	when x < 0: repeat 1; // repeat 1 jumps to the first condition check, "x > 0"
+print x;
+```
 
 ### Functions
 
