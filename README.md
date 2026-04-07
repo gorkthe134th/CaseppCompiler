@@ -8,8 +8,7 @@ An in-development compiler created as part of a university course.<br>
 A minimum required language specification was provided by the associated professor, but I have also expanded the syntax and supported additional features when I deemed it appropriate.<br>
 The full language documentation can be viewed bellow.<br>
 The compiler's output language will be RISC-V assembly.<br>
-Current functionality is limited to Lexical and Syntactical Analysis.<br>
-The input file encoding is also currently restricted to UTF-8.<br>
+Current functionality is limited to Intermediate Code generation.<br>
 
 ## Case++ Documentation
 
@@ -397,8 +396,8 @@ Beware that this also means a higher repeat index is required when a loop consis
 
 #### Break & Repeat Points
 
-For most control structures, the point a break or repeat jumps to is the beginning or end of the whole statement, respectively.<br>
-Many of them also offer a way to insert code that can only be executed if the loop is not broken.<br>
+For most control structures, the point a break or repeat statement jumps to is the beginning or end of the whole statement, respectively.<br>
+Many control structures also offer a way to insert code that can only be executed if the loop is not broken.<br>
 ```
 while x > 0 {
 	break 2; // break skips the else statement and jumps to "print x"
