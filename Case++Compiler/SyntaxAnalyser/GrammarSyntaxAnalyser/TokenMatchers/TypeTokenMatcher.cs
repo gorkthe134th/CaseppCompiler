@@ -14,6 +14,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
                 if (tokens.Current is IdentifierToken identifier) program.PushVariable(identifier.Name);
                 if (tokens.Current is ConstantToken     constant) program.PushVariable(constant.Constant);
                 if (tokens.Current is BoolConstantToken    @bool) program.PushVariable(@bool.Constant);
+                if (tokens.Current is OperatorToken    @operator) program.PushVariable(@operator.Operation);
             }
 
             if (!tokens.MoveNext() && !typeof(T).IsAssignableTo(typeof(EOFToken)))

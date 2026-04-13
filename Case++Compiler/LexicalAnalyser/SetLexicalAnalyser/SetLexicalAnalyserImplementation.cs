@@ -12,7 +12,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
         [
             new AssignmentTokenType(),
             new BlockTokenType(),
-            new CaseStartTokenType(),
+            new ColonTokenType(),
             new CommaTokenType(),
             new ConstantTokenType(),
             new IdentifierTokenType(),
@@ -20,6 +20,8 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
             new ParenthesisTokenType(),
             new SquareBracketTokenType(),
             new SemiColonTokenType(),
+            new HashTokenType(),
+            new UnderscoreTokenType(),
             new SingleLineCommentTokenType(),
             new MultiLineCommentTokenType(),
         ];

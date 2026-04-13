@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
-    internal class AssignmentInstruction(int line, int column, string varID, object result) : Instruction(line, column)
+    internal class AssignmentInstruction(int line, int column, string varID, object value) : Instruction(line, column)
     {
-        public override (string?, string?, string?, string?) ToQuad() => (":=", result.ToString(), null, varID);
+        public override (string?, string?, string?, string?) ToQuad() => (":=", value.ToString(), null, varID);
     }
 }

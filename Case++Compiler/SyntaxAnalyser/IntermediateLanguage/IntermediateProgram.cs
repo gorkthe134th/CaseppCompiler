@@ -1,4 +1,5 @@
-﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
+﻿using CaseppCompiler.LexicalAnalyser.Tokens;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
 using System.Collections.Concurrent;
 using System.Reflection;
@@ -43,6 +44,29 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             CurrentFunction.AddInstruction((Instruction)constructor.Invoke([CurrentLine, CurrentColumn, ..parameters]));
         }
 
+        internal void AddIntermediateLanguageInstruction(object arg0, object arg1, object arg2, object arg3)
+        {
+            if (arg0 is OperatorToken.OperationType operation)
+            {
+                if (OperatorToken.CategoryMap[operation] == OperatorToken.OperationCategory.Comparison)
+                {
+                    if (arg3 is not string labelName) throw new SyntaxAnalyserException($"Expected Label Name for 3rd argument: Line {CurrentLine}, Column {CurrentColumn}");
+                    CurrentFunction.AddJumpToLabel(InstructionFactory.Create(operation, arg1, arg2, null!, CurrentLine, CurrentColumn), labelName);
+                }
+                else CurrentFunction.AddInstruction(InstructionFactory.Create(operation, arg1, arg2, arg3, CurrentLine, CurrentColumn));
+            }
+            else if (arg0 is InstructionFactory.Opcode opcode)
+            {
+                if (opcode == InstructionFactory.Opcode.Jump)
+                {
+                    if (arg3 is not string labelName) throw new SyntaxAnalyserException($"Expected Label Name for 3rd argument: Line {CurrentLine}, Column {CurrentColumn}");
+                    CurrentFunction.AddJumpToLabel(InstructionFactory.Create(opcode, arg1, arg2, null!, CurrentLine, CurrentColumn), labelName);
+                }
+                else CurrentFunction.AddInstruction(InstructionFactory.Create(opcode, arg1, arg2, arg3, CurrentLine, CurrentColumn));
+            }
+            else throw new InvalidOperationException($"Expected Label Name for 3rd argument: Line {CurrentLine}, Column {CurrentColumn}");
+        }
+
         internal void AddJumpInstructions(Type type, IEnumerable<Type> parameterTypes, IEnumerable<object> parameters, int start)
         {
             Function currentFunction = CurrentFunction;
@@ -67,6 +91,8 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             Function currentFunction = CurrentFunction;
             currentFunction.AddInstruction(new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, currentFunction.GetRepeatPoint(index)));
         }
+
+        internal void SetLabel(string labelName) => CurrentFunction.SetLabel(labelName);
 
         internal void PushVariable(object variable) => currentVariables.Push(variable);
 

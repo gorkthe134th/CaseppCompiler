@@ -5,6 +5,8 @@ using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 {
@@ -322,6 +324,57 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         })),
                 ]);
 
+            UnresolvedTokenMatcher ILInstruction = new("IL Instruction");
+
+            TokenMatcher ILArgumentMatcher =
+                "Argument" |
+                [
+                    "Constant" % typeof(ConstantToken),
+                    "Variable ID" % typeof(IdentifierToken),
+                    "Underscore" % typeof(UnderscoreToken) | (p => p.PushVariable(null!)),
+                    "CV" % typeof(CVToken) | (p => p.PushVariable(ParameterInstruction.ParameterType.In)),
+                    "Ref" % typeof(RefToken) | (p => p.PushVariable(ParameterInstruction.ParameterType.InOut)),
+                    "Ret" % typeof(RetToken) | (p => p.PushVariable(ParameterInstruction.ParameterType.Out)),
+                ];
+
+            ILInstruction.Resolve(
+                "Intermediate Language Instruction" %
+                [
+                    "Label" ^
+                        "Label" %
+                        [
+                            "Label Name" % typeof(IdentifierToken),
+                            "Colon" % typeof(ColonToken),
+                        ] | (p => p.SetLabel((string)p.PopVariable())),
+                    "Instruction" ^
+                    [
+                        "Opcode" |
+                        [
+                            "Assignment Token" % typeof(AssignmentToken) | (p => p.PushVariable(InstructionFactory.Opcode.Assignment)),
+                            "In Token" % typeof(InToken) | (p => p.PushVariable(InstructionFactory.Opcode.Input)),
+                            "Out Token" % typeof(OutToken) | (p => p.PushVariable(InstructionFactory.Opcode.Output)),
+                            "Halt Token" % typeof(HaltToken) | (p => p.PushVariable(InstructionFactory.Opcode.Halt)),
+                            "Jump Token" % typeof(JumpToken) | (p => p.PushVariable(InstructionFactory.Opcode.Jump)),
+                            "Par Token" % typeof(ParToken) | (p => p.PushVariable(InstructionFactory.Opcode.Parameter)),
+                            "Call Token" % typeof(CallToken) | (p => p.PushVariable(InstructionFactory.Opcode.Call)),
+                            "Retv Token" % typeof(RetvToken) | (p => p.PushVariable(InstructionFactory.Opcode.Return)),
+                            "Operation" % typeof(OperatorToken),
+                        ],
+                        "Comma" % typeof(CommaToken),
+                        ILArgumentMatcher,
+                        "Comma" % typeof(CommaToken),
+                        ILArgumentMatcher,
+                        "Comma" % typeof(CommaToken),
+                        ILArgumentMatcher,
+                    ] | (p => {
+                        object arg3 = p.PopVariable();
+                        object arg2 = p.PopVariable();
+                        object arg1 = p.PopVariable();
+                        object arg0 = p.PopVariable();
+                        p.AddIntermediateLanguageInstruction(arg0, arg1, arg2, arg3);
+                    })
+                ]);
+            
             UnresolvedTokenMatcher blockBodyMatcher = new("Block Body");
 
             statementMatcher.Resolve(
@@ -384,7 +437,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         [
                             "\"when\" Keyword" % typeof(WhenToken),
                             conditionMatcher,
-                            "Colon" % typeof(CaseStartToken),
+                            "Colon" % typeof(ColonToken),
                             -"$true target" | (p => {
                                 JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                                 p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
@@ -403,7 +456,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             }),
                         ],
                         "\"default\" Keyword" % typeof(DefaultToken),
-                        "Colon" % typeof(CaseStartToken),
+                        "Colon" % typeof(ColonToken),
                         "Default Body" ^ statementMatcher,
                         -"$end" | (p => {
                             List<int> exitJumps = (List<int>)p.PopVariable();
@@ -446,7 +499,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         [
                             "\"when\" Keyword" % typeof(WhenToken),
                             conditionMatcher,
-                            "Colon" % typeof(CaseStartToken),
+                            "Colon" % typeof(ColonToken),
                             -"$true target" | (p => {
                                 JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                                 p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
@@ -461,7 +514,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             }),
                         ],
                         "\"default\" Keyword" % typeof(DefaultToken),
-                        "Colon" % typeof(CaseStartToken),
+                        "Colon" % typeof(ColonToken),
                         "Default Body" ^ statementMatcher,
                         -"$end" | (p => p.CurrentFunction.SetBreakPoint()),
                     ],
@@ -476,7 +529,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         [
                             "\"when\" Keyword" % typeof(WhenToken),
                             conditionMatcher,
-                            "Colon" % typeof(CaseStartToken),
+                            "Colon" % typeof(ColonToken),
                             -"$true target" | (p => {
                                 JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                                 p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
@@ -515,7 +568,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         [
                             "\"when\" Keyword" % typeof(WhenToken),
                             conditionMatcher,
-                            "Colon" % typeof(CaseStartToken),
+                            "Colon" % typeof(ColonToken),
                             -"$true target" | (p => {
                                 JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                                 p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
@@ -585,7 +638,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         [
                             "\"when\" Keyword" % typeof(WhenToken),
                             conditionMatcher,
-                            "Colon" % typeof(CaseStartToken),
+                            "Colon" % typeof(ColonToken),
                             -"$true target" | (p => {
                                 JumpBlockInfo info = (JumpBlockInfo)p.PeekVariable();
                                 p.CurrentFunction.SetJumpTargets(info.TrueOriginList, p.CurrentFunction.CurrentPosition);
@@ -634,6 +687,16 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "\"print\" Keyword" % typeof(PrintToken),
                         expressionMatcher,
                     ] | (p => p.AddInstruction(typeof(OutputInstruction), [typeof(object)], [((ExpressionBlockInfo)p.PopVariable()).Result])),
+                    "Intermediate Language Instruction" %
+                    [
+                        "hash prefix" % typeof(HashToken),
+                        "Instruction or Block" |
+                        [
+                            ILInstruction,
+                            "Intermediate Language Block" >>
+                                "Instructions" * ILInstruction,
+                        ],
+                    ],
                 ]);
 
             TokenMatcher statementsMatcher =

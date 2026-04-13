@@ -4,14 +4,14 @@ using System.Text.RegularExpressions;
 
 namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 {
-    internal partial class CaseStartTokenType : TokenType
+    internal partial class UnderscoreTokenType : TokenType
     {
-        [GeneratedRegex(@"^:")]
+        [GeneratedRegex(@"^_")]
         public override partial Regex Regex { get; }
 
         public override Predicate<char>? Trim => null;
 
         public override Token GenerateToken(string text, int line, int column) =>
-            new CaseStartToken(line, column);
+            new UnderscoreToken(line, column);
     }
 }

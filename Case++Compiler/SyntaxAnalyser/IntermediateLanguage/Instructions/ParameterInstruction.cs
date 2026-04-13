@@ -1,13 +1,15 @@
-﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
+﻿using System.Collections.Immutable;
+
+namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
     internal class ParameterInstruction(int line, int column, object parameter, ParameterInstruction.ParameterType type) : Instruction(line, column)
     {
-        private static readonly Dictionary<ParameterType, string> typeMap = new()
+        private static readonly ImmutableDictionary<ParameterType, string> typeMap = new Dictionary<ParameterType, string>()
         {
             [ParameterType.In   ] = "cv",
             [ParameterType.Out  ] = "ret",
             [ParameterType.InOut] = "ref",
-        };
+        }.ToImmutableDictionary();
 
         public enum ParameterType { In, Out, InOut };
 

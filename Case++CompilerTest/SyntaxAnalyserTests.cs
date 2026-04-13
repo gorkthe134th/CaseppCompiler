@@ -11,6 +11,7 @@ namespace CaseppCompilerTest
     {
         private ISyntaxAnalyser syntaxAnalyser;
         private ILexicalAnalyser lexicalAnalyser;
+
         private static readonly object[] happyTests =
         [
             new object[] { @"Program\EmptyProgram.c++" },
@@ -66,7 +67,12 @@ namespace CaseppCompilerTest
             new object[] { @"Statements\Break\SimpleBreak.c++" },
             new object[] { @"Statements\Repeat\SimpleRepeat.c++" },
             new object[] { @"Statements\BlockAnywhere.c++" },
+            new object[] { @"ILInstructions\NoInstruction.c++" },
+            new object[] { @"ILInstructions\Label.c++" },
+            new object[] { @"ILInstructions\OnlyLabel.c++" },
+            new object[] { @"ILInstructions\Assignment\Assignment.c++" },
         ];
+
         private static readonly object[] sadTests =
         [
             new object[] { @"EmptyFile.c++", Is.EqualTo("Expected Program: Line 1 Column 1: EOF") },
@@ -147,6 +153,10 @@ namespace CaseppCompilerTest
             new object[] { @"Statements\Print\NoExpression.c++", Is.EqualTo("Expected Expression: Line 4 Column 1: Block End") },
             new object[] { @"Statements\Break\NoCount.c++", Is.EqualTo("Expected Break Count: Line 4 Column 1: Block End") },
             new object[] { @"Statements\Repeat\NoIndex.c++", Is.EqualTo("Expected Repeat Index: Line 4 Column 1: Block End") },
+            
+            new object[] { @"ILInstructions\Expression.c++", Is.EqualTo("Expected Comma: Line 3 Column 9: Add") },
+            new object[] { @"ILInstructions\LessArguments.c++", Is.EqualTo("Expected Comma: Line 3 Column 12: Semi Colon") },
+            new object[] { @"ILInstructions\NoComma.c++", Is.EqualTo("Expected Comma: Line 3 Column 7: Constant 9") },
         ];
 
         [SetUp]

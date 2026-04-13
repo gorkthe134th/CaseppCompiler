@@ -1,12 +1,14 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 
+using System.Collections.Immutable;
+
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
     internal class ComparisonJumpInstruction(int line, int column,
         OperatorToken.OperationType operation, object operand1, object operand2, int? target)
         : JumpInstruction(line, column, target)
     {
-        private static readonly Dictionary<OperatorToken.OperationType, string> operationMap = new()
+        private static readonly ImmutableDictionary<OperatorToken.OperationType, string> operationMap = new Dictionary<OperatorToken.OperationType, string>()
         {
             [OperatorToken.OperationType.EqualTo             ] = "=",
             [OperatorToken.OperationType.LessThan            ] = "<",
@@ -14,7 +16,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
             [OperatorToken.OperationType.NotEqualTo          ] = "<>",
             [OperatorToken.OperationType.LessThanOrEqualTo   ] = "<=",
             [OperatorToken.OperationType.GreaterThanOrEqualTo] = ">=",
-        };
+        }.ToImmutableDictionary();
 
         public override (string?, string?, string?, string?) ToQuad() =>
             (operationMap[operation], operand1.ToString(), operand2.ToString(), Target.ToString());

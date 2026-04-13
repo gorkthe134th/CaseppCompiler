@@ -16,12 +16,14 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
             KeywordTokenType keywordTokenType = new();
             IdentifierTokenType identifierTokenType = new(keywordTokenType);
             AssignmentTokenType assignmentTokenType = new();
-            CaseStartTokenType caseStartTokenType = new();
+            ColonTokenType caseStartTokenType = new();
             BlockTokenType blockTokenType = new();
             ParenthesisTokenType parameterTokenType = new();
             SquareBracketTokenType squareBracketTokenType = new();
             CommaTokenType commaTokenType = new();
             SemiColonTokenType endTokenType = new();
+            HashTokenType hashTokenType = new();
+            UnderscoreTokenType underscoreTokenType = new();
 
             tokenTypes =
             [
@@ -35,6 +37,8 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                 squareBracketTokenType,
                 commaTokenType,
                 endTokenType,
+                hashTokenType,
+                underscoreTokenType,
             ];
         }
 

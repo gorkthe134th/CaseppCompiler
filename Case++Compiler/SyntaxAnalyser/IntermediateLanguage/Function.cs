@@ -1,12 +1,41 @@
 ﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
+using System.Reflection.Emit;
+using System.Runtime.InteropServices;
+
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
     internal class Function(Function? parent = null)
     {
+        private class Label
+        {
+            public int? Position { get; private set; }
+            public IList<int>? JumpsToLabel { get; private set; }
+
+            public Label(IList<int> jumpsToLabel)
+            {
+                Position = null;
+                JumpsToLabel = jumpsToLabel;
+            }
+
+            public Label(int position)
+            {
+                Position = position;
+                JumpsToLabel = null;
+            }
+
+            public void Set(int position, out IList<int> jumpsToLabel)
+            {
+                if (Position != null) throw new InvalidOperationException("Label is already set.");
+                jumpsToLabel = JumpsToLabel ?? [];
+                Position = position;
+            }
+        }
+
         private readonly IList<Instruction> instructions = [];
         private Dictionary<int, uint> breakOrigins = [];
         private readonly Stack<int> repeatTargets = [];
+        private readonly Dictionary<string, Label> labels = [];
 
         public string Name { get => Parent != null ? Parent.Name + "_" + field : field; set => field = value; } = "$Invalid Name$";
 
@@ -59,6 +88,27 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         {
             SetJumpTargets(breakOrigins.Keys, CurrentPosition);
             breakOrigins.Clear();
+        }
+
+        internal void AddJumpToLabel(Instruction instruction, string labelName)
+        {
+            if (instruction is not JumpInstruction jump) throw new InvalidOperationException($"Instruction is not a jump instruction.");
+        
+            if (!labels.TryGetValue(labelName, out Label? label)) labels[labelName] = new Label(jumpsToLabel: [CurrentPosition]);
+            else if (label.Position is not int labelPosition) label.JumpsToLabel?.Add(CurrentPosition);
+            else jump.Target = labelPosition;
+
+            instructions.Add(instruction);
+        }
+
+        internal void SetLabel(string labelName)
+        {
+            if (!labels.TryGetValue(labelName, out Label? label)) labels[labelName] = new Label(position: CurrentPosition);
+            else
+            {
+                label.Set(CurrentPosition, out IList<int> jumpsToLabel);
+                SetJumpTargets(jumpsToLabel, CurrentPosition);
+            }
         }
 
         public IEnumerable<(string?, string?, string?, string?)> ToQuads(int offset)

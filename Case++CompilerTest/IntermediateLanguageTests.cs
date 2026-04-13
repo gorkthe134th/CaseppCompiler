@@ -12,7 +12,8 @@ namespace CaseppCompilerTest
     {
         private ISyntaxAnalyser syntaxAnalyser;
         private ILexicalAnalyser lexicalAnalyser;
-        private static readonly object[] tests =
+
+        private static readonly object[] happyTests =
         [
             new object[] { @"Program\EmptyProgram.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p", null, null),
@@ -635,6 +636,19 @@ namespace CaseppCompilerTest
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
             } },
+            new object[] { @"ILInstructions\Assignment\Assignment.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                (":=", "9", null, "x"),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+        ];
+
+        private static readonly object[] sadTests =
+        [
+            new object[] { @"ILInstructions\Assignment\NoValue.c++", Is.EqualTo("Expected 1st argument: Line 3, Column 15") },
+            new object[] { @"ILInstructions\Assignment\NoNull.c++", Is.EqualTo("Expected no 2nd argument: Line 3, Column 15") },
+            new object[] { @"ILInstructions\Assignment\AssignToConstant.c++", Is.EqualTo("Expected Variable ID for 3rd argument: Line 3, Column 15") },
         ];
 
         [SetUp]
@@ -644,10 +658,10 @@ namespace CaseppCompilerTest
             syntaxAnalyser = SyntaxAnalyserFactory.Create(type);
         }
 
-        [TestCaseSource(nameof(tests))]
-        public void Test(string file, (string?, string?, string?, string?)[] expectedQuads)
+        [TestCaseSource(nameof(happyTests))]
+        public void Happy(string file, (string?, string?, string?, string?)[] expectedQuads)
         {
-            string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"IntermediateLanguageTests\{file}");
+            string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"IntermediateLanguageTests\Happy\{file}");
             using BlockingCollection<Token> tokenQueue = [];
             using IntermediateProgram program = new();
 
@@ -668,6 +682,23 @@ namespace CaseppCompilerTest
                         Assert.Fail("Length mismatch");
                         return;
                 }
+        }
+
+        [TestCaseSource(nameof(sadTests))]
+        public void Sad(string file, NUnit.Framework.Constraints.IResolveConstraint messageConstraint)
+        {
+            string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"IntermediateLanguageTests\Sad\{file}");
+
+            var e = Assert.Throws<SyntaxAnalyserException>(() =>
+            {
+                using BlockingCollection<Token> tokenQueue = [];
+                using IntermediateProgram program = new();
+
+                lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
+                syntaxAnalyser.Analyse(tokenQueue, program);
+            },
+            $"Expected SyntaxAnalyserException");
+            Assert.That(e.Message, messageConstraint);
         }
     }
 }

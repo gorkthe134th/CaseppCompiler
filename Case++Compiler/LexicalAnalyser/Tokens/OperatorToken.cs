@@ -1,8 +1,11 @@
-﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
+﻿using System.Collections.Immutable;
+using System.ComponentModel;
+
+namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
     public class OperatorToken : Token
     {
-        private static readonly Dictionary<string, OperationType> operationMap = new()
+        private static readonly ImmutableDictionary<string, OperationType> operationMap = new Dictionary<string, OperationType>()
         {
             ["not"] = OperationType.Not,
             [ "+" ] = OperationType.Add,
@@ -17,7 +20,31 @@
             [">=" ] = OperationType.GreaterThanOrEqualTo,
             ["and"] = OperationType.And,
             ["or" ] = OperationType.Or,
-        };
+        }.ToImmutableDictionary();
+
+        public static ImmutableDictionary<OperationType, OperationCategory> CategoryMap { get; } = new Dictionary<OperationType, OperationCategory>()
+        {
+            [OperationType.Not                 ] = OperationCategory.Logical,
+            [OperationType.Add                 ] = OperationCategory.Numerical,
+            [OperationType.Subtract            ] = OperationCategory.Numerical,
+            [OperationType.Multiply            ] = OperationCategory.Numerical,
+            [OperationType.Divide              ] = OperationCategory.Numerical,
+            [OperationType.EqualTo             ] = OperationCategory.Comparison,
+            [OperationType.LessThan            ] = OperationCategory.Comparison,
+            [OperationType.GreaterThan         ] = OperationCategory.Comparison,
+            [OperationType.NotEqualTo          ] = OperationCategory.Comparison,
+            [OperationType.LessThanOrEqualTo   ] = OperationCategory.Comparison,
+            [OperationType.GreaterThanOrEqualTo] = OperationCategory.Comparison,
+            [OperationType.And                 ] = OperationCategory.Logical,
+            [OperationType.Or                  ] = OperationCategory.Logical,
+        }.ToImmutableDictionary();
+
+        public enum OperationCategory
+        {
+            Logical,
+            Numerical,
+            Comparison,
+        }
 
         public enum OperationType
         {

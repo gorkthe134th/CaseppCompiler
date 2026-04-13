@@ -35,124 +35,133 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <Content Include="IntermediateLanguageTests\Conditions\InvertedCondition.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Conditions\InvertedCondition.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Conditions\CompositeCondition.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Conditions\CompositeCondition.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Conditions\SimpleCondition.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Conditions\SimpleCondition.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Expressions\SimpleExpression.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Expressions\SimpleExpression.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Functions\LocalFunctionCall.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Functions\LocalFunctionCall.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Functions\NestedFunctionCall.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Functions\NestedFunctionCall.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Functions\FunctionCall.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Functions\FunctionCall.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Functions\EmptyFunction.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Functions\EmptyFunction.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Functions\NestedFunctions.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Functions\NestedFunctions.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Break\BreakZero.c++">
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Assignment\Assignment.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Repeat\RepeatZero.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Break\BreakZero.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Repeat\RepeatBlock.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Repeat\RepeatZero.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Repeat\RepeatFunction.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Repeat\RepeatBlock.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Repeat\RepeatProgram.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Repeat\RepeatFunction.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Break\BreakBlock.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Repeat\RepeatProgram.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Break\BreakFunction.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Break\BreakBlock.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Break\BreakProgram.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Break\BreakFunction.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\ForCase\ManyCases.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Break\BreakProgram.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\ForCase\NoCases.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\ForCase\ManyCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\InCase\ManyCases.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\ForCase\NoCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\InCase\NoCases.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\InCase\ManyCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\SwitchCase\ManyCases.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\InCase\NoCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\SwitchCase\NoCases.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\SwitchCase\ManyCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\UntilCase\ManyCases.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\SwitchCase\NoCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\UntilCase\NoCases.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\UntilCase\ManyCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\WhileCase\ManyCases.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\UntilCase\NoCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\WhileCase\NoCases.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\WhileCase\ManyCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\While\BlockWhileBlockElse.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\WhileCase\NoCases.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\While\BlockWhileNoElse.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\While\BlockWhileBlockElse.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Program\EmptyProgram.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\While\BlockWhileNoElse.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\While\EmptyWhileEmptyElse.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Program\EmptyProgram.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\While\EmptyWhileNoElse.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\While\EmptyWhileEmptyElse.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Assignment\SimpleAssignment.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\While\EmptyWhileNoElse.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\If\BlockIfBlockElse.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Assignment\SimpleAssignment.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\If\BlockIfNoElse.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\If\BlockIfBlockElse.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\If\EmptyIfEmptyElse.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\If\BlockIfNoElse.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\If\EmptyIfNoElse.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\If\EmptyIfEmptyElse.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Input\SimpleInput.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\If\EmptyIfNoElse.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Print\SimplePrint.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Input\SimpleInput.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Statements\Return\SimpleReturn.c++">
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Print\SimplePrint.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\Statements\Return\SimpleReturn.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Assignment\NoValue.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Assignment\NoNull.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Conditions\Condition.c++">
@@ -180,6 +189,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Functions\EmptyFunction.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\ILInstructions\OnlyLabel.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\ILInstructions\Label.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\ILInstructions\Assignment\Assignment.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Program\EmptyProgram.c++">
@@ -390,6 +408,21 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Sad\Functions\Parameters\NoIDIn.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Assignment\AssignToConstant.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\ILInstructions\NoComma.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\ILInstructions\LessArguments.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\ILInstructions\Expression.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\ILInstructions\NoInstruction.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Sad\Program\NoBody.c++">
