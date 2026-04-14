@@ -1,7 +1,6 @@
 ﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
@@ -24,11 +23,12 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                 JumpsToLabel = null;
             }
 
-            public void Set(int position, out IList<int> jumpsToLabel)
+            public bool TrySet(int position, [NotNullWhen(true)] out IList<int>? jumpsToLabel)
             {
-                if (Position != null) throw new InvalidOperationException("Label is already set.");
+                if (Position != null) { jumpsToLabel = null; return false; }
                 jumpsToLabel = JumpsToLabel ?? [];
                 Position = position;
+                return true;
             }
         }
 
@@ -101,14 +101,12 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             instructions.Add(instruction);
         }
 
-        internal void SetLabel(string labelName)
+        internal bool TrySetLabel(string labelName)
         {
             if (!labels.TryGetValue(labelName, out Label? label)) labels[labelName] = new Label(position: CurrentPosition);
-            else
-            {
-                label.Set(CurrentPosition, out IList<int> jumpsToLabel);
-                SetJumpTargets(jumpsToLabel, CurrentPosition);
-            }
+            else if (!label.TrySet(CurrentPosition, out IList<int>? jumpsToLabel)) return false;
+            else SetJumpTargets(jumpsToLabel, CurrentPosition);
+            return true;
         }
 
         public IEnumerable<(string?, string?, string?, string?)> ToQuads(int offset)

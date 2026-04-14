@@ -642,13 +642,118 @@ namespace CaseppCompilerTest
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
             } },
+            new object[] { @"ILInstructions\Input\Input.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                ("in", "x", null, null),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+            new object[] { @"ILInstructions\Output\Output.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                ("out", "9", null, null),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+            new object[] { @"ILInstructions\Halt\Halt.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                ("halt", null, null, null),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+            new object[] { @"ILInstructions\Par\Par.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                ("par", "9", "cv", null),
+                ("par", "9", "ref", null),
+                ("par", "9", "ret", null),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+            new object[] { @"ILInstructions\Call\Call.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                ("call", "f", null, null),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+            new object[] { @"ILInstructions\Return\Return.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                ("retv", "9", null, null),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+            new object[] { @"ILInstructions\Operation\Operation.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                ("+", "5", "4", "x"),
+                ("-", "11", "2", "x"),
+                ("*", "3", "3", "x"),
+                ("/", "19", "2", "x"),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+            new object[] { @"ILInstructions\Jump\Jump.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                ("jump", null, null, "2"),
+                (":=", "9", null, "x"),
+                ("jump", null, null, "3"),
+                (":=", "9", null, "x"),
+                ("jump", null, null, "4"),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+            new object[] { @"ILInstructions\Comparison\Comparison.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                (">", "x", "9", "2"),
+                (":=", "9", null, "x"),
+                ("=", "x", "9", "3"),
+                (":=", "9", null, "x"),
+                ("<", "x", "9", "4"),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
         ];
 
         private static readonly object[] sadTests =
         [
+            new object[] { @"ILInstructions\LabelAlreadyExists.c++", Is.EqualTo("Label \"l\" already exists: Line 3, Column 12") },
+
             new object[] { @"ILInstructions\Assignment\NoValue.c++", Is.EqualTo("Expected 1st argument: Line 3, Column 15") },
             new object[] { @"ILInstructions\Assignment\NoNull.c++", Is.EqualTo("Expected no 2nd argument: Line 3, Column 15") },
             new object[] { @"ILInstructions\Assignment\AssignToConstant.c++", Is.EqualTo("Expected Variable ID for 3rd argument: Line 3, Column 15") },
+
+            new object[] { @"ILInstructions\Input\InputToConstant.c++", Is.EqualTo("Expected Variable ID for 1st argument: Line 3, Column 15") },
+            new object[] { @"ILInstructions\Input\NoNull1.c++", Is.EqualTo("Expected no 2nd argument: Line 3, Column 15") },
+            new object[] { @"ILInstructions\Input\NoNull2.c++", Is.EqualTo("Expected no 3rd argument: Line 3, Column 15") },
+
+            new object[] { @"ILInstructions\Output\OutputNull.c++", Is.EqualTo("Expected 1st argument: Line 3, Column 16") },
+            new object[] { @"ILInstructions\Output\NoNull1.c++", Is.EqualTo("Expected no 2nd argument: Line 3, Column 16") },
+            new object[] { @"ILInstructions\Output\NoNull2.c++", Is.EqualTo("Expected no 3rd argument: Line 3, Column 16") },
+
+            new object[] { @"ILInstructions\Halt\NoNull1.c++", Is.EqualTo("Expected no 1st argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Halt\NoNull2.c++", Is.EqualTo("Expected no 2nd argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Halt\NoNull3.c++", Is.EqualTo("Expected no 3rd argument: Line 3, Column 17") },
+
+            new object[] { @"ILInstructions\Par\NoValue.c++", Is.EqualTo("Expected 1st argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Par\NoType.c++", Is.EqualTo("Expected Parameter Type for 2nd argument: Line 3, Column 16") },
+            new object[] { @"ILInstructions\Par\NoNull.c++", Is.EqualTo("Expected no 3rd argument: Line 3, Column 17") },
+
+            new object[] { @"ILInstructions\Call\CallConstant.c++", Is.EqualTo("Expected Function Name for 1st argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Call\NoNull1.c++", Is.EqualTo("Expected no 2nd argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Call\NoNull2.c++", Is.EqualTo("Expected no 3rd argument: Line 3, Column 17") },
+
+            new object[] { @"ILInstructions\Return\ReturnNull.c++", Is.EqualTo("Expected 1st argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Return\NoNull1.c++", Is.EqualTo("Expected no 2nd argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Return\NoNull2.c++", Is.EqualTo("Expected no 3rd argument: Line 3, Column 17") },
+
+            new object[] { @"ILInstructions\Operation\NoOperand1.c++", Is.EqualTo("Expected 1st argument: Line 3, Column 14") },
+            new object[] { @"ILInstructions\Operation\NoOperand2.c++", Is.EqualTo("Expected 2nd argument: Line 3, Column 14") },
+            new object[] { @"ILInstructions\Operation\NoVariable.c++", Is.EqualTo("Expected Variable ID for 3rd argument: Line 3, Column 14") },
+
+            new object[] { @"ILInstructions\Jump\NoNull1.c++", Is.EqualTo("Expected no 1st argument: Line 3, Column 20") },
+            new object[] { @"ILInstructions\Jump\NoNull2.c++", Is.EqualTo("Expected no 2nd argument: Line 3, Column 20") },
+            new object[] { @"ILInstructions\Jump\NotLabel.c++", Is.EqualTo("Expected Label Name for 3rd argument: Line 3, Column 20") },
+
+            new object[] { @"ILInstructions\Comparison\NoOperand1.c++", Is.EqualTo("Expected 1st argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Comparison\NoOperand2.c++", Is.EqualTo("Expected 2nd argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Comparison\NotLabel.c++", Is.EqualTo("Expected Label Name for 3rd argument: Line 3, Column 17") },
         ];
 
         [SetUp]

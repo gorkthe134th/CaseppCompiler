@@ -64,8 +64,8 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
                 case Opcode.Call:
                     {
                         if (arg1 is not string function) throw new SyntaxAnalyserException($"Expected Function Name for 1st argument: Line {line}, Column {column}");
-                        if (arg2 is not null) throw new SyntaxAnalyserException($"Expected no 1st argument: Line {line}, Column {column}");
-                        if (arg3 is not null) throw new SyntaxAnalyserException($"Expected no 2nd argument: Line {line}, Column {column}");
+                        if (arg2 is not null) throw new SyntaxAnalyserException($"Expected no 2nd argument: Line {line}, Column {column}");
+                        if (arg3 is not null) throw new SyntaxAnalyserException($"Expected no 3rd argument: Line {line}, Column {column}");
                         return new CallInstruction(line, column, function);
                     }
                 case Opcode.Return:
@@ -86,9 +86,13 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
             {
                 case OperatorToken.OperationCategory.Logical:
                 case OperatorToken.OperationCategory.Numerical:
+                    if (arg1 is null) throw new SyntaxAnalyserException($"Expected 1st argument: Line {line}, Column {column}");
+                    if (arg2 is null) throw new SyntaxAnalyserException($"Expected 2nd argument: Line {line}, Column {column}");
                     if (arg3 is not string varID) throw new SyntaxAnalyserException($"Expected Variable ID for 3rd argument: Line {line}, Column {column}");
                     return new OperationInstruction(line, column, operation, arg1, arg2, varID);
                 case OperatorToken.OperationCategory.Comparison:
+                    if (arg1 is null) throw new SyntaxAnalyserException($"Expected 1st argument: Line {line}, Column {column}");
+                    if (arg2 is null) throw new SyntaxAnalyserException($"Expected 2nd argument: Line {line}, Column {column}");
                     return new ComparisonJumpInstruction(line, column, operation, arg1, arg2, null);
                 default:
                     throw new SyntaxAnalyserException($"{operation} is not a valid Operation Type: Line {line}, Column {column}");

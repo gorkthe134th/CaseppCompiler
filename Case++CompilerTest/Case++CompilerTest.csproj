@@ -62,6 +62,33 @@
     <Content Include="IntermediateLanguageTests\Happy\Functions\NestedFunctions.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Comparison\Comparison.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Jump\Jump.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Operation\Operation.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Halt\Halt.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Call\Call.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Return\Return.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Par\Par.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Output\Output.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Input\Input.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Assignment\Assignment.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -158,6 +185,90 @@
     <Content Include="IntermediateLanguageTests\Happy\Statements\Return\SimpleReturn.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Comparison\NoOperand1.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Comparison\NoOperand2.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Comparison\NotLabel.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Jump\NotLabel.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Jump\NoNull1.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Jump\NoNull2.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\LabelAlreadyExists.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Operation\NoVariable.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Operation\NoOperand1.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Operation\NoOperand2.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Halt\NoNull1.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Halt\NoNull2.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Halt\NoNull3.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Call\CallConstant.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Call\NoNull1.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Call\NoNull2.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Return\NoNull1.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Return\NoNull2.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Return\ReturnNull.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Par\NoType.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Par\NoNull.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Par\NoValue.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Output\OutputNull.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Output\NoNull1.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Output\NoNull2.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Input\InputToConstant.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Input\NoNull1.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Input\NoNull2.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Assignment\NoValue.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -197,7 +308,10 @@
     <Content Include="SyntaxAnalyserTests\Happy\ILInstructions\Label.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="SyntaxAnalyserTests\Happy\ILInstructions\Assignment\Assignment.c++">
+    <Content Include="SyntaxAnalyserTests\Happy\ILInstructions\Block.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Happy\ILInstructions\SimpleInstruction.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Program\EmptyProgram.c++">
@@ -411,6 +525,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Assignment\AssignToConstant.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SyntaxAnalyserTests\Sad\ILInstructions\SemiColonInBlock.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Sad\ILInstructions\NoComma.c++">

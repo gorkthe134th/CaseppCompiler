@@ -70,7 +70,8 @@ namespace CaseppCompilerTest
             new object[] { @"ILInstructions\NoInstruction.c++" },
             new object[] { @"ILInstructions\Label.c++" },
             new object[] { @"ILInstructions\OnlyLabel.c++" },
-            new object[] { @"ILInstructions\Assignment\Assignment.c++" },
+            new object[] { @"ILInstructions\SimpleInstruction.c++" },
+            new object[] { @"ILInstructions\Block.c++" },
         ];
 
         private static readonly object[] sadTests =
@@ -157,6 +158,7 @@ namespace CaseppCompilerTest
             new object[] { @"ILInstructions\Expression.c++", Is.EqualTo("Expected Comma: Line 3 Column 9: Add") },
             new object[] { @"ILInstructions\LessArguments.c++", Is.EqualTo("Expected Comma: Line 3 Column 12: Semi Colon") },
             new object[] { @"ILInstructions\NoComma.c++", Is.EqualTo("Expected Comma: Line 3 Column 7: Constant 9") },
+            new object[] { @"ILInstructions\SemiColonInBlock.c++", Is.EqualTo("Expected Block End Token: Line 4 Column 14: Semi Colon") },
         ];
 
         [SetUp]

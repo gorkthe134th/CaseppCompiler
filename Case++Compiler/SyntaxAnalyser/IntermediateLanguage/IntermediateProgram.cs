@@ -92,7 +92,10 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             currentFunction.AddInstruction(new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, currentFunction.GetRepeatPoint(index)));
         }
 
-        internal void SetLabel(string labelName) => CurrentFunction.SetLabel(labelName);
+        internal void SetLabel(string labelName)
+        {
+            if (!CurrentFunction.TrySetLabel(labelName)) throw new SyntaxAnalyserException($"Label \"{labelName}\" already exists: Line {CurrentLine}, Column {CurrentColumn}");
+        }
 
         internal void PushVariable(object variable) => currentVariables.Push(variable);
 
