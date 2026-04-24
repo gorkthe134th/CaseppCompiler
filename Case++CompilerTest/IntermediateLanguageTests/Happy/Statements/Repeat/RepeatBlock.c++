@@ -1,5 +1,6 @@
 ﻿program p
 {
+	declare x;
 	x := 9; // buffer 1
 	{
 		x := 9; // buffer 2

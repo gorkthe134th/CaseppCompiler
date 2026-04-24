@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
     internal class ComparisonJumpInstruction(int line, int column,
-        OperatorToken.OperationType operation, object operand1, object operand2, int? target)
+        OperatorToken.OperationType operation, Value operand1, Value operand2, int? target)
         : JumpInstruction(line, column, target)
     {
         private static readonly ImmutableDictionary<OperatorToken.OperationType, string> operationMap = new Dictionary<OperatorToken.OperationType, string>()

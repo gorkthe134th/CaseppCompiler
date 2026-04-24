@@ -1,7 +1,11 @@
 ﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Symbols;
 
 using System.Collections.Concurrent;
+using System.Data.Common;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
@@ -24,66 +28,58 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal int CurrentColumn { private get; set; } = 0;
 
-        internal void CreateFunction() => currentFunction = new Function(parent: currentFunction);
+        internal SyntaxAnalyserException CreateException(string message) => new($"{message}: Line {CurrentLine}, Column {CurrentColumn}");
 
-        internal Function CurrentFunction => currentFunction ?? throw new InvalidOperationException("No available functions.");
+        private Function CurrentFunction => currentFunction ?? throw new InvalidOperationException("No available functions.");
 
-        internal void FinalizeFunction(Type finalInstructionType, IEnumerable<Type> finalInstructionParameterTypes, IEnumerable<object> finalInstructionParameters)
+        internal int CurrentPosition => CurrentFunction.CurrentPosition;
+
+        internal void CreateFunction(string name)
+        {
+            Function newFunction = new(name, currentFunction);
+            FunctionSymbol functionSymbol = new(newFunction);
+            if (currentFunction != null && !currentFunction.TryAddSymbol(functionSymbol))
+                throw CreateException($"Symbol \"{name}\" already exists");
+            currentVariables.Push(functionSymbol);
+            currentFunction = newFunction;
+        }
+
+        internal void FinalizeFunction<T>(Func<int, int, T> create) where T : Instruction
         {
             Function function = CurrentFunction;
             function.SetAllBreakTargets();
-            AddInstruction(finalInstructionType, finalInstructionParameterTypes, finalInstructionParameters);
+            CreateInstruction(create);
             Functions.Add(function);
             currentFunction = function.Parent;
         }
 
-        internal void AddInstruction(Type type, IEnumerable<Type> parameterTypes, IEnumerable<object> parameters)
+        internal T CreateInstruction<T>(Func<int, int, T> create) where T : Instruction
         {
-            ConstructorInfo constructor = type.GetConstructor([typeof(int), typeof(int), ..parameterTypes])
-                ?? throw new ArgumentException($"Cannot create {type} using parameter types \"{string.Concat(parameterTypes)}\"");
-            CurrentFunction.AddInstruction((Instruction)constructor.Invoke([CurrentLine, CurrentColumn, ..parameters]));
+            T instruction = create(CurrentLine, CurrentColumn);
+            CurrentFunction.AddInstruction(instruction);
+            return instruction;
         }
 
-        internal void AddIntermediateLanguageInstruction(object arg0, object arg1, object arg2, object arg3)
-        {
-            if (arg0 is OperatorToken.OperationType operation)
-            {
-                if (OperatorToken.CategoryMap[operation] == OperatorToken.OperationCategory.Comparison)
-                {
-                    if (arg3 is not string labelName) throw new SyntaxAnalyserException($"Expected Label Name for 3rd argument: Line {CurrentLine}, Column {CurrentColumn}");
-                    CurrentFunction.AddJumpToLabel(InstructionFactory.Create(operation, arg1, arg2, null!, CurrentLine, CurrentColumn), labelName);
-                }
-                else CurrentFunction.AddInstruction(InstructionFactory.Create(operation, arg1, arg2, arg3, CurrentLine, CurrentColumn));
-            }
-            else if (arg0 is InstructionFactory.Opcode opcode)
-            {
-                if (opcode == InstructionFactory.Opcode.Jump)
-                {
-                    if (arg3 is not string labelName) throw new SyntaxAnalyserException($"Expected Label Name for 3rd argument: Line {CurrentLine}, Column {CurrentColumn}");
-                    CurrentFunction.AddJumpToLabel(InstructionFactory.Create(opcode, arg1, arg2, null!, CurrentLine, CurrentColumn), labelName);
-                }
-                else CurrentFunction.AddInstruction(InstructionFactory.Create(opcode, arg1, arg2, arg3, CurrentLine, CurrentColumn));
-            }
-            else throw new InvalidOperationException($"Expected Label Name for 3rd argument: Line {CurrentLine}, Column {CurrentColumn}");
-        }
+        internal void AddIntermediateLanguageInstruction(InstructionFactory.Argument arg0, InstructionFactory.Argument arg1, InstructionFactory.Argument arg2, InstructionFactory.Argument arg3) =>
+            CurrentFunction.AddInstruction(InstructionFactory.Create(arg0, arg1, arg2, arg3, CurrentLine, CurrentColumn));
 
-        internal void AddJumpInstructions(Type type, IEnumerable<Type> parameterTypes, IEnumerable<object> parameters, int start)
+        internal void AddJumpInstructions<T>(Func<int, int, T> create, int start) where T : JumpInstruction
         {
             Function currentFunction = CurrentFunction;
-            List<int> trueList = [currentFunction.CurrentPosition];
-            AddInstruction(type, parameterTypes, parameters);
-            List<int> falseList = [currentFunction.CurrentPosition];
-            currentFunction.AddInstruction(new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, null));
-            currentVariables.Push(new JumpBlockInfo(trueList, falseList, start));
+            JumpInstruction trueJump = CreateInstruction(create);
+            JumpInstruction falseJump = new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, null);
+            currentFunction.AddInstruction(falseJump);
+            currentVariables.Push(new JumpBlockInfo([trueJump], [falseJump], start));
         }
 
         internal void AddBreakInstruction(uint count)
         {
             if (count == 0) return;
             Function currentFunction = CurrentFunction;
-            currentFunction.AddBreak(count);
-            currentFunction.AddInstruction(new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, null));
+            currentFunction.AddBreak(new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, null), count);
         }
+
+        internal void SetBreakPoint() => CurrentFunction.SetBreakPoint();
 
         internal void AddRepeatInstruction(uint index)
         {
@@ -92,18 +88,82 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             currentFunction.AddInstruction(new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, currentFunction.GetRepeatPoint(index)));
         }
 
+        internal void SetRepeatPoint() => CurrentFunction.SetRepeatPoint();
+
         internal void SetLabel(string labelName)
         {
-            if (!CurrentFunction.TrySetLabel(labelName)) throw new SyntaxAnalyserException($"Label \"{labelName}\" already exists: Line {CurrentLine}, Column {CurrentColumn}");
+            if (!CurrentFunction.TryGetSymbol(labelName, out Symbol? symbol))
+            {
+                AddSymbol(new LabelSymbol(labelName, CurrentPosition));
+                return;
+            }
+            if (symbol is not LabelSymbol label) throw CreateException($"Symbol \"{labelName}\" already exists");
+            if (!label.TrySet(CurrentPosition)) throw CreateException($"Label \"{labelName}\" already exists");
+        }
+
+        internal void EnterScope() => CurrentFunction.EnterScope();
+
+        internal void ExitScope() => CurrentFunction.ExitScope();
+
+        internal void AddSymbol(Symbol symbol)
+        {
+            if (!CurrentFunction.TryAddSymbol(symbol)) throw CreateException($"Symbol \"{symbol.Name}\" already exists");
+        }
+
+        internal delegate bool SymbolPredicate<T>(T symbol, [NotNullWhen(false)] out string? errorMessage);
+
+        internal T GetSymbolInScope<T>(string name, SymbolPredicate<T>? predicate = null) where T : Symbol
+        {
+            if (!CurrentFunction.TryGetSymbol(name, out Symbol? symbol))
+                throw CreateException($"Symbol \"{name}\" does not exists in the current scope");
+            if (symbol is not T s)
+                throw CreateException($"Symbol \"{name}\" is not a {typeof(T).Name.Replace("Symbol", null)}");
+            if (predicate?.Invoke(s, out string? errorMessage) == false)
+                throw CreateException(errorMessage);
+            return s;
+        }
+
+        internal bool TryGetSymbolInScope<T>(string name, [NotNullWhen(true)] out T? symbol) where T : Symbol
+        {
+            if (!CurrentFunction.TryGetSymbol(name, out Symbol? s) || s is not T ts)
+            {
+                symbol = null;
+                return false;
+            }
+            symbol = ts;
+            return true;
         }
 
         internal void PushVariable(object variable) => currentVariables.Push(variable);
 
-        internal object PopVariable() => currentVariables.Pop();
+        internal T PopVariable<T>() => CastVariable<T>(currentVariables.Pop());
 
-        internal object PeekVariable() => currentVariables.Peek();
+        internal T PeekVariable<T>() => CastVariable<T>(currentVariables.Peek());
 
-        internal string GenerateTemp() => $"_T{nextTempIndex++}";
+        private static T CastVariable<T>(object variable) =>
+            variable is T v ? v : throw new InvalidOperationException($"Variable \"{variable}\" is not compatible with type {typeof(T)}");
+
+        internal void AddParameterToCallBlock(IActualParameter actualParameter)
+        {
+            FunctionCallBlockInfo callBlockInfo = PeekVariable<FunctionCallBlockInfo>();
+            if (!callBlockInfo.TryAddParameter(actualParameter, out string? errorMessage))
+            {
+                if (errorMessage == null) throw CreateException($"Expected no more parameters for function \"{callBlockInfo.FunctionSymbol.Name}\"");
+                else throw CreateException($"{errorMessage}: Function \"{callBlockInfo.FunctionSymbol.Name}\"");
+            }
+        }
+
+        internal VariableSymbol GenerateTemp()
+        {
+            var temp = new VariableSymbol($"_T{nextTempIndex++}", false);
+            AddSymbol(temp);
+            return temp;
+        }
+
+        internal void CheckNoLeftoverVariables()
+        {
+            if (currentVariables.Count != 0) throw new UnreachableException($"Leftover Variables: {string.Join(',', currentVariables)}");
+        }
 
         public IEnumerable<(string?, string?, string?, string?)> ToQuads()
         {

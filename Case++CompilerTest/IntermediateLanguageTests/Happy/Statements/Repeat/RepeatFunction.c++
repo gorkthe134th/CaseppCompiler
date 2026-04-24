@@ -1,5 +1,6 @@
 ﻿program p
 {
+	declare x;
 	function f()
 	{
 		x := 9; // buffer 1

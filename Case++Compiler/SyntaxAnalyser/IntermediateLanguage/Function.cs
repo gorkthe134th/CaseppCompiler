@@ -1,45 +1,22 @@
 ﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
+using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Symbols;
 
 using System.Diagnostics.CodeAnalysis;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
-    internal class Function(Function? parent = null)
+    internal class Function(string name, Function? parent = null)
     {
-        private class Label
-        {
-            public int? Position { get; private set; }
-            public IList<int>? JumpsToLabel { get; private set; }
+        public Function? Parent { get; } = parent;
 
-            public Label(IList<int> jumpsToLabel)
-            {
-                Position = null;
-                JumpsToLabel = jumpsToLabel;
-            }
+        public string Name { get; } = name;
 
-            public Label(int position)
-            {
-                Position = position;
-                JumpsToLabel = null;
-            }
-
-            public bool TrySet(int position, [NotNullWhen(true)] out IList<int>? jumpsToLabel)
-            {
-                if (Position != null) { jumpsToLabel = null; return false; }
-                jumpsToLabel = JumpsToLabel ?? [];
-                Position = position;
-                return true;
-            }
-        }
+        public string FullName => Parent != null ? Parent.FullName + "_" + Name : Name;
 
         private readonly IList<Instruction> instructions = [];
-        private Dictionary<int, uint> breakOrigins = [];
+        private Scope currentScope = new(parent?.currentScope);
+        private Dictionary<JumpInstruction, uint> breakOrigins = [];
         private readonly Stack<int> repeatTargets = [];
-        private readonly Dictionary<string, Label> labels = [];
-
-        public string Name { get => Parent != null ? Parent.Name + "_" + field : field; set => field = value; } = "$Invalid Name$";
-
-        public Function? Parent { get; } = parent;
 
         public IReadOnlyList<Instruction> Instructions => instructions.AsReadOnly();
 
@@ -49,14 +26,11 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void AddInstruction(Instruction instruction) => instructions.Add(instruction);
 
-        internal void SetJumpTargets(IEnumerable<int> positions, int target)
+        internal void AddBreak(JumpInstruction jump, uint count)
         {
-            foreach (int p in positions)
-                if (instructions[p] is JumpInstruction jump) jump.Target = target;
-                else throw new InvalidOperationException($"Instruction {p} is not a jump instruction.");
+            instructions.Add(jump);
+            breakOrigins.Add(jump, count);
         }
-
-        internal void AddBreak(uint count) => breakOrigins.Add(CurrentPosition, count);
 
         internal int GetRepeatPoint(uint index)
         {
@@ -77,41 +51,30 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             repeatTargets.Pop();
 
             var lookup = breakOrigins
-                .Select(kvp => new KeyValuePair<int, uint>(kvp.Key, kvp.Value - 1))
+                .Select(kvp => new KeyValuePair<JumpInstruction, uint>(kvp.Key, kvp.Value - 1))
                 .ToLookup(kvp => kvp.Value > 0);
 
             breakOrigins = lookup[true].ToDictionary();
-            SetJumpTargets(lookup[false].Select(kvp => kvp.Key), CurrentPosition);
+           lookup[false].Select(kvp => kvp.Key).Targets = CurrentPosition;
         }
 
         internal void SetAllBreakTargets()
         {
-            SetJumpTargets(breakOrigins.Keys, CurrentPosition);
+            breakOrigins.Keys.Targets = CurrentPosition;
             breakOrigins.Clear();
         }
 
-        internal void AddJumpToLabel(Instruction instruction, string labelName)
-        {
-            if (instruction is not JumpInstruction jump) throw new InvalidOperationException($"Instruction is not a jump instruction.");
-        
-            if (!labels.TryGetValue(labelName, out Label? label)) labels[labelName] = new Label(jumpsToLabel: [CurrentPosition]);
-            else if (label.Position is not int labelPosition) label.JumpsToLabel?.Add(CurrentPosition);
-            else jump.Target = labelPosition;
+        internal void EnterScope() => currentScope = new Scope(parent: currentScope);
 
-            instructions.Add(instruction);
-        }
+        internal void ExitScope() => currentScope = currentScope.Parent ?? throw new InvalidOperationException("Cannot exit head function scope.");
 
-        internal bool TrySetLabel(string labelName)
-        {
-            if (!labels.TryGetValue(labelName, out Label? label)) labels[labelName] = new Label(position: CurrentPosition);
-            else if (!label.TrySet(CurrentPosition, out IList<int>? jumpsToLabel)) return false;
-            else SetJumpTargets(jumpsToLabel, CurrentPosition);
-            return true;
-        }
+        internal bool TryAddSymbol(Symbol symbol) => currentScope.TryAddSymbol(symbol);
+
+        internal bool TryGetSymbol(string name, [NotNullWhen(true)] out Symbol? symbol) => currentScope.TryGetSymbol(name, out symbol);
 
         public IEnumerable<(string?, string?, string?, string?)> ToQuads(int offset)
         {
-            yield return ("begin_block", Name, null, null);
+            yield return ("begin_block", FullName, null, null);
             foreach (var instruction in instructions)
             {
                 if (instruction is JumpInstruction jump)
@@ -125,7 +88,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                 }
                 yield return instruction.ToQuad();
             }
-            yield return ("end_block", Name, null, null);
+            yield return ("end_block", FullName, null, null);
         }
     }
 }

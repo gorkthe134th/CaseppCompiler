@@ -1,5 +1,6 @@
 ﻿program p
 {
+	declare x;
 	/*
 	expect
 	- a "p_f_g" block with an instruction returning 9 and an instruction returning 0 (return 0 is just a fallback in case there was no return)

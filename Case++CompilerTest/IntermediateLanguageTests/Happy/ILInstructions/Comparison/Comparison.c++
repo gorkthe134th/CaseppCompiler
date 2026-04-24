@@ -1,5 +1,6 @@
 ﻿program p
 {
+	declare x;
 	# {
 		>, x, 9, l1
 		l1: :=, 9, _, x

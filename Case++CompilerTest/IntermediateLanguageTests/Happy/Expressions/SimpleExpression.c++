@@ -1,6 +1,7 @@
 ﻿program p
 {
-	x := 9; // expect 9
+	declare x, i;
+	i := 0; // expect 0
 	x := +9; // expect adding 9 to 0 and returning the result
 	x := -9; // expect subtracting 9 from 0 and returning the result
 	x := (9); // expect 9

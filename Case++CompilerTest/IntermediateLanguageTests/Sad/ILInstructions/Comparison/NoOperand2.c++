@@ -1,4 +1,4 @@
 ﻿program p
 {
-	# l: <, x, _, l;
+	# l: <, 9, cv, l;
 }

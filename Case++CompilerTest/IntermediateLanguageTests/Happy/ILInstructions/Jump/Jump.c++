@@ -1,5 +1,6 @@
 ﻿program p
 {
+	declare x;
 	# {
 		jump, _, _, l1
 		l1: :=, 9, _, x

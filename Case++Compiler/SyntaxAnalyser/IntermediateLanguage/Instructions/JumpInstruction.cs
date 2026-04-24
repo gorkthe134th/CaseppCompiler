@@ -4,4 +4,12 @@
     {
         public int? Target { get; set; } = target;
     }
+
+    internal static class JumpInstructionExtensions
+    {
+        extension(IEnumerable<JumpInstruction> jumps)
+        {
+            public int? Targets { set { foreach (var jump in jumps) jump.Target = value; } }
+        }
+    }
 }

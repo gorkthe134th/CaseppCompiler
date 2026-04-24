@@ -1,5 +1,6 @@
 ﻿program p
 {
+	declare x;
 	# +, 5, 4, x;
 	# -, 11, 2, x;
 	# *, 3, 3, x;
