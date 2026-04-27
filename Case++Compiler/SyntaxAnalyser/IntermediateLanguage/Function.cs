@@ -82,7 +82,10 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal bool TryGetSymbol(string name, [NotNullWhen(true)] out Symbol? symbol) => currentScope.TryGetSymbol(name, out symbol);
 
-        internal void InitialiseVariable(VariableSymbol variable) => variablesInitialised.Add(variable);
+        internal void InitialiseVariable(VariableSymbol variable)
+        {
+            if (!variablesUsed.Contains(variable)) variablesInitialised.Add(variable);
+        }
 
         internal bool TryUseVariable(VariableSymbol variable)
         {
@@ -91,10 +94,23 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             return true;
         }
 
-        internal void MergeVariableDependancies(Function other)
+        internal bool MergeVariableDependancies(Function other, [NotNullWhen(false)] out IEnumerable<VariableSymbol>? uninitialisedVariables)
         {
-            variablesInitialised.UnionWith(other.variablesInitialised.Except(variablesUsed));
-            variablesUsed.UnionWith(other.variablesUsed.Except(variablesInitialised));
+            variablesInitialised.UnionWith(from variable in other.variablesInitialised
+                                           where !variablesUsed.Contains(variable)
+                                           select variable);
+            var usedVariableGroups = from variable in other.variablesUsed
+                                     where !variablesInitialised.Contains(variable)
+                                     group variable by variable.DeclaratingScope == currentScope;
+            uninitialisedVariables = null;
+            IEnumerable<VariableSymbol>? initialisedVariables = null;
+            foreach (var group in usedVariableGroups)
+            {
+                if (group.Key) { uninitialisedVariables = group; return false; }
+                else initialisedVariables = group;
+            }
+            if (initialisedVariables != null) variablesUsed.UnionWith(initialisedVariables);
+            return true;
         }
 
         public IEnumerable<(string?, string?, string?, string?)> ToQuads(int offset)

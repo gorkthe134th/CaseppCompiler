@@ -1,9 +1,15 @@
 ﻿program p
 {
-	declare x, y;
+	declare x, y, z;
 
-	function f() x := 9;
+	function f() return x;
+	function g()
+	{
+		x := 9;
+		y := f();
+	}
 
-	y := f();
+	z := g();
 	print x;
+	print y;
 }

@@ -2,7 +2,8 @@
 {
 	declare x, y;
 
-	function f() x := 9;
+	function f() x := x;
 
+	y := f();
 	print x;
 }

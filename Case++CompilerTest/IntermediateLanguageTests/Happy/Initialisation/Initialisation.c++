@@ -1,8 +1,10 @@
 ﻿program p
 {
 	declare x, y;
-
-	function f() x := 9;
-
+	x := 9;
+	{
+		y := 42;
+	};
 	print x;
+	print y;
 }
