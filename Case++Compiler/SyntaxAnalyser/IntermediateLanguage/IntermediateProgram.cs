@@ -15,7 +15,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         internal BlockingCollection<Function> Functions { get; }
 
         private Function? currentFunction = null;
-        private readonly Stack<object> currentVariables = [];
+        private readonly Stack<object> compilerVariables = [];
         private int nextTempIndex = 0;
 
         public IntermediateProgram(int? functionCapacity = null)
@@ -40,7 +40,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             FunctionSymbol functionSymbol = new(newFunction);
             if (currentFunction != null && !currentFunction.TryAddSymbol(functionSymbol))
                 throw CreateException($"Symbol \"{name}\" already exists");
-            currentVariables.Push(functionSymbol);
+            compilerVariables.Push(functionSymbol);
             currentFunction = newFunction;
         }
 
@@ -69,7 +69,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             JumpInstruction trueJump = CreateInstruction(create);
             JumpInstruction falseJump = new UnconditionalJumpInstruction(CurrentLine, CurrentColumn, null);
             currentFunction.AddInstruction(falseJump);
-            currentVariables.Push(new JumpBlockInfo([trueJump], [falseJump], start));
+            compilerVariables.Push(new JumpBlockInfo([trueJump], [falseJump], start));
         }
 
         internal void AddBreakInstruction(uint count)
@@ -110,16 +110,12 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             if (!CurrentFunction.TryAddSymbol(symbol)) throw CreateException($"Symbol \"{symbol.Name}\" already exists");
         }
 
-        internal delegate bool SymbolPredicate<T>(T symbol, [NotNullWhen(false)] out string? errorMessage);
-
-        internal T GetSymbolInScope<T>(string name, SymbolPredicate<T>? predicate = null) where T : Symbol
+        internal T GetSymbolInScope<T>(string name) where T : Symbol
         {
             if (!CurrentFunction.TryGetSymbol(name, out Symbol? symbol))
                 throw CreateException($"Symbol \"{name}\" does not exists in the current scope");
             if (symbol is not T s)
                 throw CreateException($"Symbol \"{name}\" is not a {typeof(T).Name.Replace("Symbol", null)}");
-            if (predicate?.Invoke(s, out string? errorMessage) == false)
-                throw CreateException(errorMessage);
             return s;
         }
 
@@ -134,18 +130,26 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             return true;
         }
 
-        internal void PushVariable(object variable) => currentVariables.Push(variable);
+        internal void InitialiseVariable(VariableSymbol variable) => CurrentFunction.InitialiseVariable(variable);
 
-        internal T PopVariable<T>() => CastVariable<T>(currentVariables.Pop());
+        internal void UseVariable(VariableSymbol variable)
+        {
+            if (!CurrentFunction.TryUseVariable(variable)) throw CreateException($"Use of uninitialised variable {variable.Name}");
+        }
+        internal void MergeVariableDependancies(FunctionSymbol calledFunction) => CurrentFunction.MergeVariableDependancies(calledFunction.Function);
 
-        internal T PeekVariable<T>() => CastVariable<T>(currentVariables.Peek());
+        internal void PushCompilerVariable(object variable) => compilerVariables.Push(variable);
 
-        private static T CastVariable<T>(object variable) =>
+        internal T PopCompilerVariable<T>() => CastCompilerVariable<T>(compilerVariables.Pop());
+
+        internal T PeekCompilerVariable<T>() => CastCompilerVariable<T>(compilerVariables.Peek());
+
+        private static T CastCompilerVariable<T>(object variable) =>
             variable is T v ? v : throw new InvalidOperationException($"Variable \"{variable}\" is not compatible with type {typeof(T)}");
 
         internal void AddParameterToCallBlock(IActualParameter actualParameter)
         {
-            FunctionCallBlockInfo callBlockInfo = PeekVariable<FunctionCallBlockInfo>();
+            FunctionCallBlockInfo callBlockInfo = PeekCompilerVariable<FunctionCallBlockInfo>();
             if (!callBlockInfo.TryAddParameter(actualParameter, out string? errorMessage))
             {
                 if (errorMessage == null) throw CreateException($"Expected no more parameters for function \"{callBlockInfo.FunctionSymbol.Name}\"");
@@ -162,7 +166,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void CheckNoLeftoverVariables()
         {
-            if (currentVariables.Count != 0) throw new UnreachableException($"Leftover Variables: {string.Join(',', currentVariables)}");
+            if (compilerVariables.Count != 0) throw new UnreachableException($"Leftover Variables: {string.Join(',', compilerVariables)}");
         }
 
         public IEnumerable<(string?, string?, string?, string?)> ToQuads()

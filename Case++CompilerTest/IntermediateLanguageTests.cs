@@ -738,6 +738,46 @@ namespace CaseppCompilerTest
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
             } },
+            new object[] { @"Scope\Scope.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p_f", null, null),
+                (":=", "9", null, "x"),
+                ("retv", "0", null, null),
+                ("end_block", "p_f", null, null),
+                ("begin_block", "p_g1_g2", null, null),
+                (":=", "9", null, "x"),
+                ("retv", "0", null, null),
+                ("end_block", "p_g1_g2", null, null),
+                ("begin_block", "p_g1", null, null),
+                ("retv", "0", null, null),
+                ("end_block", "p_g1", null, null),
+                ("begin_block", "p_h1", null, null),
+                (":=", "9", null, "x"),
+                ("retv", "0", null, null),
+                ("end_block", "p_h1", null, null),
+                ("begin_block", "p_h2", null, null),
+                (":=", "42", null, "y"),
+                ("retv", "0", null, null),
+                ("end_block", "p_h2", null, null),
+                ("begin_block", "p", null, null),
+                (":=", "9", null, "x"),
+                (":=", "42", null, "y"),
+                (":=", "9", null, "x"),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
+            new object[] { @"Initialisation\InitialiseFromFunction.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p_f", null, null),
+                (":=", "9", null, "x"),
+                ("retv", "0", null, null),
+                ("end_block", "p_f", null, null),
+                ("begin_block", "p", null, null),
+                ("par", "_T0", "ret", null),
+                ("call", "f", null, null),
+                (":=", "_T0", null, "y"),
+                ("out", "x", null, null),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
         ];
 
         private static readonly object[] sadTests =
@@ -783,6 +823,9 @@ namespace CaseppCompilerTest
             new object[] { @"ILInstructions\Comparison\NoOperand1.c++", Is.EqualTo("Expected Constant or Variable ID for 1st argument: Line 3, Column 17") },
             new object[] { @"ILInstructions\Comparison\NoOperand2.c++", Is.EqualTo("Expected Constant or Variable ID for 2nd argument: Line 3, Column 18") },
             new object[] { @"ILInstructions\Comparison\NotLabel.c++", Is.EqualTo("Expected Label Name for 3rd argument: Line 3, Column 17") },
+
+            new object[] { @"Initialisation\NoInitialisation.c++", Is.EqualTo("Use of uninitialised variable x: Line 4, Column 9") },
+            new object[] { @"Initialisation\InitialiseFromFunctionNoCall.c++", Is.EqualTo("Use of uninitialised variable x: Line 5, Column 9") },
         ];
 
         [SetUp]

@@ -92,6 +92,12 @@
     <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Assignment\Assignment.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Happy\Initialisation\InitialiseFromFunction.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\Scope\Scope.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Happy\Statements\Break\BreakZero.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -273,6 +279,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Assignment\NoNull.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\Initialisation\NoInitialisation.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\Initialisation\InitialiseFromFunctionNoCall.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Conditions\Condition.c++">

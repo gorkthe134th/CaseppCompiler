@@ -9,7 +9,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
         {
             if (tokens.Current is not OperatorToken operatorToken ||
                 operatorToken.Operation != operation) return false;
-            program?.PushVariable(operatorToken.Operation);
+            program?.PushCompilerVariable(operatorToken.Operation);
             MoveNext(tokens);
 
             return true;

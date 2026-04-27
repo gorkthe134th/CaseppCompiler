@@ -14,7 +14,11 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         public string FullName => Parent != null ? Parent.FullName + "_" + Name : Name;
 
         private readonly IList<Instruction> instructions = [];
+
         private Scope currentScope = new(parent?.currentScope);
+        private readonly HashSet<VariableSymbol> variablesInitialised = [];
+        private readonly HashSet<VariableSymbol> variablesUsed = [];
+
         private Dictionary<JumpInstruction, uint> breakOrigins = [];
         private readonly Stack<int> repeatTargets = [];
 
@@ -66,11 +70,32 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void EnterScope() => currentScope = new Scope(parent: currentScope);
 
-        internal void ExitScope() => currentScope = currentScope.Parent ?? throw new InvalidOperationException("Cannot exit head function scope.");
+        internal void ExitScope()
+        {
+            currentScope.DetachVariables();
+            currentScope = currentScope.Parent ?? throw new InvalidOperationException("Cannot exit progenitor scope.");
+        }
+        // Could check parent nullability first to skip detaching the variables in case it is null,
+        // but it looks cleaner this way and the progenitor scope never has variables, anyway.
 
         internal bool TryAddSymbol(Symbol symbol) => currentScope.TryAddSymbol(symbol);
 
         internal bool TryGetSymbol(string name, [NotNullWhen(true)] out Symbol? symbol) => currentScope.TryGetSymbol(name, out symbol);
+
+        internal void InitialiseVariable(VariableSymbol variable) => variablesInitialised.Add(variable);
+
+        internal bool TryUseVariable(VariableSymbol variable)
+        {
+            if (variable.DeclaratingScope == currentScope && !variablesInitialised.Contains(variable)) return false;
+            variablesUsed.Add(variable);
+            return true;
+        }
+
+        internal void MergeVariableDependancies(Function other)
+        {
+            variablesInitialised.UnionWith(other.variablesInitialised.Except(variablesUsed));
+            variablesUsed.UnionWith(other.variablesUsed.Except(variablesInitialised));
+        }
 
         public IEnumerable<(string?, string?, string?, string?)> ToQuads(int offset)
         {
