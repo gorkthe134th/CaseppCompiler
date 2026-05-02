@@ -4,21 +4,19 @@ using System.Collections.Immutable;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
-    internal class ComparisonJumpInstruction(int line, int column,
-        OperatorToken.OperationType operation, Value operand1, Value operand2, int? target)
-        : JumpInstruction(line, column, target)
+    internal record class ComparisonJumpInstruction(Position Position, OperationType Operation, Value Operand1, Value Operand2) : JumpInstruction(Position)
     {
-        private static readonly ImmutableDictionary<OperatorToken.OperationType, string> operationMap = new Dictionary<OperatorToken.OperationType, string>()
+        private static readonly ImmutableDictionary<OperationType, string> operationMap = new Dictionary<OperationType, string>()
         {
-            [OperatorToken.OperationType.EqualTo             ] = "=",
-            [OperatorToken.OperationType.LessThan            ] = "<",
-            [OperatorToken.OperationType.GreaterThan         ] = ">",
-            [OperatorToken.OperationType.NotEqualTo          ] = "<>",
-            [OperatorToken.OperationType.LessThanOrEqualTo   ] = "<=",
-            [OperatorToken.OperationType.GreaterThanOrEqualTo] = ">=",
+            [OperationType.EqualTo             ] = "=",
+            [OperationType.LessThan            ] = "<",
+            [OperationType.GreaterThan         ] = ">",
+            [OperationType.NotEqualTo          ] = "<>",
+            [OperationType.LessThanOrEqualTo   ] = "<=",
+            [OperationType.GreaterThanOrEqualTo] = ">=",
         }.ToImmutableDictionary();
 
         public override (string?, string?, string?, string?) ToQuad() =>
-            (operationMap[operation], operand1.ToString(), operand2.ToString(), Target.ToString());
+            (operationMap[Operation], Operand1.ToString(), Operand2.ToString(), Target.ToString());
     }
 }

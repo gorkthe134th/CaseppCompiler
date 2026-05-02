@@ -34,9 +34,9 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
             Dictionary<TokenType, IEnumerator<Func<char, bool?>>> tokenTypePredicates;
             StringBuilder currentText = new();
             Queue<char> addedOverflow = new();
-            int line = 1, column = 0;
-            int matchStartLine = 1, matchStartColumn = 1;
-            int matchEndLine = -1, matchEndColumn = -1;
+            Position currentPosition = new(1, 0);
+            Position matchStart = new(1, 1);
+            Position matchEnd = new(-1, -1);
 
             bool IsOnlyWhiteSpace()
             {
@@ -48,15 +48,14 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                         if (reader.EndOfStream) return true;
                         character = (char)reader.Read();
                     }
-                    if (character == '\n') { line++; column = -1; }
-                    column++;
+                    if (character == '\n') currentPosition.GoToNextLine();
+                    else currentPosition++;
                 } while (char.IsWhiteSpace(character));
 
-                matchStartLine = line;
-                matchStartColumn = column;
+                matchStart = currentPosition;
 
                 overflow.Enqueue(character);
-                column--;
+                currentPosition--;
 
                 return false;
             }
@@ -86,8 +85,8 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                     }
                     if (!eof)
                     {
-                        if (character == '\n') { line++; column = -1; }
-                        column++;
+                        if (character == '\n') currentPosition.GoToNextLine();
+                        else currentPosition++;
                     }
 
                     bool updatedLongestMatchingType = false;
@@ -98,17 +97,12 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                         {
                             longestMatchingType = type;
                             updatedLongestMatchingType = true;
-                            matchEndLine = line;
-                            matchEndColumn = column - 1;
+                            matchEnd = currentPosition - 1;
                             addedOverflow.Clear();
                             if (!eof)
                             {
                                 addedOverflow.Enqueue(character);
-                                if (character == '\n')
-                                {
-                                    matchEndLine--;
-                                    matchEndColumn = -1;
-                                }
+                                if (character == '\n') matchEnd.GoToPreviousLine();
                             }
                             tokenTypePredicates.Remove(type);
                             continue;
@@ -122,8 +116,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                                 longestMatchingType = type;
                                 updatedLongestMatchingType = true;
                                 if (limit == null || type.Limit > limit) limit = type.Limit;
-                                matchEndLine = line;
-                                matchEndColumn = column;
+                                matchEnd = currentPosition;
                                 addedOverflow.Clear();
                                 break;
                             case true:
@@ -142,20 +135,19 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
                 } while (tokenTypePredicates.Count > 0);
 
                 if (longestMatchingType == null)
-                    throw new LexicalAnalyserException($"Line {line} Column {column}: Invalid Token \"{currentText}\"");
+                    throw new LexicalAnalyserException(currentPosition, $"Invalid Token \"{currentText}\"");
 
                 currentText.Remove(currentText.Length - addedOverflow.Count, addedOverflow.Count);
-                Token? token = longestMatchingType.GenerateToken(currentText.ToString(), matchStartLine, matchStartColumn);
+                Token? token = longestMatchingType.GenerateToken(matchStart, currentText.ToString());
                 if (token != null) output?.Add(token);
 
                 currentText.Clear();
 
-                line = matchEndLine;
-                column = matchEndColumn;
+                currentPosition = matchEnd;
 
                 while (addedOverflow.TryDequeue(out character)) overflow.Enqueue(character);
             }
-            output?.Add(new EOFToken(line, column + 1));
+            output?.Add(new EOFToken(currentPosition + 1));
             output?.CompleteAdding();
         }
     }

@@ -1,9 +1,7 @@
-﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Symbols;
-
-namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
+﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
-    internal class InputInstruction(int line, int column, VariableSymbol variable) : Instruction(line, column)
+    internal record class InputInstruction(Position Position, Variable Variable) : Instruction(Position)
     {
-        public override (string?, string?, string?, string?) ToQuad() => ("in", variable.Name, null, null);
+        public override (string?, string?, string?, string?) ToQuad() => ("in", Variable.Name, null, null);
     }
 }

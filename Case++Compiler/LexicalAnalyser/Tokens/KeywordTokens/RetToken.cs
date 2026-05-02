@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class RetToken(int line, int column) : Token(line, column)
+    public record class RetToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Ret";
+        public override string ToString() => $"Ret";
     }
 }

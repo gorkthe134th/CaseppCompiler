@@ -1,11 +1,11 @@
 ﻿namespace CaseppCompiler.SyntaxAnalyser
 {
-    public class SyntaxAnalyserException : Exception
+    public class SyntaxAnalyserException : CompilerException
     {
-        public SyntaxAnalyserException() : base() { }
+        public SyntaxAnalyserException(Position position, string? message)
+            : base(position, message) { }
 
-        public SyntaxAnalyserException(string? message) : base(message) { }
-
-        public SyntaxAnalyserException(string? message, Exception? innerException) : base(message, innerException) { }
+        public SyntaxAnalyserException(Position position, string? message, Exception? innerException)
+            : base(position, message, innerException) { }
     }
 }

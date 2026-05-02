@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class CVToken(int line, int column) : Token(line, column)
+    public record class CVToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} CV";
+        public override string ToString() => $"CV";
     }
 }

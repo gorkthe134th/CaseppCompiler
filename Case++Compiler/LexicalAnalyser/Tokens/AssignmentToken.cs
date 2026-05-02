@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public class AssignmentToken(int line, int column) : Token(line, column)
+    public record class AssignmentToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Assignment";
+        public override string ToString() => $"Assignment Token";
     }
 }

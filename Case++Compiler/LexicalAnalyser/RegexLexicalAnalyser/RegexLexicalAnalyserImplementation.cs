@@ -45,27 +45,26 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
         public void Analyse(Stream input, BlockingCollection<Token>? output = null)
         {
             InputStream inputStream = new(input);
-            int line = 1;
-            int column = 1;
+            Position position = new(1, 1);
             while (!inputStream.EndOfStream)
             {
-                inputStream.Trim(ref line, ref column);
+                inputStream.Trim(ref position);
                 if (inputStream.EndOfStream) break;
                 TokenType? matchedType = null;
                 if (inputStream.TryMatchFirst(tokenTypes.Select(type => (matchedType = type).Regex), out string text) && matchedType != null)
                 {
-                    var token = matchedType.GenerateToken(text, line, column);
+                    var token = matchedType.GenerateToken(position, text);
                     output?.Add(token);
-                    column += text.Length;
+                    position += text.Length;
                     Predicate<char>? trim = matchedType.Trim;
-                    if (trim != null) inputStream.Trim(trim, ref line, ref column);
+                    if (trim != null) inputStream.Trim(trim, ref position);
                 }
                 else
                 {
-                    throw new LexicalAnalyserException($"Line {line} Column {column}: Invalid Token");
+                    throw new LexicalAnalyserException(position, $"Invalid Token");
                 }
             }
-            output?.Add(new EOFToken(line, column));
+            output?.Add(new EOFToken(position));
             output?.CompleteAdding();
         }
     }

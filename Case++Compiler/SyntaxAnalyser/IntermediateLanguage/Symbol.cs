@@ -1,7 +1,9 @@
-﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Symbols
+﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
-    internal abstract record class Symbol(string Name)
+    internal abstract class Symbol(string name)
     {
+        public string Name { get; } = name;
+
         private Scope? declaratingScope;
         internal Scope DeclaratingScope
         {

@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class DefaultToken(int line, int column) : Token(line, column)
+    public record class DefaultToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Default";
+        public override string ToString() => $"Default";
     }
 }

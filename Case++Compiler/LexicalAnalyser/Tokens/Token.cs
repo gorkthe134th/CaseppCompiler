@@ -1,11 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public abstract class Token(int line, int column)
+    public abstract record class Token(Position Position)
     {
-        public int Line { get; } = line;
-
-        public int Column { get; } = column;
-
-        public override string ToString() => $"Line {Line} Column {Column}:";
+        public override string ToString() => "$Invalid Token$";
     }
 }

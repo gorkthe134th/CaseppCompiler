@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class ReturnToken(int line, int column) : Token(line, column)
+    public record class ReturnToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Return";
+        public override string ToString() => $"Return";
     }
 }

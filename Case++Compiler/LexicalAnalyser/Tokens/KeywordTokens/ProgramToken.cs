@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class ProgramToken(int line, int column) : Token(line, column)
+    public record class ProgramToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Program";
+        public override string ToString() => $"Program";
     }
 }

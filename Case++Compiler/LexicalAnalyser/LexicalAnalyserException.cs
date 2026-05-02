@@ -1,11 +1,11 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser
 {
-    public class LexicalAnalyserException : Exception
+    public class LexicalAnalyserException : CompilerException
     {
-        public LexicalAnalyserException() : base() { }
+        public LexicalAnalyserException(Position position, string? message)
+            : base(position, message) { }
 
-        public LexicalAnalyserException(string? message) : base(message) { }
-
-        public LexicalAnalyserException(string? message, Exception? innerException) : base(message, innerException) { }
+        public LexicalAnalyserException(Position position, string? message, Exception? innerException)
+            : base(position, message, innerException) { }
     }
 }

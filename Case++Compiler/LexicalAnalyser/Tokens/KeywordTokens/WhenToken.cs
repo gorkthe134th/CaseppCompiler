@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class WhenToken(int line, int column) : Token(line, column)
+    public record class WhenToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} When";
+        public override string ToString() => $"When";
     }
 }

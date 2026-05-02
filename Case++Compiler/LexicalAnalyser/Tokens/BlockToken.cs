@@ -1,9 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public class BlockToken(RegionMarkType type, int line, int column) : Token(line, column)
+    public record class BlockToken(Position Position, RegionMarkType Type) : Token(Position)
     {
-        public RegionMarkType Type { get; } = type;
-
-        public override string ToString() => $"{base.ToString()} Block {Type}";
+        public override string ToString() => $"Block {Type}";
     }
 }

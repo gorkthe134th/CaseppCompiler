@@ -1,9 +1,7 @@
-﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Symbols;
-
-namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
+﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
-    internal class AssignmentInstruction(int line, int column, VariableSymbol variable, Value value) : Instruction(line, column)
+    internal record class AssignmentInstruction(Position Position, Variable Variable, Value Value) : Instruction(Position)
     {
-        public override (string?, string?, string?, string?) ToQuad() => (":=", value.ToString(), null, variable.Name);
+        public override (string?, string?, string?, string?) ToQuad() => (":=", Value.ToString(), null, Variable.Name);
     }
 }

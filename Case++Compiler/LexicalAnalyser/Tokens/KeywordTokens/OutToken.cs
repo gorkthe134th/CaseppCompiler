@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class OutToken(int line, int column) : Token(line, column)
+    public record class OutToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Out";
+        public override string ToString() => $"Out";
     }
 }

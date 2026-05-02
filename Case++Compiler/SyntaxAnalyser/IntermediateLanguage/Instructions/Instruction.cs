@@ -1,11 +1,7 @@
 ﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
-    internal abstract class Instruction(int line, int column)
+    internal abstract record class Instruction(Position Position)
     {
-        public int Line { get; } = line;
-
-        public int Column { get; } = column;
-
         public abstract (string?, string?, string?, string?) ToQuad();
     }
 }

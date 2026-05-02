@@ -15,7 +15,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
 
         public bool EndOfStream => start == end && reader.EndOfStream;
 
-        public void Trim(ref int line, ref int column)
+        public void Trim(ref Position position)
         {
             char current;
             CommentState commentState = CommentState.None;
@@ -34,24 +34,22 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                         if (current == '\n')
                         {
                             commentState = CommentState.None;
-                            line++;
-                            column = 0;
+                            position.GoToNextLine();
                         }
                         start++;
-                        column++;
+                        position++;
                         break;
                     case CommentState.MultiLine:
                         if (current == '*') commentState = CommentState.ExitingMultiLine;
-                        else if (current == '\n') { line++; column = 0; }
+                        else if (current == '\n') position.GoToNextLine();
                         start++;
-                        column++;
+                        position++;
                         break;
                     case CommentState.ExitingMultiLine:
                         switch (current)
                         {
                             case '\n':
-                                line++;
-                                column = 0;
+                                position.GoToNextLine();
                                 goto default;
                             default:
                                 commentState = CommentState.MultiLine;
@@ -63,14 +61,14 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                                 break;
                         }
                         start++;
-                        column++;
+                        position++;
                         break;
                     default:
                         if (!char.IsWhiteSpace(current))
                         {
                             if (current != '/') return;
                             start++;
-                            column++;
+                            position++;
                             if (start == end)
                             {
                                 if (reader.EndOfStream) { start--; return; }
@@ -83,22 +81,22 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                                 case '/':
                                     commentState = CommentState.SingleLine;
                                     start++;
-                                    column++;
+                                    position++;
                                     continue;
                                 case '*':
                                     commentState = CommentState.MultiLine;
                                     start++;
-                                    column++;
+                                    position++;
                                     continue;
                                 default:
                                     start--;
-                                    column--;
+                                    position--;
                                     return;
                             }
                         }
-                        if (current == '\n') { line++; column = 0; }
+                        if (current == '\n') position.GoToNextLine();
                         start++;
-                        column++;
+                        position++;
                         break;
                 }
             }
@@ -106,7 +104,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
 
         private enum CommentState { None, SingleLine, MultiLine, ExitingMultiLine }
 
-        public void Trim(Predicate<char> predicate, ref int line, ref int column)
+        public void Trim(Predicate<char> predicate, ref Position position)
         {
             char current;
             while (true)
@@ -119,9 +117,9 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                 }
                 current = buffer[start];
                 if (!predicate(current)) return;
-                if (current == '\n') { line++; column = 0; }
+                if (current == '\n') position.GoToNextLine();
                 start++;
-                column++;
+                position++;
             }
         }
 
@@ -141,7 +139,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                 if (e.MoveNext())
                 {
                     ValueMatch match = e.Current;
-                    if (match.Index != 0) throw new LexicalAnalyserException("Token regex should only match if at the beginning.");
+                    if (match.Index != 0) throw new ArgumentException("Token regex should only match if at the beginning.");
                     text = span[..match.Length].ToString();
                     start += match.Length;
                     return true;

@@ -3,10 +3,8 @@ using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
-using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Symbols;
 
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 {
@@ -24,14 +22,14 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "\"declare\" Keyword" % typeof(DeclareToken),
                         "Variable List" ^
                         [
-                            "Variable ID" % typeof(IdentifierToken) | (p => {
-                                p.AddSymbol(new VariableSymbol(p.PopCompilerVariable<string>(), false));
+                            "Variable ID" % typeof(IdentifierToken) | (program => {
+                                program.AddSymbol(new Variable(program.PopCompilerVariable<string>(), false));
                             }),
                             "More Variables" *
                             [
                                 "Comma" % typeof(CommaToken),
-                                "Variable ID" % typeof(IdentifierToken) | (p => {
-                                    p.AddSymbol(new VariableSymbol(p.PopCompilerVariable<string>(), false));
+                                "Variable ID" % typeof(IdentifierToken) | (program => {
+                                    program.AddSymbol(new Variable(program.PopCompilerVariable<string>(), false));
                                 }),
                             ],
                         ],
@@ -47,33 +45,30 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Optional Keyword" ^
                             "\"in\" Keyword" % typeof(InToken),
                         "Parameter ID" % typeof(IdentifierToken),
-                    ] | (p => {
-                        string id = p.PopCompilerVariable<string>();
-                        p.PeekCompilerVariable<FunctionSymbol>().AddParameter(new TypeRestrictedFormalParameter<InParameter>());
-                        VariableSymbol variable = new (id, false);
-                        p.AddSymbol(variable);
-                        p.InitialiseVariable(variable);
+                    ] | (program => {
+                        string id = program.PopCompilerVariable<string>();
+                        Variable variable = new(id, false);
+                        program.PeekCompilerVariable<Function>().AddParameter(new TypeRestrictedFormalParameter<InParameter>(variable));
+                        program.InitialiseVariable(variable);
                     }),
                     "Out Parameter" %
                     [
                         "\"out\" Keyword" % typeof(OutToken),
                         "Parameter ID" % typeof(IdentifierToken),
-                    ] | (p => {
-                        string id = p.PopCompilerVariable<string>();
-                        p.PeekCompilerVariable<FunctionSymbol>().AddParameter(new TypeRestrictedFormalParameter<OutParameter>());
-                        VariableSymbol variable = new (id, true);
-                        p.AddSymbol(variable);
+                    ] | (program => {
+                        string id = program.PopCompilerVariable<string>();
+                        Variable variable = new(id, true);
+                        program.PeekCompilerVariable<Function>().AddParameter(new TypeRestrictedFormalParameter<OutParameter>(variable));
                     }),
                     "InOut Parameter" %
                     [
                         "\"inout\" Keyword" % typeof(InOutToken),
                         "Parameter ID" % typeof(IdentifierToken),
-                    ] | (p => {
-                        string id = p.PopCompilerVariable<string>();
-                        p.PeekCompilerVariable<FunctionSymbol>().AddParameter(new TypeRestrictedFormalParameter<InOutParameter>());
-                        VariableSymbol variable = new (id, true);
-                        p.AddSymbol(variable);
-                        p.InitialiseVariable(variable);
+                    ] | (program => {
+                        string id = program.PopCompilerVariable<string>();
+                        Variable variable = new(id, true);
+                        program.PeekCompilerVariable<Function>().AddParameter(new TypeRestrictedFormalParameter<InOutParameter>(variable));
+                        program.InitialiseVariable(variable);
                     }),
                 ];
 
@@ -85,7 +80,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     "Function" %
                     [
                         "\"function\" Keyword" % typeof(FunctionToken),
-                        "Function ID" % typeof(IdentifierToken) | (p => p.CreateFunction(p.PopCompilerVariable<string>())),
+                        "Function ID" % typeof(IdentifierToken) | (program => program.CreateFunction(program.PopCompilerVariable<string>())),
                         "Formal Parameter List" > (
                             "Formal Parameters" ^
                             [
@@ -95,10 +90,10 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                     "Comma" % typeof(CommaToken),
                                     formalParameterMatcher,
                                 ],
-                            ]) | (p => _ = p.PopCompilerVariable<FunctionSymbol>() /* Remove FunctionSymbol from stack. It no longer needs to be modified. */),
+                            ]) | (program => _ = program.PopCompilerVariable<Function>() /* End the Formal Parameter definition */),
                         "Function Body" % statementMatcher,
                         "Optional Semi Colon" ^ typeof(SemiColonToken),
-                    ] | (p => p.FinalizeFunction((l, c) => new ReturnInstruction(l, c, 0)))
+                    ] | (program => program.FinalizeFunction(p => new ReturnInstruction(p, 0)))
                 );
 
             UnresolvedTokenMatcher expressionMatcher = new("Expression");
@@ -111,27 +106,33 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Optional Keyword" ^
                             "\"in\" Keyword" % typeof(InToken),
                         expressionMatcher,
-                    ] | (p => p.AddParameterToCallBlock(new InParameter(p.PopCompilerVariable<ExpressionBlockInfo>().Result))),
+                    ] | (program => {
+                        Value value = program.PopCompilerVariable<ExpressionBlockInfo>().Result;
+                        program.PeekCompilerVariable<FunctionCallBlockInfo>().AddParameter(new InParameter(value));
+                    }),
                     "Out Parameter" %
                     [
                         "\"out\" Keyword" % typeof(OutToken),
                         "Parameter ID" % typeof(IdentifierToken),
-                    ] | (p => p.AddParameterToCallBlock(new OutParameter(p.GetSymbolInScope<VariableSymbol>(p.PopCompilerVariable<string>())))),
+                    ] | (program => {
+                        Variable variable = program.GetSymbolInScope<Variable>(program.PopCompilerVariable<string>());
+                        program.PeekCompilerVariable<FunctionCallBlockInfo>().AddParameter(new OutParameter(variable));
+                    }),
                     "InOut Parameter" %
                     [
                         "\"inout\" Keyword" % typeof(InOutToken),
                         "Parameter ID" % typeof(IdentifierToken),
-                    ] | (p => {
-                        VariableSymbol variable = p.GetSymbolInScope<VariableSymbol>(p.PopCompilerVariable<string>());
-                        p.UseVariable(variable);
-                        p.AddParameterToCallBlock(new InOutParameter(variable));
+                    ] | (program => {
+                        Variable variable = program.GetSymbolInScope<Variable>(program.PopCompilerVariable<string>());
+                        program.UseVariable(variable);
+                        program.PeekCompilerVariable < FunctionCallBlockInfo >().AddParameter(new InOutParameter(variable));
                     }),
                 ];
 
             TokenMatcher factorMatcher =
                 "Factor" |
                 [
-                    "Constant" % typeof(ConstantToken) | (p => p.PushCompilerVariable(new ExpressionBlockInfo(p.PopCompilerVariable<uint>(), p.CurrentPosition))),
+                    "Constant" % typeof(ConstantToken) | (program => program.PushCompilerVariable(new ExpressionBlockInfo(program.PopCompilerVariable<uint>(), program.CurrentInstructionIndex))),
                     "Sub-Expression" > expressionMatcher,
                     "Identifier" %
                     [
@@ -140,8 +141,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         [
                             "Actual Parameter List" >
                             [
-                                -"$function" | (p => {
-                                    p.PushCompilerVariable(new FunctionCallBlockInfo(p.GetSymbolInScope<FunctionSymbol>(p.PopCompilerVariable<string>()), p.CurrentPosition));
+                                -"$function" | (program => {
+                                    program.PushCompilerVariable(new FunctionCallBlockInfo(program.GetSymbolInScope<Function>(program.PopCompilerVariable<string>()), program.CurrentInstructionIndex));
                                 }),
                                 "Actual Parameters" ^
                                 [
@@ -152,25 +153,25 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                         actualParameterMatcher,
                                     ],
                                 ],
-                                -"$call" | (p => {
-                                    FunctionCallBlockInfo callBlockInfo = p.PopCompilerVariable<FunctionCallBlockInfo>();
-                                    VariableSymbol result = p.GenerateTemp();
+                                -"$call" | (program => {
+                                    FunctionCallBlockInfo callBlockInfo = program.PopCompilerVariable<FunctionCallBlockInfo>();
+                                    Variable result = program.GenerateTemp();
+                                    callBlockInfo.AddParameter(new OutParameter(result));
                                     foreach (var parameter in callBlockInfo.Parameters)
                                     {
-                                        p.CreateInstruction((l, c) => new ParameterInstruction(l, c, parameter));
-                                        if (parameter is OutParameter par) p.InitialiseVariable(par.Variable);
+                                        program.CreateInstruction(p => new ParameterInstruction(p, parameter));
+                                        if (parameter is OutParameter par) program.InitialiseVariable(par.Variable);
                                     }
-                                    p.CreateInstruction((l, c) => new ParameterInstruction(l, c, new OutParameter(result)));
-                                    p.CreateInstruction((l, c) => new CallInstruction(l, c, callBlockInfo.FunctionSymbol));
-                                    p.PushCompilerVariable(new ExpressionBlockInfo(result, callBlockInfo.Start));
-                                    p.MergeVariableDependancies(callBlockInfo.FunctionSymbol);
+                                    program.CreateInstruction(p => new CallInstruction(p, callBlockInfo.Function));
+                                    program.PushCompilerVariable(new ExpressionBlockInfo(result, callBlockInfo.Start));
+                                    program.MergeVariableDependancies(callBlockInfo.Function);
                                 }),
                             ],
-                            -"$variable" | (p => {
+                            -"$variable" | (program => {
                                 // If there are no parameters, expect an initialised variable
-                                VariableSymbol variable = p.GetSymbolInScope<VariableSymbol>(p.PopCompilerVariable<string>());
-                                p.UseVariable(variable);
-                                p.PushCompilerVariable(new ExpressionBlockInfo(variable, p.CurrentPosition));
+                                Variable variable = program.GetSymbolInScope<Variable>(program.PopCompilerVariable<string>());
+                                program.UseVariable(variable);
+                                program.PushCompilerVariable(new ExpressionBlockInfo(variable, program.CurrentInstructionIndex));
                             }),
                         ],
                     ],
@@ -185,17 +186,17 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         [
                             "Multiplicative Operation" |
                             [
-                                "Multiply" % OperatorToken.OperationType.Multiply,
-                                "Divide" % OperatorToken.OperationType.Divide,
+                                "Multiply" % OperationType.Multiply,
+                                "Divide" % OperationType.Divide,
                             ],
                             factorMatcher,
-                        ] | (p => {
-                            ExpressionBlockInfo operand2 = p.PopCompilerVariable<ExpressionBlockInfo>();
-                            OperatorToken.OperationType operation = p.PopCompilerVariable<OperatorToken.OperationType>();
-                            ExpressionBlockInfo operand1 = p.PopCompilerVariable<ExpressionBlockInfo>();
-                            VariableSymbol temp = p.GenerateTemp();
-                            p.CreateInstruction((l, c) => new OperationInstruction(l, c, operation, operand1.Result, operand2.Result, temp));
-                            p.PushCompilerVariable(new ExpressionBlockInfo(temp, operand1.Start));
+                        ] | (program => {
+                            ExpressionBlockInfo operand2 = program.PopCompilerVariable<ExpressionBlockInfo>();
+                            OperationType operation = program.PopCompilerVariable<OperationType>();
+                            ExpressionBlockInfo operand1 = program.PopCompilerVariable<ExpressionBlockInfo>();
+                            Variable temp = program.GenerateTemp();
+                            program.CreateInstruction(p => new OperationInstruction(p, operation, operand1.Result, operand2.Result, temp));
+                            program.PushCompilerVariable(new ExpressionBlockInfo(temp, operand1.Start));
                         })),
                 ];
 
@@ -208,16 +209,16 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         [
                             "Sign" |
                             [
-                                "Plus" % OperatorToken.OperationType.Add,
-                                "Minus" % OperatorToken.OperationType.Subtract,
+                                "Plus" % OperationType.Add,
+                                "Minus" % OperationType.Subtract,
                             ],
                             termMatcher,
-                            -"$apply sign" | (p => {
-                                ExpressionBlockInfo term = p.PopCompilerVariable<ExpressionBlockInfo>();
-                                OperatorToken.OperationType sign = p.PopCompilerVariable<OperatorToken.OperationType>();
-                                VariableSymbol temp = p.GenerateTemp();
-                                p.CreateInstruction((l, c) => new OperationInstruction(l, c, sign, 0, term.Result, temp));
-                                p.PushCompilerVariable(new ExpressionBlockInfo(temp, term.Start));
+                            -"$apply sign" | (program => {
+                                ExpressionBlockInfo term = program.PopCompilerVariable<ExpressionBlockInfo>();
+                                OperationType sign = program.PopCompilerVariable<OperationType>();
+                                Variable temp = program.GenerateTemp();
+                                program.CreateInstruction(p => new OperationInstruction(p, sign, 0, term.Result, temp));
+                                program.PushCompilerVariable(new ExpressionBlockInfo(temp, term.Start));
                             }),
                         ],
                         "Unsigned Term" % termMatcher,
@@ -227,17 +228,17 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         [
                             "Additive Operation" |
                             [
-                                "Add" % OperatorToken.OperationType.Add,
-                                "Subtract" % OperatorToken.OperationType.Subtract,
+                                "Add" % OperationType.Add,
+                                "Subtract" % OperationType.Subtract,
                             ],
                             termMatcher,
-                        ] | (p => {
-                            ExpressionBlockInfo operand2 = p.PopCompilerVariable<ExpressionBlockInfo>();
-                            OperatorToken.OperationType operation = p.PopCompilerVariable<OperatorToken.OperationType>();
-                            ExpressionBlockInfo operand1 = p.PopCompilerVariable<ExpressionBlockInfo>();
-                            VariableSymbol temp = p.GenerateTemp();
-                            p.CreateInstruction((l, c) => new OperationInstruction(l, c, operation, operand1.Result, operand2.Result, temp));
-                            p.PushCompilerVariable(new ExpressionBlockInfo(temp, operand1.Start));
+                        ] | (program => {
+                            ExpressionBlockInfo operand2 = program.PopCompilerVariable<ExpressionBlockInfo>();
+                            OperationType operation = program.PopCompilerVariable<OperationType>();
+                            ExpressionBlockInfo operand1 = program.PopCompilerVariable<ExpressionBlockInfo>();
+                            Variable temp = program.GenerateTemp();
+                            program.CreateInstruction(p => new OperationInstruction(p, operation, operand1.Result, operand2.Result, temp));
+                            program.PushCompilerVariable(new ExpressionBlockInfo(temp, operand1.Start));
                         })),
                 ]);
 
@@ -246,26 +247,26 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
             TokenMatcher boolFactorMatcher =
                 "Bool Factor" |
                 [
-                    "Constant" % typeof(BoolConstantToken) | (p =>
+                    "Constant" % typeof(BoolConstantToken) | (program =>
                     {
-                        int start = p.CurrentPosition;
-                        JumpInstruction jump = p.CreateInstruction((l, c) => new UnconditionalJumpInstruction(l, c, null));
+                        int start = program.CurrentInstructionIndex;
+                        JumpInstruction jump = program.CreateInstruction(p => new UnconditionalJumpInstruction(p));
 
-                        bool @bool = p.PopCompilerVariable<bool>();
+                        bool @bool = program.PopCompilerVariable<bool>();
                         List<JumpInstruction> trueOriginList  = [];
                         List<JumpInstruction> falseOriginList = [];
                         if (@bool == true) trueOriginList.Add(jump);
                         else              falseOriginList.Add(jump);
-                        p.PushCompilerVariable(new JumpBlockInfo(trueOriginList, falseOriginList, start));
+                        program.PushCompilerVariable(new JumpBlockInfo(trueOriginList, falseOriginList, start));
                     }),
                     "Inverted Sub-Condition" %
                     [
-                        "\"not\" Keyword" % OperatorToken.OperationType.Not,
+                        "\"not\" Keyword" % OperationType.Not,
                         "Sub-Condition" >= conditionMatcher,
-                    ] | (p => {
-                        JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                        _ = p.PopCompilerVariable<OperatorToken.OperationType>(); // Ignore Variable; it will always be Not.
-                        p.PushCompilerVariable(new JumpBlockInfo(info.FalseOriginList, info.TrueOriginList, info.Start));
+                    ] | (program => {
+                        JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                        _ = program.PopCompilerVariable<OperationType>(); // Ignore Variable; it will always be Not.
+                        program.PushCompilerVariable(new JumpBlockInfo(info.FalseOriginList, info.TrueOriginList, info.Start));
                     }),
                     "Sub-Condition" >= conditionMatcher,
                     "Comparison" %
@@ -273,20 +274,20 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         expressionMatcher,
                         "Comparison Operation" |
                         [
-                            "Equality" % OperatorToken.OperationType.EqualTo,
-                            "Less Than" % OperatorToken.OperationType.LessThan,
-                            "Greater Than" % OperatorToken.OperationType.GreaterThan,
-                            "Inequality" % OperatorToken.OperationType.NotEqualTo,
-                            "Less Than or Equal To" % OperatorToken.OperationType.LessThanOrEqualTo,
-                            "Greater Than or Equal To" % OperatorToken.OperationType.GreaterThanOrEqualTo,
+                            "Equality" % OperationType.EqualTo,
+                            "Less Than" % OperationType.LessThan,
+                            "Greater Than" % OperationType.GreaterThan,
+                            "Inequality" % OperationType.NotEqualTo,
+                            "Less Than or Equal To" % OperationType.LessThanOrEqualTo,
+                            "Greater Than or Equal To" % OperationType.GreaterThanOrEqualTo,
                         ],
                         expressionMatcher,
-                    ] | (p => {
-                        ExpressionBlockInfo operand2 = p.PopCompilerVariable<ExpressionBlockInfo>();
-                        OperatorToken.OperationType operation = p.PopCompilerVariable<OperatorToken.OperationType>();
-                        ExpressionBlockInfo operand1 = p.PopCompilerVariable<ExpressionBlockInfo>();
-                        p.AddJumpInstructions(
-                            (l, c) => new ComparisonJumpInstruction(l, c, operation, operand1.Result, operand2.Result, null),
+                    ] | (program => {
+                        ExpressionBlockInfo operand2 = program.PopCompilerVariable<ExpressionBlockInfo>();
+                        OperationType operation = program.PopCompilerVariable<OperationType>();
+                        ExpressionBlockInfo operand1 = program.PopCompilerVariable<ExpressionBlockInfo>();
+                        program.AddJumpInstructions(
+                            p => new ComparisonJumpInstruction(p, operation, operand1.Result, operand2.Result),
                             operand1.Start);
                     }),
                 ];
@@ -298,16 +299,16 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     "More Bool Factors" * (
                         "Operation" %
                         [
-                            "And" % OperatorToken.OperationType.And,
+                            "And" % OperationType.And,
                             boolFactorMatcher,
-                        ] | (p => {
-                            JumpBlockInfo info2 = p.PopCompilerVariable<JumpBlockInfo>();
-                            _ = p.PopCompilerVariable<OperatorToken.OperationType>(); // Ignore Variable; it will always be And.
-                            JumpBlockInfo info1 = p.PopCompilerVariable<JumpBlockInfo>();
+                        ] | (program => {
+                            JumpBlockInfo info2 = program.PopCompilerVariable<JumpBlockInfo>();
+                            _ = program.PopCompilerVariable<OperationType>(); // Ignore Variable; it will always be And.
+                            JumpBlockInfo info1 = program.PopCompilerVariable<JumpBlockInfo>();
 
                             info1.TrueOriginList.Targets = info2.Start;
                             info1.FalseOriginList.AddRange(info2.FalseOriginList);
-                            p.PushCompilerVariable(new JumpBlockInfo(info2.TrueOriginList, info1.FalseOriginList, info1.Start));
+                            program.PushCompilerVariable(new JumpBlockInfo(info2.TrueOriginList, info1.FalseOriginList, info1.Start));
                         })),
                 ];
 
@@ -318,16 +319,16 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     "More Bool Terms" * (
                         "Operation" %
                         [
-                            "Or" % OperatorToken.OperationType.Or,
+                            "Or" % OperationType.Or,
                             boolTermMatcher,
-                        ] | (p => {
-                            JumpBlockInfo info2 = p.PopCompilerVariable<JumpBlockInfo>();
-                            _ = p.PopCompilerVariable<OperatorToken.OperationType>(); // Ignore Variable; it will always be Or.
-                            JumpBlockInfo info1 = p.PopCompilerVariable<JumpBlockInfo>();
+                        ] | (program => {
+                            JumpBlockInfo info2 = program.PopCompilerVariable<JumpBlockInfo>();
+                            _ = program.PopCompilerVariable<OperationType>(); // Ignore Variable; it will always be Or.
+                            JumpBlockInfo info1 = program.PopCompilerVariable<JumpBlockInfo>();
 
                             info1.FalseOriginList.Targets = info2.Start;
                             info1.TrueOriginList.AddRange(info2.TrueOriginList);
-                            p.PushCompilerVariable(new JumpBlockInfo(info1.TrueOriginList, info2.FalseOriginList, info1.Start));
+                            program.PushCompilerVariable(new JumpBlockInfo(info1.TrueOriginList, info2.FalseOriginList, info1.Start));
                         })),
                 ]);
 
@@ -336,20 +337,20 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
             TokenMatcher ILArgumentMatcher =
                 "Argument" |
                 [
-                    "Constant" % typeof(ConstantToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(p.PopCompilerVariable<uint>()))),
-                    "Symbol or Label" % typeof(IdentifierToken) | (p => {
-                        string name = p.PopCompilerVariable<string>();
-                        if (!p.TryGetSymbolInScope<Symbol>(name, out var symbol))
+                    "Constant" % typeof(ConstantToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(program.PopCompilerVariable<uint>()))),
+                    "Symbol or Label" % typeof(IdentifierToken) | (program => {
+                        string name = program.PopCompilerVariable<string>();
+                        if (!program.TryGetSymbolInScope<Symbol>(name, out var symbol))
                         {
-                            symbol = new LabelSymbol(name, []);
-                            p.AddSymbol(symbol);
+                            symbol = new Label(name, []);
+                            program.AddSymbol(symbol);
                         }
-                        p.PushCompilerVariable(new InstructionFactory.Argument(symbol));
+                        program.PushCompilerVariable(new InstructionFactory.Argument(symbol));
                     }),
-                    "Underscore" % typeof(UnderscoreToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(null))),
-                    "CV" % typeof(CVToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.ParameterType.In))),
-                    "Ref" % typeof(RefToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.ParameterType.InOut))),
-                    "Ret" % typeof(RetToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.ParameterType.Out))),
+                    "Underscore" % typeof(UnderscoreToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(null))),
+                    "CV" % typeof(CVToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.ParameterType.In))),
+                    "Ref" % typeof(RefToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.ParameterType.InOut))),
+                    "Ret" % typeof(RetToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.ParameterType.Out))),
                 ];
 
             ILInstruction.Resolve(
@@ -360,20 +361,20 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         [
                             "Label Name" % typeof(IdentifierToken),
                             "Colon" % typeof(ColonToken),
-                        ] | (p => p.SetLabel(p.PopCompilerVariable<string>())),
+                        ] | (program => program.SetLabel(program.PopCompilerVariable<string>())),
                     "Instruction" ^
                     [
                         "Valid Opcode" |
                         [
-                            "Assignment Token" % typeof(AssignmentToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Assignment))),
-                            "In Token" % typeof(InToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Input))),
-                            "Out Token" % typeof(OutToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Output))),
-                            "Halt Token" % typeof(HaltToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Halt))),
-                            "Jump Token" % typeof(JumpToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Jump))),
-                            "Par Token" % typeof(ParToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Parameter))),
-                            "Call Token" % typeof(CallToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Call))),
-                            "Retv Token" % typeof(RetvToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Return))),
-                            "Operation" % typeof(OperatorToken) | (p => p.PushCompilerVariable(new InstructionFactory.Argument(p.PopCompilerVariable<OperatorToken.OperationType>()))),
+                            "Assignment Token" % typeof(AssignmentToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Assignment))),
+                            "In Token" % typeof(InToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Input))),
+                            "Out Token" % typeof(OutToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Output))),
+                            "Halt Token" % typeof(HaltToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Halt))),
+                            "Jump Token" % typeof(JumpToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Jump))),
+                            "Par Token" % typeof(ParToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Parameter))),
+                            "Call Token" % typeof(CallToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Call))),
+                            "Retv Token" % typeof(RetvToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(InstructionFactory.Opcode.Return))),
+                            "Operation" % typeof(OperatorToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(program.PopCompilerVariable<OperationType>()))),
                         ],
                         "Comma" % typeof(CommaToken),
                         ILArgumentMatcher,
@@ -381,12 +382,12 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         ILArgumentMatcher,
                         "Comma" % typeof(CommaToken),
                         ILArgumentMatcher,
-                    ] | (p => {
-                        InstructionFactory.Argument arg3 = p.PopCompilerVariable<InstructionFactory.Argument>();
-                        InstructionFactory.Argument arg2 = p.PopCompilerVariable<InstructionFactory.Argument>();
-                        InstructionFactory.Argument arg1 = p.PopCompilerVariable<InstructionFactory.Argument>();
-                        InstructionFactory.Argument arg0 = p.PopCompilerVariable<InstructionFactory.Argument>();
-                        p.AddIntermediateLanguageInstruction(arg0, arg1, arg2, arg3);
+                    ] | (program => {
+                        InstructionFactory.Argument arg3 = program.PopCompilerVariable<InstructionFactory.Argument>();
+                        InstructionFactory.Argument arg2 = program.PopCompilerVariable<InstructionFactory.Argument>();
+                        InstructionFactory.Argument arg1 = program.PopCompilerVariable<InstructionFactory.Argument>();
+                        InstructionFactory.Argument arg0 = program.PopCompilerVariable<InstructionFactory.Argument>();
+                        program.AddIntermediateLanguageInstruction(arg0, arg1, arg2, arg3);
                     })
                 ]);
             
@@ -401,22 +402,22 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Variable ID" % typeof(IdentifierToken),
                         "Assignment Token" % typeof(AssignmentToken),
                         expressionMatcher,
-                    ] | (p => {
-                        ExpressionBlockInfo expression = p.PopCompilerVariable<ExpressionBlockInfo>();
-                        VariableSymbol variable = p.GetSymbolInScope<VariableSymbol>(p.PopCompilerVariable<string>());
+                    ] | (program => {
+                        ExpressionBlockInfo expression = program.PopCompilerVariable<ExpressionBlockInfo>();
+                        Variable variable = program.GetSymbolInScope<Variable>(program.PopCompilerVariable<string>());
                         // Assume that the variable is initialised when the first assignment is encountered.
                         // It is possible that this assignment will be skipped, but it's hard to check initisation in a way that accounts for jumps.
                         // This assumption doesn't lead to false positives and catches the most obvious (but not uncommon) true positives.
-                        p.CreateInstruction((l, c) => new AssignmentInstruction(l, c, variable, expression.Result));
-                        p.InitialiseVariable(variable);
+                        program.CreateInstruction(p => new AssignmentInstruction(p, variable, expression.Result));
+                        program.InitialiseVariable(variable);
                     }),
                     "If" %
                     [
                         "\"if\" Keyword" % typeof(IfToken),
                         conditionMatcher,
-                        -"$true target" | (p => {
-                            JumpBlockInfo info = p.PeekCompilerVariable<JumpBlockInfo>();
-                            info.TrueOriginList.Targets = p.CurrentPosition;
+                        -"$true target" | (program => {
+                            JumpBlockInfo info = program.PeekCompilerVariable<JumpBlockInfo>();
+                            info.TrueOriginList.Targets = program.CurrentInstructionIndex;
                         }),
                         "If Body" ^ statementMatcher,
                         "Optional Else" ^
@@ -426,71 +427,71 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 // Cannot allow a semi colon here because it's ambiguous
                                 // whether a semi colon ends the main body or the whole if
                                 "\"else\" Keyword" % typeof(ElseToken),
-                                -"$false target" | (p => {
-                                    int ifExit = p.CurrentPosition;
-                                    JumpInstruction exitJump = p.CreateInstruction((l, c) => new UnconditionalJumpInstruction(l, c, null));
+                                -"$false target" | (program => {
+                                    int ifExit = program.CurrentInstructionIndex;
+                                    JumpInstruction exitJump = program.CreateInstruction(p => new UnconditionalJumpInstruction(p));
 
-                                    JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                                    info.FalseOriginList.Targets = p.CurrentPosition;
+                                    JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                                    info.FalseOriginList.Targets = program.CurrentInstructionIndex;
 
-                                    p.PushCompilerVariable(new JumpBlockInfo([], [exitJump], ifExit));
+                                    program.PushCompilerVariable(new JumpBlockInfo([], [exitJump], ifExit));
                                 }),
                                 "Else Body" ^ statementMatcher,
                             ],
-                        -"$end" | (p => {
-                            JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                            info.FalseOriginList.Targets = p.CurrentPosition;
+                        -"$end" | (program => {
+                            JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                            info.FalseOriginList.Targets = program.CurrentInstructionIndex;
                         }),
                     ],
                     "Switch Case" %
                     [
                         "\"switchcase\" Keyword" % typeof(SwitchCaseToken),
-                        -"$start" | (p => {
+                        -"$start" | (program => {
                             List<JumpInstruction> exitJumps = [];
-                            p.PushCompilerVariable(exitJumps);
+                            program.PushCompilerVariable(exitJumps);
                         }),
                         "Cases" *
                         [
                             "\"when\" Keyword" % typeof(WhenToken),
                             conditionMatcher,
                             "Colon" % typeof(ColonToken),
-                            -"$true target" | (p => {
-                                JumpBlockInfo info = p.PeekCompilerVariable<JumpBlockInfo>();
-                                info.TrueOriginList.Targets = p.CurrentPosition;
+                            -"$true target" | (program => {
+                                JumpBlockInfo info = program.PeekCompilerVariable<JumpBlockInfo>();
+                                info.TrueOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                             "When Body" ^ statementMatcher,
                             "Optional Semi Colon" ^ typeof(SemiColonToken),
-                            -"$false target" | (p => {
-                                JumpInstruction exitJump = p.CreateInstruction((l, c) => new UnconditionalJumpInstruction(l, c, null));
+                            -"$false target" | (program => {
+                                JumpInstruction exitJump = program.CreateInstruction(p => new UnconditionalJumpInstruction(p));
 
-                                JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                                info.FalseOriginList.Targets = p.CurrentPosition;
+                                JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                                info.FalseOriginList.Targets = program.CurrentInstructionIndex;
 
-                                List<JumpInstruction> exitJumps = p.PeekCompilerVariable<List<JumpInstruction>>();
+                                List<JumpInstruction> exitJumps = program.PeekCompilerVariable<List<JumpInstruction>>();
                                 exitJumps.Add(exitJump);
                             }),
                         ],
                         "\"default\" Keyword" % typeof(DefaultToken),
                         "Colon" % typeof(ColonToken),
                         "Default Body" ^ statementMatcher,
-                        -"$end" | (p => {
-                            List<JumpInstruction> exitJumps = p.PopCompilerVariable<List<JumpInstruction>>();
-                            exitJumps.Targets = p.CurrentPosition;
+                        -"$end" | (program => {
+                            List<JumpInstruction> exitJumps = program.PopCompilerVariable<List<JumpInstruction>>();
+                            exitJumps.Targets = program.CurrentInstructionIndex;
                         }),
                     ],
                     "While" %
                     [
-                        "\"while\" Keyword" % typeof(WhileToken) | (p => p.SetRepeatPoint()),
+                        "\"while\" Keyword" % typeof(WhileToken) | (program => program.SetRepeatPoint()),
                         conditionMatcher,
-                        -"$true target" | (p => {
-                            JumpBlockInfo info = p.PeekCompilerVariable<JumpBlockInfo>();
-                            info.TrueOriginList.Targets = p.CurrentPosition;
+                        -"$true target" | (program => {
+                            JumpBlockInfo info = program.PeekCompilerVariable<JumpBlockInfo>();
+                            info.TrueOriginList.Targets = program.CurrentInstructionIndex;
                         }),
                         "While Body" ^ statementMatcher,
-                        -"$repeat" | (p => {
-                            JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                            p.CreateInstruction((l, c) => new UnconditionalJumpInstruction(l, c, info.Start));
-                            info.FalseOriginList.Targets = p.CurrentPosition;
+                        -"$repeat" | (program => {
+                            JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                            program.CreateInstruction(p => new UnconditionalJumpInstruction(p) { Target = info.Start });
+                            info.FalseOriginList.Targets = program.CurrentInstructionIndex;
                         }),
                         "Optional Else" ^
                             "Else" %
@@ -501,206 +502,206 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 "\"else\" Keyword" % typeof(ElseToken),
                                 "Else Body" ^ statementMatcher,
                             ],
-                        -"$end" | (p => p.SetBreakPoint()),
+                        -"$end" | (program => program.SetBreakPoint()),
                     ],
                     "While Case" %
                     [
-                        "\"whilecase\" Keyword" % typeof(WhileCaseToken) | (p => p.SetRepeatPoint()),
-                        -"$start" | (p => {
-                            int start = p.CurrentPosition;
-                            p.PushCompilerVariable(start);
+                        "\"whilecase\" Keyword" % typeof(WhileCaseToken) | (program => program.SetRepeatPoint()),
+                        -"$start" | (program => {
+                            int start = program.CurrentInstructionIndex;
+                            program.PushCompilerVariable(start);
                         }),
                         "Cases" *
                         [
                             "\"when\" Keyword" % typeof(WhenToken),
                             conditionMatcher,
                             "Colon" % typeof(ColonToken),
-                            -"$true target" | (p => {
-                                JumpBlockInfo info = p.PeekCompilerVariable<JumpBlockInfo>();
-                                info.TrueOriginList.Targets = p.CurrentPosition;
+                            -"$true target" | (program => {
+                                JumpBlockInfo info = program.PeekCompilerVariable<JumpBlockInfo>();
+                                info.TrueOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                             "When Body" ^ statementMatcher,
                             "Optional Semi Colon" ^ typeof(SemiColonToken),
-                            -"$repeat & false target" | (p => {
-                                JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                                int start = p.PeekCompilerVariable<int>();
-                                p.CreateInstruction((l, c) => new UnconditionalJumpInstruction(l, c, start));
-                                info.FalseOriginList.Targets = p.CurrentPosition;
+                            -"$repeat & false target" | (program => {
+                                JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                                int start = program.PeekCompilerVariable<int>();
+                                program.CreateInstruction(p => new UnconditionalJumpInstruction(p) { Target = start });
+                                info.FalseOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                         ],
-                        -"$remove start variable" | (p => _ = p.PopCompilerVariable<int>()),
+                        -"$remove start variable" | (program => _ = program.PopCompilerVariable<int>()),
                         "\"default\" Keyword" % typeof(DefaultToken),
                         "Colon" % typeof(ColonToken),
                         "Default Body" ^ statementMatcher,
-                        -"$end" | (p => p.SetBreakPoint()),
+                        -"$end" | (program => program.SetBreakPoint()),
                     ],
                     "Until Case" %
                     [
-                        "\"untilcase\" Keyword" % typeof(UntilCaseToken) | (p => p.SetRepeatPoint()),
-                        -"$start" | (p => {
-                            int start = p.CurrentPosition;
-                            p.PushCompilerVariable(start);
+                        "\"untilcase\" Keyword" % typeof(UntilCaseToken) | (program => program.SetRepeatPoint()),
+                        -"$start" | (program => {
+                            int start = program.CurrentInstructionIndex;
+                            program.PushCompilerVariable(start);
                         }),
                         "Cases" *
                         [
                             "\"when\" Keyword" % typeof(WhenToken),
                             conditionMatcher,
                             "Colon" % typeof(ColonToken),
-                            -"$true target" | (p => {
-                                JumpBlockInfo info = p.PeekCompilerVariable<JumpBlockInfo>();
-                                info.TrueOriginList.Targets = p.CurrentPosition;
+                            -"$true target" | (program => {
+                                JumpBlockInfo info = program.PeekCompilerVariable<JumpBlockInfo>();
+                                info.TrueOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                             "When Body" ^ statementMatcher,
                             "Optional Semi Colon" ^ typeof(SemiColonToken),
-                            -"$false target" | (p => {
-                                JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                                info.FalseOriginList.Targets = p.CurrentPosition;
+                            -"$false target" | (program => {
+                                JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                                info.FalseOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                         ],
                         "\"until\" Keyword" % typeof(UntilToken),
                         conditionMatcher,
-                        -"$until" | (p => {
-                            JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                            info.TrueOriginList.Targets = p.CurrentPosition;
+                        -"$until" | (program => {
+                            JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                            info.TrueOriginList.Targets = program.CurrentInstructionIndex;
 
-                            int start = p.PopCompilerVariable<int>();
+                            int start = program.PopCompilerVariable<int>();
                             info.FalseOriginList.Targets = start;
 
-                            p.SetBreakPoint();
+                            program.SetBreakPoint();
                         }),
                     ],
                     "In Case" %
                     [
-                        "\"incase\" Keyword" % typeof(InCaseToken) | (p => p.SetRepeatPoint()),
-                        -"$initialize" | (p => {
-                            int start = p.CurrentPosition;
-                            p.PushCompilerVariable(start);
+                        "\"incase\" Keyword" % typeof(InCaseToken) | (program => program.SetRepeatPoint()),
+                        -"$initialize" | (program => {
+                            int start = program.CurrentInstructionIndex;
+                            program.PushCompilerVariable(start);
 
-                            VariableSymbol exitFlag = p.GenerateTemp();
-                            p.PushCompilerVariable(exitFlag);
-                            p.CreateInstruction((l, c) => new AssignmentInstruction(l, c, exitFlag, 0));
+                            Variable exitFlag = program.GenerateTemp();
+                            program.PushCompilerVariable(exitFlag);
+                            program.CreateInstruction(p => new AssignmentInstruction(p, exitFlag, 0));
                         }),
                         "Cases" *
                         [
                             "\"when\" Keyword" % typeof(WhenToken),
                             conditionMatcher,
                             "Colon" % typeof(ColonToken),
-                            -"$true target" | (p => {
-                                JumpBlockInfo info = p.PeekCompilerVariable<JumpBlockInfo>();
-                                info.TrueOriginList.Targets = p.CurrentPosition;
+                            -"$true target" | (program => {
+                                JumpBlockInfo info = program.PeekCompilerVariable<JumpBlockInfo>();
+                                info.TrueOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                             "When Body" ^ statementMatcher,
                             // "Optional Semi Colon" ^ typeof(SemiColonToken),
                             // Cannot allow a semi colon here because it's ambiguous
                             // whether a semi colon ends the current case or the whole incase
-                            -"$false target" | (p => {
-                                JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                                VariableSymbol exitFlag = p.PeekCompilerVariable<VariableSymbol>();
+                            -"$false target" | (program => {
+                                JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                                Variable exitFlag = program.PeekCompilerVariable<Variable>();
 
-                                p.CreateInstruction((l, c) => new AssignmentInstruction(l, c, exitFlag, 1));
-                                info.FalseOriginList.Targets = p.CurrentPosition;
+                                program.CreateInstruction(p => new AssignmentInstruction(p, exitFlag, 1));
+                                info.FalseOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                         ],
-                        -"$end" | (p =>
+                        -"$end" | (program =>
                         {
-                            VariableSymbol exitFlag = p.PopCompilerVariable<VariableSymbol>();
-                            int start = p.PopCompilerVariable<int>();
-                            p.CreateInstruction((l, c) => new ComparisonJumpInstruction(l, c, OperatorToken.OperationType.NotEqualTo, exitFlag, 0, start));
+                            Variable exitFlag = program.PopCompilerVariable<Variable>();
+                            int start = program.PopCompilerVariable<int>();
+                            program.CreateInstruction(p => new ComparisonJumpInstruction(p, OperationType.NotEqualTo, exitFlag, 0) { Target = start });
 
-                            p.SetBreakPoint();
+                            program.SetBreakPoint();
                         }),
                     ],
                     "For Case" %
                     [
-                        "\"forcase\" Keyword" % typeof(ForCaseToken) | (p => p.SetRepeatPoint()),
+                        "\"forcase\" Keyword" % typeof(ForCaseToken) | (program => program.SetRepeatPoint()),
                         "Iteration Identifier" % typeof(IdentifierToken),
-                        -"$initialize" | (p => {
-                            VariableSymbol iterationVariable = new(p.PopCompilerVariable<string>(), false);
-                            p.AddSymbol(iterationVariable);
-                            p.InitialiseVariable(iterationVariable);
-                            p.PushCompilerVariable(iterationVariable);
-                            p.CreateInstruction((l, c) => new AssignmentInstruction(l, c, iterationVariable, 0));
+                        -"$initialize" | (program => {
+                            Variable iterationVariable = new(program.PopCompilerVariable<string>(), false);
+                            program.AddSymbol(iterationVariable);
+                            program.InitialiseVariable(iterationVariable);
+                            program.PushCompilerVariable(iterationVariable);
+                            program.CreateInstruction(p => new AssignmentInstruction(p, iterationVariable, 0));
                         }),
-                        "Equals Sign" % OperatorToken.OperationType.EqualTo | (p => {
-                            _ = p.PopCompilerVariable<OperatorToken.OperationType>(); // Ignore Variable; it will always be an Equals Sign.
+                        "Equals Sign" % OperationType.EqualTo | (program => {
+                            _ = program.PopCompilerVariable<OperationType>(); // Ignore Variable; it will always be an Equals Sign.
                         }),
                         expressionMatcher,
-                        -"$condition & increment" | (p =>
+                        -"$condition & increment" | (program =>
                         {
                             // Condition
 
-                            ExpressionBlockInfo count = p.PopCompilerVariable<ExpressionBlockInfo>();
-                            VariableSymbol iterationVariable = p.PopCompilerVariable<VariableSymbol>();
-                            p.AddJumpInstructions(
-                                (l, c) => new ComparisonJumpInstruction(l, c, OperatorToken.OperationType.LessThan, iterationVariable, count.Result, null),
-                                p.CurrentPosition);
+                            ExpressionBlockInfo count = program.PopCompilerVariable<ExpressionBlockInfo>();
+                            Variable iterationVariable = program.PopCompilerVariable<Variable>();
+                            program.AddJumpInstructions(
+                                p => new ComparisonJumpInstruction(p, OperationType.LessThan, iterationVariable, count.Result),
+                                program.CurrentInstructionIndex);
 
-                            JumpBlockInfo info = p.PeekCompilerVariable<JumpBlockInfo>();
-                            info.TrueOriginList.Targets = p.CurrentPosition;
+                            JumpBlockInfo info = program.PeekCompilerVariable<JumpBlockInfo>();
+                            info.TrueOriginList.Targets = program.CurrentInstructionIndex;
 
                             // Increment
 
-                            p.CreateInstruction((l, c) => new OperationInstruction(l, c, OperatorToken.OperationType.Add, iterationVariable, 1, iterationVariable));
+                            program.CreateInstruction(p => new OperationInstruction(p, OperationType.Add, iterationVariable, 1, iterationVariable));
 
-                            p.SetRepeatPoint();
+                            program.SetRepeatPoint();
                         }),
                         "Cases" *
                         [
                             "\"when\" Keyword" % typeof(WhenToken),
                             conditionMatcher,
                             "Colon" % typeof(ColonToken),
-                            -"$true target" | (p => {
-                                JumpBlockInfo info = p.PeekCompilerVariable<JumpBlockInfo>();
-                                info.TrueOriginList.Targets = p.CurrentPosition;
+                            -"$true target" | (program => {
+                                JumpBlockInfo info = program.PeekCompilerVariable<JumpBlockInfo>();
+                                info.TrueOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                             "When Body" ^ statementMatcher,
                             // "Optional Semi Colon" ^ typeof(SemiColonToken),
                             // Cannot allow a semi colon here because it's ambiguous
                             // whether a semi colon ends the current case or the whole forcase
-                            -"$false target" | (p => {
-                                JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                                info.FalseOriginList.Targets = p.CurrentPosition;
+                            -"$false target" | (program => {
+                                JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                                info.FalseOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                         ],
-                        -"$end" | (p => {
-                            p.SetBreakPoint();
+                        -"$end" | (program => {
+                            program.SetBreakPoint();
 
-                            JumpBlockInfo info = p.PopCompilerVariable<JumpBlockInfo>();
-                            p.CreateInstruction((l, c) => new UnconditionalJumpInstruction(l, c, info.Start));
-                            info.FalseOriginList.Targets = p.CurrentPosition;
+                            JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
+                            program.CreateInstruction(p => new UnconditionalJumpInstruction(p) { Target = info.Start });
+                            info.FalseOriginList.Targets = program.CurrentInstructionIndex;
 
-                            p.SetBreakPoint();
+                            program.SetBreakPoint();
                         }),
                     ],
                     "Break" %
                     [
                         "\"break\" Keyword" % typeof(BreakToken),
                         "Break Count" % typeof(ConstantToken),
-                    ] | (p => p.AddBreakInstruction(p.PopCompilerVariable<uint>())),
+                    ] | (program => program.AddBreakInstruction(program.PopCompilerVariable<uint>())),
                     "Repeat" %
                     [
                         "\"repeat\" Keyword" % typeof(RepeatToken),
                         "Repeat Index" % typeof(ConstantToken),
-                    ] | (p => p.AddRepeatInstruction(p.PopCompilerVariable<uint>())),
+                    ] | (program => program.AddRepeatInstruction(program.PopCompilerVariable<uint>())),
                     "Return" %
                     [
                         "\"return\" Keyword" % typeof(ReturnToken),
                         expressionMatcher,
-                    ] | (p => p.CreateInstruction((l, c) => new ReturnInstruction(l, c, p.PopCompilerVariable<ExpressionBlockInfo>().Result))),
+                    ] | (program => program.CreateInstruction(p => new ReturnInstruction(p, program.PopCompilerVariable < ExpressionBlockInfo >().Result))),
                     "Input" %
                     [
                         "\"input\" Keyword" % typeof(InputToken),
                         "Variable ID" % typeof(IdentifierToken),
-                    ] | (p => {
-                        VariableSymbol variable = p.GetSymbolInScope<VariableSymbol>(p.PopCompilerVariable<string>());
-                        p.CreateInstruction((l, c) => new InputInstruction(l, c, variable));
-                        p.InitialiseVariable(variable);
+                    ] | (program => {
+                        Variable variable = program.GetSymbolInScope<Variable>(program.PopCompilerVariable<string>());
+                        program.CreateInstruction(p => new InputInstruction(p, variable));
+                        program.InitialiseVariable(variable);
                     }),
                     "Print" %
                     [
                         "\"print\" Keyword" % typeof(PrintToken),
                         expressionMatcher,
-                    ] | (p => p.CreateInstruction((l, c) => new OutputInstruction(l, c, p.PopCompilerVariable<ExpressionBlockInfo>().Result))),
+                    ] | (program => program.CreateInstruction(p => new OutputInstruction(p, program.PopCompilerVariable < ExpressionBlockInfo >().Result))),
                     "Intermediate Language Instruction" %
                     [
                         "hash prefix" % typeof(HashToken),
@@ -728,16 +729,16 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                 "Body" >>
                     "Body Contents" %
                     [
-                        -"$start" | (p => {
-                            p.EnterScope();
-                            p.SetRepeatPoint();
+                        -"$start" | (program => {
+                            program.EnterScope();
+                            program.SetRepeatPoint();
                         }),
                         declarationsMatcher,
                         functionsMatcher,
                         statementsMatcher,
-                        -"$end" | (p => {
-                            p.ExitScope();
-                            p.SetBreakPoint();
+                        -"$end" | (program => {
+                            program.ExitScope();
+                            program.SetBreakPoint();
                         }),
                     ]);
 
@@ -745,21 +746,21 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                 "Program" %
                 [
                     "\"program\" Keyword" % typeof(ProgramToken),
-                    "Program ID" % typeof(IdentifierToken) | (p => {
-                        p.CreateFunction(p.PopCompilerVariable<string>());
-                        _ = p.PopCompilerVariable<FunctionSymbol>(); // Ignore Symbol; program has no arguments to keep track of.
+                    "Program ID" % typeof(IdentifierToken) | (program => {
+                        program.CreateFunction(program.PopCompilerVariable<string>(), true);
+                        _ = program.PopCompilerVariable<Function>(); // Ignore variable; program takes no arguments.
                     }),
                     "Program Body" % statementMatcher,
-                    "EOF" % typeof(EOFToken) | (p => p.FinalizeFunction((l, c) => new HaltInstruction(l, c))),
+                    "EOF" % typeof(EOFToken) | (program => program.FinalizeFunction(p => new HaltInstruction(p))),
                 ];
         }
 
         public void Analyse(BlockingCollection<Token> input, IntermediateProgram? output = null)
         {
             var tokens = input.GetConsumingEnumerable().GetEnumerator();
-            TokenMatcher.MoveNext(tokens);
+            if (!tokens.MoveNext()) throw new SyntaxAnalyserException(default, $"Expected EOF Token.");
             if (superMatcher.TryMatch(tokens, output) == false)
-                throw new SyntaxAnalyserException($"Expected {superMatcher.Name}: {tokens.Current}");
+                throw new SyntaxAnalyserException(tokens.Current.Position, $"Expected {superMatcher.Name}, but got {tokens.Current}.");
             output?.CheckNoLeftoverVariables();
         }
     }

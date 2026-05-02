@@ -1,9 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public class IdentifierToken(string name, int line, int column) : Token(line, column)
+    public record class IdentifierToken(Position Position, string Name) : Token(Position)
     {
-        public string Name { get; } = name;
-
-        public override string ToString() => $"{base.ToString()} Identifier \"{Name}\"";
+        public override string ToString() => $"Identifier \"{Name}\"";
     }
 }

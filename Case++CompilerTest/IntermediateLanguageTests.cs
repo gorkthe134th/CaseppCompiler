@@ -745,53 +745,53 @@ namespace CaseppCompilerTest
 
         private static readonly object[] sadTests =
         [
-            new object[] { @"ILInstructions\LabelAlreadyExists.c++", Is.EqualTo("Label \"l\" already exists: Line 3, Column 12") },
+            new object[] { @"ILInstructions\LabelAlreadyExists.c++", Is.EqualTo("Line 3, Column 12: Label \"l\" already exists.") },
 
-            new object[] { @"ILInstructions\Assignment\NoValue.c++", Is.EqualTo("Expected Constant or Variable ID for 1st argument: Line 4, Column 15") },
-            new object[] { @"ILInstructions\Assignment\NoNull.c++", Is.EqualTo("Expected no 2nd argument: Line 4, Column 15") },
-            new object[] { @"ILInstructions\Assignment\AssignToConstant.c++", Is.EqualTo("Expected Variable ID for 3rd argument: Line 4, Column 15") },
+            new object[] { @"ILInstructions\Assignment\NoValue.c++", Is.EqualTo("Line 4, Column 15: Expected Constant or Variable ID for 1st argument.") },
+            new object[] { @"ILInstructions\Assignment\NoNull.c++", Is.EqualTo("Line 4, Column 15: Expected no 2nd argument.") },
+            new object[] { @"ILInstructions\Assignment\AssignToConstant.c++", Is.EqualTo("Line 4, Column 15: Expected Variable ID for 3rd argument.") },
 
-            new object[] { @"ILInstructions\Input\InputToConstant.c++", Is.EqualTo("Expected Variable ID for 1st argument: Line 4, Column 15") },
-            new object[] { @"ILInstructions\Input\NoNull1.c++", Is.EqualTo("Expected no 2nd argument: Line 4, Column 15") },
-            new object[] { @"ILInstructions\Input\NoNull2.c++", Is.EqualTo("Expected no 3rd argument: Line 4, Column 15") },
+            new object[] { @"ILInstructions\Input\InputToConstant.c++", Is.EqualTo("Line 4, Column 15: Expected Variable ID for 1st argument.") },
+            new object[] { @"ILInstructions\Input\NoNull1.c++", Is.EqualTo("Line 4, Column 15: Expected no 2nd argument.") },
+            new object[] { @"ILInstructions\Input\NoNull2.c++", Is.EqualTo("Line 4, Column 15: Expected no 3rd argument.") },
 
-            new object[] { @"ILInstructions\Output\OutputNull.c++", Is.EqualTo("Expected Constant or Variable ID for 1st argument: Line 4, Column 16") },
-            new object[] { @"ILInstructions\Output\NoNull1.c++", Is.EqualTo("Expected no 2nd argument: Line 4, Column 16") },
-            new object[] { @"ILInstructions\Output\NoNull2.c++", Is.EqualTo("Expected no 3rd argument: Line 4, Column 16") },
+            new object[] { @"ILInstructions\Output\OutputNull.c++", Is.EqualTo("Line 4, Column 16: Expected Constant or Variable ID for 1st argument.") },
+            new object[] { @"ILInstructions\Output\NoNull1.c++", Is.EqualTo("Line 4, Column 16: Expected no 2nd argument.") },
+            new object[] { @"ILInstructions\Output\NoNull2.c++", Is.EqualTo("Line 4, Column 16: Expected no 3rd argument.") },
 
-            new object[] { @"ILInstructions\Halt\NoNull1.c++", Is.EqualTo("Expected no 1st argument: Line 3, Column 17") },
-            new object[] { @"ILInstructions\Halt\NoNull2.c++", Is.EqualTo("Expected no 2nd argument: Line 3, Column 17") },
-            new object[] { @"ILInstructions\Halt\NoNull3.c++", Is.EqualTo("Expected no 3rd argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Halt\NoNull1.c++", Is.EqualTo("Line 3, Column 17: Expected no 1st argument.") },
+            new object[] { @"ILInstructions\Halt\NoNull2.c++", Is.EqualTo("Line 3, Column 17: Expected no 2nd argument.") },
+            new object[] { @"ILInstructions\Halt\NoNull3.c++", Is.EqualTo("Line 3, Column 17: Expected no 3rd argument.") },
 
-            new object[] { @"ILInstructions\Par\NoValue.c++", Is.EqualTo("Expected Constant or Variable ID for 1st argument: Line 3, Column 17") },
-            new object[] { @"ILInstructions\Par\NoType.c++", Is.EqualTo("Expected Parameter Type for 2nd argument: Line 3, Column 16") },
-            new object[] { @"ILInstructions\Par\NoNull.c++", Is.EqualTo("Expected no 3rd argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Par\NoValue.c++", Is.EqualTo("Line 3, Column 17: Expected Constant or Variable ID for 1st argument.") },
+            new object[] { @"ILInstructions\Par\NoType.c++", Is.EqualTo("Line 3, Column 16: Expected Parameter Type for 2nd argument.") },
+            new object[] { @"ILInstructions\Par\NoNull.c++", Is.EqualTo("Line 3, Column 17: Expected no 3rd argument.") },
 
-            new object[] { @"ILInstructions\Call\CallConstant.c++", Is.EqualTo("Expected Function Name for 1st argument: Line 4, Column 17") },
-            new object[] { @"ILInstructions\Call\NoNull1.c++", Is.EqualTo("Expected no 2nd argument: Line 4, Column 17") },
-            new object[] { @"ILInstructions\Call\NoNull2.c++", Is.EqualTo("Expected no 3rd argument: Line 4, Column 17") },
+            new object[] { @"ILInstructions\Call\CallConstant.c++", Is.EqualTo("Line 4, Column 17: Expected Function Name for 1st argument.") },
+            new object[] { @"ILInstructions\Call\NoNull1.c++", Is.EqualTo("Line 4, Column 17: Expected no 2nd argument.") },
+            new object[] { @"ILInstructions\Call\NoNull2.c++", Is.EqualTo("Line 4, Column 17: Expected no 3rd argument.") },
 
-            new object[] { @"ILInstructions\Return\ReturnNull.c++", Is.EqualTo("Expected Constant or Variable ID for 1st argument: Line 4, Column 17") },
-            new object[] { @"ILInstructions\Return\NoNull1.c++", Is.EqualTo("Expected no 2nd argument: Line 4, Column 17") },
-            new object[] { @"ILInstructions\Return\NoNull2.c++", Is.EqualTo("Expected no 3rd argument: Line 4, Column 17") },
+            new object[] { @"ILInstructions\Return\ReturnNull.c++", Is.EqualTo("Line 4, Column 17: Expected Constant or Variable ID for 1st argument.") },
+            new object[] { @"ILInstructions\Return\NoNull1.c++", Is.EqualTo("Line 4, Column 17: Expected no 2nd argument.") },
+            new object[] { @"ILInstructions\Return\NoNull2.c++", Is.EqualTo("Line 4, Column 17: Expected no 3rd argument.") },
 
-            new object[] { @"ILInstructions\Operation\NoOperand1.c++", Is.EqualTo("Expected Constant or Variable ID for 1st argument: Line 3, Column 14") },
-            new object[] { @"ILInstructions\Operation\NoOperand2.c++", Is.EqualTo("Expected Constant or Variable ID for 2nd argument: Line 3, Column 14") },
-            new object[] { @"ILInstructions\Operation\NoVariable.c++", Is.EqualTo("Expected Variable ID for 3rd argument: Line 3, Column 14") },
+            new object[] { @"ILInstructions\Operation\NoOperand1.c++", Is.EqualTo("Line 3, Column 14: Expected Constant or Variable ID for 1st argument.") },
+            new object[] { @"ILInstructions\Operation\NoOperand2.c++", Is.EqualTo("Line 3, Column 14: Expected Constant or Variable ID for 2nd argument.") },
+            new object[] { @"ILInstructions\Operation\NoVariable.c++", Is.EqualTo("Line 3, Column 14: Expected Variable ID for 3rd argument.") },
 
-            new object[] { @"ILInstructions\Jump\NoNull1.c++", Is.EqualTo("Expected no 1st argument: Line 3, Column 20") },
-            new object[] { @"ILInstructions\Jump\NoNull2.c++", Is.EqualTo("Expected no 2nd argument: Line 3, Column 20") },
-            new object[] { @"ILInstructions\Jump\NotLabel.c++", Is.EqualTo("Expected Label Name for 3rd argument: Line 3, Column 20") },
+            new object[] { @"ILInstructions\Jump\NoNull1.c++", Is.EqualTo("Line 3, Column 20: Expected no 1st argument.") },
+            new object[] { @"ILInstructions\Jump\NoNull2.c++", Is.EqualTo("Line 3, Column 20: Expected no 2nd argument.") },
+            new object[] { @"ILInstructions\Jump\NotLabel.c++", Is.EqualTo("Line 3, Column 20: Expected Label Name for 3rd argument.") },
 
-            new object[] { @"ILInstructions\Comparison\NoOperand1.c++", Is.EqualTo("Expected Constant or Variable ID for 1st argument: Line 3, Column 17") },
-            new object[] { @"ILInstructions\Comparison\NoOperand2.c++", Is.EqualTo("Expected Constant or Variable ID for 2nd argument: Line 3, Column 18") },
-            new object[] { @"ILInstructions\Comparison\NotLabel.c++", Is.EqualTo("Expected Label Name for 3rd argument: Line 3, Column 17") },
+            new object[] { @"ILInstructions\Comparison\NoOperand1.c++", Is.EqualTo("Line 3, Column 17: Expected Constant or Variable ID for 1st argument.") },
+            new object[] { @"ILInstructions\Comparison\NoOperand2.c++", Is.EqualTo("Line 3, Column 18: Expected Constant or Variable ID for 2nd argument.") },
+            new object[] { @"ILInstructions\Comparison\NotLabel.c++", Is.EqualTo("Line 3, Column 17: Expected Label Name for 3rd argument.") },
 
-            new object[] { @"Initialisation\NoInitialisation.c++", Is.EqualTo("Use of uninitialised variable x: Line 4, Column 9") },
-            new object[] { @"Initialisation\InitialiseLocalInstead.c++", Is.EqualTo("Use of uninitialised variable x: Line 8, Column 9") },
-            new object[] { @"Initialisation\InitialiseFromFunctionNoCall.c++", Is.EqualTo("Use of uninitialised variable x: Line 7, Column 9") },
-            new object[] { @"Initialisation\InitialiseFromFunctionUseFirst.c++", Is.EqualTo("Use of uninitialised variables in function \"f\": \"x\": Line 7, Column 9") },
-            new object[] { @"Initialisation\InitialiseFromFunctionAlreadyUsed.c++", Is.EqualTo("Use of uninitialised variables in function \"g\": \"x\": Line 13, Column 9") },
+            new object[] { @"Initialisation\NoInitialisation.c++", Is.EqualTo("Line 4, Column 9: Use of uninitialised variable x.") },
+            new object[] { @"Initialisation\InitialiseLocalInstead.c++", Is.EqualTo("Line 8, Column 9: Use of uninitialised variable x.") },
+            new object[] { @"Initialisation\InitialiseFromFunctionNoCall.c++", Is.EqualTo("Line 7, Column 9: Use of uninitialised variable x.") },
+            new object[] { @"Initialisation\InitialiseFromFunctionUseFirst.c++", Is.EqualTo("Line 7, Column 9: Use of uninitialised variables in function \"f\": \"x\".") },
+            new object[] { @"Initialisation\InitialiseFromFunctionAlreadyUsed.c++", Is.EqualTo("Line 13, Column 9: Use of uninitialised variables in function \"g\": \"x\".") },
         ];
 
         [SetUp]

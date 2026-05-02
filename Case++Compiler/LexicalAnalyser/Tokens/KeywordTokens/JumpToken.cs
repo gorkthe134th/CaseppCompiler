@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class JumpToken(int line, int column) : Token(line, column)
+    public record class JumpToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Jump";
+        public override string ToString() => $"Jump";
     }
 }

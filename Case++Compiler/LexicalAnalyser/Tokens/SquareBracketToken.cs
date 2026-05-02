@@ -1,9 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public class SquareBracketToken(RegionMarkType type, int line, int column) : Token(line, column)
+    public record class SquareBracketToken(Position Position, RegionMarkType Type) : Token(Position)
     {
-        public RegionMarkType Type { get; } = type;
-
-        public override string ToString() => $"{base.ToString()} Square Bracket {Type}";
+        public override string ToString() => $"Square Bracket {Type}";
     }
 }

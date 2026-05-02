@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class ElseToken(int line, int column) : Token(line, column)
+    public record class ElseToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Else";
+        public override string ToString() => $"Else";
     }
 }

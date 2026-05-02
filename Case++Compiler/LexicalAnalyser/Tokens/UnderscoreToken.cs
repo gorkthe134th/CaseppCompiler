@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public class UnderscoreToken(int line, int column) : Token(line, column)
+    public record class UnderscoreToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Underscore";
+        public override string ToString() => $"Underscore";
     }
 }

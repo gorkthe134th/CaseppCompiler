@@ -10,6 +10,6 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 
         public abstract Predicate<char>? Trim { get; }
 
-        public abstract Token GenerateToken(string text, int line, int column);
+        public abstract Token GenerateToken(Position position, string text);
     }
 }

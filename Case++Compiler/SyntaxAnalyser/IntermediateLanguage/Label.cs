@@ -1,25 +1,22 @@
 ﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Emit;
-
-namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Symbols
+namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
-    internal record class LabelSymbol : Symbol
+    internal class Label : Symbol
     {
         // TODO: Replace with a union when C# 15 is officially released
         private int? position;
         private IList<JumpInstruction>? jumpsToLabel;
 
-        private LabelSymbol(string name) : base(name) { }
+        private Label(string name) : base(name) { }
 
-        public LabelSymbol(string name, IList<JumpInstruction> jumpsToLabel) : this(name)
+        public Label(string name, IList<JumpInstruction> jumpsToLabel) : this(name)
         {
             this.position = null;
             this.jumpsToLabel = jumpsToLabel;
         }
 
-        public LabelSymbol(string name, int position) : this(name)
+        public Label(string name, int position) : this(name)
         {
             this.position = position;
             this.jumpsToLabel = null;

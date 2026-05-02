@@ -11,7 +11,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 
         public override Predicate<char>? Trim => null;
 
-        public override Token GenerateToken(string text, int line, int column) =>
-            new SemiColonToken(line, column);
+        public override Token GenerateToken(Position position, string text) =>
+            new SemiColonToken(position);
     }
 }

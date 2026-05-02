@@ -3,7 +3,7 @@ using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
-    internal class OperatorTokenMatcher(string name, OperatorToken.OperationType operation) : TokenMatcher(name)
+    internal class OperatorTokenMatcher(string name, OperationType operation) : TokenMatcher(name)
     {
         public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
         {

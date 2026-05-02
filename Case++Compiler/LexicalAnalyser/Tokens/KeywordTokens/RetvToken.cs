@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class RetvToken(int line, int column) : Token(line, column)
+    public record class RetvToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Retv";
+        public override string ToString() => $"Retv";
     }
 }

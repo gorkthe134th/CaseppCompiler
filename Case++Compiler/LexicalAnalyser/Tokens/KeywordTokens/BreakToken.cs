@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class BreakToken(int line, int column) : Token(line, column)
+    public record class BreakToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Break";
+        public override string ToString() => $"Break";
     }
 }

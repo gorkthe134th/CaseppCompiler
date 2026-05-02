@@ -31,7 +31,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
 
         public override int Limit => 2;
 
-        public override Token GenerateToken(string text, int line, int column) =>
-            new OperatorToken(text, line, column);
+        public override Token GenerateToken(Position position, string text) =>
+            new OperatorToken(position, OperationType.FromSymbol(text));
     }
 }

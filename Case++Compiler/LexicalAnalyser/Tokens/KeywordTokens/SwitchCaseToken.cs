@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class SwitchCaseToken(int line, int column) : Token(line, column)
+    public record class SwitchCaseToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} SwitchCase";
+        public override string ToString() => $"SwitchCase";
     }
 }

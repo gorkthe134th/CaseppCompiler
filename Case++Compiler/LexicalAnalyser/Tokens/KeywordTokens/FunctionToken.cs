@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class FunctionToken(int line, int column) : Token(line, column)
+    public record class FunctionToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Function";
+        public override string ToString() => $"Function";
     }
 }

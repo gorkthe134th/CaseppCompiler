@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public class ColonToken(int line, int column) : Token(line, column)
+    public record class ColonToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Case Start";
+        public override string ToString() => $"Colon";
     }
 }

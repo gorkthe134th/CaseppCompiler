@@ -1,9 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public class BoolConstantToken(bool constant, int line, int column) : Token(line, column)
+    public record class BoolConstantToken(Position Position, bool Constant) : Token(Position)
     {
-        public bool Constant { get; } = constant;
-
-        public override string ToString() => $"{base.ToString()} {Constant}";
+        public override string ToString() => $"Constant {Constant}";
     }
 }

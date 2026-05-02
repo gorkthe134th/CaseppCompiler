@@ -1,32 +1,55 @@
 ﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
-using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Symbols;
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
-    internal class Function(string name, Function? parent = null)
+    // TODO: Replace error code with exceptions
+    internal class Function : Symbol
     {
-        public Function? Parent { get; } = parent;
-
-        public string Name { get; } = name;
+        public Function? Parent { get; }
 
         public string FullName => Parent != null ? Parent.FullName + "_" + Name : Name;
 
+        internal bool IsMain { get; init; } = false;
+
+        private readonly IList<FormalParameter> formalParameters = [];
+
         private readonly IList<Instruction> instructions = [];
 
-        private Scope currentScope = new(parent?.currentScope);
-        private readonly HashSet<VariableSymbol> variablesInitialised = [];
-        private readonly HashSet<VariableSymbol> variablesUsed = [];
+        private Scope currentScope;
+        private readonly HashSet<Variable> variablesInitialised = [];
+        private readonly HashSet<Variable> variablesUsed = [];
+
+        internal Variable? ReturnVariable { get; }
 
         private Dictionary<JumpInstruction, uint> breakOrigins = [];
         private readonly Stack<int> repeatTargets = [];
+        private readonly BlockingCollection<Scope> scopes;
+
+        public Function(string name, BlockingCollection<Scope> scopes, Function? parent = null) : base(name)
+        {
+            this.Parent = parent;
+            this.ReturnVariable = new("_RET", true);
+            this.currentScope = new(this, 0, parent?.currentScope, ReturnVariable) { IsBase = true }; // Cannot use field initializer for this
+            this.scopes = scopes;
+        }
+
+        internal IReadOnlyList<FormalParameter> FormalParameters => formalParameters.AsReadOnly();
 
         public IReadOnlyList<Instruction> Instructions => instructions.AsReadOnly();
 
-        public int CurrentPosition => instructions.Count;
+        public int CurrentInstructionIndex => instructions.Count;
 
         public int QuadCount => instructions.Count + 2;
+
+        internal void AddParameter(FormalParameter formalParameter)
+        {
+            formalParameters.Add(formalParameter);
+            if (!TryAddSymbol(formalParameter.AssociatedVariable))
+                throw new InvalidOperationException($"Parameter \"{formalParameter.AssociatedVariable.Name}\" already exists.");
+        }
 
         internal void AddInstruction(Instruction instruction) => instructions.Add(instruction);
 
@@ -46,7 +69,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void SetRepeatPoint()
         {
-            repeatTargets.Push(CurrentPosition);
+            repeatTargets.Push(CurrentInstructionIndex);
             foreach (var kvp in breakOrigins) breakOrigins[kvp.Key]++;
         }
 
@@ -59,20 +82,21 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                 .ToLookup(kvp => kvp.Value > 0);
 
             breakOrigins = lookup[true].ToDictionary();
-           lookup[false].Select(kvp => kvp.Key).Targets = CurrentPosition;
+           lookup[false].Select(kvp => kvp.Key).Targets = CurrentInstructionIndex;
         }
 
         internal void SetAllBreakTargets()
         {
-            breakOrigins.Keys.Targets = CurrentPosition;
+            breakOrigins.Keys.Targets = CurrentInstructionIndex;
             breakOrigins.Clear();
         }
 
-        internal void EnterScope() => currentScope = new Scope(parent: currentScope);
+        internal void EnterScope() => currentScope = new Scope(this, CurrentInstructionIndex, currentScope);
 
         internal void ExitScope()
         {
-            currentScope.DetachVariables();
+            currentScope.Exit(CurrentInstructionIndex);
+            scopes.Add(currentScope);
             currentScope = currentScope.Parent ?? throw new InvalidOperationException("Cannot exit progenitor scope.");
         }
         // Could check parent nullability first to skip detaching the variables in case it is null,
@@ -82,19 +106,19 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal bool TryGetSymbol(string name, [NotNullWhen(true)] out Symbol? symbol) => currentScope.TryGetSymbol(name, out symbol);
 
-        internal void InitialiseVariable(VariableSymbol variable)
+        internal void InitialiseVariable(Variable variable)
         {
             if (!variablesUsed.Contains(variable)) variablesInitialised.Add(variable);
         }
 
-        internal bool TryUseVariable(VariableSymbol variable)
+        internal bool TryUseVariable(Variable variable)
         {
             if (variable.DeclaratingScope == currentScope && !variablesInitialised.Contains(variable)) return false;
             variablesUsed.Add(variable);
             return true;
         }
 
-        internal bool MergeVariableDependancies(Function other, [NotNullWhen(false)] out IEnumerable<VariableSymbol>? uninitialisedVariables)
+        internal bool MergeVariableDependancies(Function other, [NotNullWhen(false)] out IEnumerable<Variable>? uninitialisedVariables)
         {
             variablesInitialised.UnionWith(from variable in other.variablesInitialised
                                            where !variablesUsed.Contains(variable)
@@ -103,7 +127,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                                      where !variablesInitialised.Contains(variable)
                                      group variable by variable.DeclaratingScope == currentScope;
             uninitialisedVariables = null;
-            IEnumerable<VariableSymbol>? initialisedVariables = null;
+            IEnumerable<Variable>? initialisedVariables = null;
             foreach (var group in usedVariableGroups)
             {
                 if (group.Key) { uninitialisedVariables = group; return false; }

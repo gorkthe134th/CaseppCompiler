@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class CallToken(int line, int column) : Token(line, column)
+    public record class CallToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Call";
+        public override string ToString() => $"Call";
     }
 }

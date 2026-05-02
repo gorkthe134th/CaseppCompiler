@@ -17,6 +17,6 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
 
         public abstract int Limit { get; }
 
-        public abstract Token? GenerateToken(string text, int line, int column);
+        public abstract Token? GenerateToken(Position Position, string text);
     }
 }

@@ -17,8 +17,9 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
                 if (tokens.Current is OperatorToken    @operator) program.PushCompilerVariable(@operator.Operation);
             }
 
+            Position currentPosition = tokens.Current.Position;
             if (!tokens.MoveNext() && !typeof(T).IsAssignableTo(typeof(EOFToken)))
-                throw new SyntaxAnalyserException($"Expected EOF Token");
+                throw new SyntaxAnalyserException(currentPosition + 1, $"Expected EOF Token.");
 
             return true;
         }

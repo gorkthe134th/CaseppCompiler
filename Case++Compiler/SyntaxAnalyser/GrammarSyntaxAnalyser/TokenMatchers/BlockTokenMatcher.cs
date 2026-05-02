@@ -11,10 +11,11 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
                 startToken.Type != RegionMarkType.Start) return false;
             MoveNext(tokens);
 
-            if (contentMatcher.TryMatch(tokens, program) == false) throw new SyntaxAnalyserException($"Expected {Name}: {tokens.Current}");
+            if (contentMatcher.TryMatch(tokens, program) == false)
+                throw new SyntaxAnalyserException(tokens.Current.Position, $"Expected {Name}, but got {tokens.Current}.");
 
-            if (tokens.Current is not BlockToken endToken ||
-                endToken.Type != RegionMarkType.End) throw new SyntaxAnalyserException($"Expected Block End Token: {tokens.Current}");
+            if (tokens.Current is not BlockToken endToken || endToken.Type != RegionMarkType.End)
+                throw new SyntaxAnalyserException(tokens.Current.Position, $"Expected Block End Token, but got {tokens.Current}.");
             MoveNext(tokens);
 
             return true;

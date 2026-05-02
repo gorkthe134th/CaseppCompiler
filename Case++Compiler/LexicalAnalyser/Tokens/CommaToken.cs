@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public class CommaToken(int line, int column) : Token(line, column)
+    public record class CommaToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Comma";
+        public override string ToString() => $"Comma";
     }
 }

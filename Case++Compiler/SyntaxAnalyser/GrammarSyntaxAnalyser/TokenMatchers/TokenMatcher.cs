@@ -34,8 +34,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
             bool? result = BaseTryMatch(tokens, program);
             if (result == true && program != null && FinalAction != null)
             {
-                program.CurrentLine = tokens.Current.Line;
-                program.CurrentColumn = tokens.Current.Column;
+                program.Position = tokens.Current.Position;
                 FinalAction.Invoke(program);
             }
             return result;
@@ -45,7 +44,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 
         public static void MoveNext(IEnumerator<Token> tokens)
         {
-            if (!tokens.MoveNext()) throw new SyntaxAnalyserException($"Expected EOF Token");
+            Position currentPosition = tokens.Current.Position;
+            if (!tokens.MoveNext()) throw new SyntaxAnalyserException(currentPosition + 1, $"Expected EOF Token.");
         }
 
         public static implicit operator TokenMatcher(Type type)
@@ -56,7 +56,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
             return tokenMatcher;
         }
 
-        public static implicit operator TokenMatcher(OperatorToken.OperationType operation) =>
+        public static implicit operator TokenMatcher(OperationType operation) =>
             new OperatorTokenMatcher(GenerateName(), operation) { IsGenerated = true };
 
         public static TokenMatcher Create(ReadOnlySpan<TokenMatcher> matchers) =>

@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class ForCaseToken(int line, int column) : Token(line, column)
+    public record class ForCaseToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} ForCase";
+        public override string ToString() => $"ForCase";
     }
 }

@@ -9,40 +9,40 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 {
     internal class KeywordTokenType : TokenType
     {
-        private static readonly ImmutableDictionary<string, Func<int, int, Token>> tokenMap = new Dictionary<string, Func<int, int, Token>>()
+        private static readonly ImmutableDictionary<string, Func<Position, Token>> tokenMap = new Dictionary<string, Func<Position, Token>>()
         {
-            [ "program"  ] = (line, column) => new ProgramToken(line, column),
-            [ "declare"  ] = (line, column) => new DeclareToken(line, column),
-            [    "if"    ] = (line, column) => new IfToken(line, column),
-            [   "else"   ] = (line, column) => new ElseToken(line, column),
-            [  "while"   ] = (line, column) => new WhileToken(line, column),
-            ["switchcase"] = (line, column) => new SwitchCaseToken(line, column),
-            [  "incase"  ] = (line, column) => new InCaseToken(line, column),
-            ["whilecase" ] = (line, column) => new WhileCaseToken(line, column),
-            ["untilcase" ] = (line, column) => new UntilCaseToken(line, column),
-            [ "forcase"  ] = (line, column) => new ForCaseToken(line, column),
-            [   "when"   ] = (line, column) => new WhenToken(line, column),
-            [ "default"  ] = (line, column) => new DefaultToken(line, column),
-            [  "until"   ] = (line, column) => new UntilToken(line, column),
-            [  "break"   ] = (line, column) => new BreakToken(line, column),
-            [  "repeat"  ] = (line, column) => new RepeatToken(line, column),
-            [  "return"  ] = (line, column) => new ReturnToken(line, column),
-            [  "print"   ] = (line, column) => new PrintToken(line, column),
-            [  "input"   ] = (line, column) => new InputToken(line, column),
-            [   "halt"   ] = (line, column) => new HaltToken(line, column),
-            [   "jump"   ] = (line, column) => new JumpToken(line, column),
-            [ "function" ] = (line, column) => new FunctionToken(line, column),
-            [    "in"    ] = (line, column) => new InToken(line, column),
-            [   "out"    ] = (line, column) => new OutToken(line, column),
-            [  "inout"   ] = (line, column) => new InOutToken(line, column),
-            [   "retv"   ] = (line, column) => new RetvToken(line, column),
-            [   "par"    ] = (line, column) => new ParToken(line, column),
-            [    "cv"    ] = (line, column) => new CVToken(line, column),
-            [   "ref"    ] = (line, column) => new RefToken(line, column),
-            [   "ret"    ] = (line, column) => new RetToken(line, column),
-            [   "call"   ] = (line, column) => new CallToken(line, column),
-            [   "true"   ] = (line, column) => new BoolConstantToken(true, line, column),
-            [  "false"   ] = (line, column) => new BoolConstantToken(false, line, column),
+            [ "program"  ] = (position) => new ProgramToken(position),
+            [ "declare"  ] = (position) => new DeclareToken(position),
+            [    "if"    ] = (position) => new IfToken(position),
+            [   "else"   ] = (position) => new ElseToken(position),
+            [  "while"   ] = (position) => new WhileToken(position),
+            ["switchcase"] = (position) => new SwitchCaseToken(position),
+            [  "incase"  ] = (position) => new InCaseToken(position),
+            ["whilecase" ] = (position) => new WhileCaseToken(position),
+            ["untilcase" ] = (position) => new UntilCaseToken(position),
+            [ "forcase"  ] = (position) => new ForCaseToken(position),
+            [   "when"   ] = (position) => new WhenToken(position),
+            [ "default"  ] = (position) => new DefaultToken(position),
+            [  "until"   ] = (position) => new UntilToken(position),
+            [  "break"   ] = (position) => new BreakToken(position),
+            [  "repeat"  ] = (position) => new RepeatToken(position),
+            [  "return"  ] = (position) => new ReturnToken(position),
+            [  "print"   ] = (position) => new PrintToken(position),
+            [  "input"   ] = (position) => new InputToken(position),
+            [   "halt"   ] = (position) => new HaltToken(position),
+            [   "jump"   ] = (position) => new JumpToken(position),
+            [ "function" ] = (position) => new FunctionToken(position),
+            [    "in"    ] = (position) => new InToken(position),
+            [   "out"    ] = (position) => new OutToken(position),
+            [  "inout"   ] = (position) => new InOutToken(position),
+            [   "retv"   ] = (position) => new RetvToken(position),
+            [   "par"    ] = (position) => new ParToken(position),
+            [    "cv"    ] = (position) => new CVToken(position),
+            [   "ref"    ] = (position) => new RefToken(position),
+            [   "ret"    ] = (position) => new RetToken(position),
+            [   "call"   ] = (position) => new CallToken(position),
+            [   "true"   ] = (position) => new BoolConstantToken(position, true),
+            [  "false"   ] = (position) => new BoolConstantToken(position, false),
         }.ToImmutableDictionary();
 
         private static readonly Regex regex;
@@ -60,7 +60,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 
         public override Predicate<char>? Trim => null;
 
-        public override Token GenerateToken(string text, int line, int column) =>
-            tokenMap[text](line, column);
+        public override Token GenerateToken(Position position, string text) =>
+            tokenMap[text](position);
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public class EOFToken(int line, int column) : Token(line, column)
+    public record class EOFToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} EOF";
+        public override string ToString() => $"EOF";
     }
 }

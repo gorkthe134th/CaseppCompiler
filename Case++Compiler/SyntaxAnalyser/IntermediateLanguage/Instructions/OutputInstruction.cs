@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
-    internal class OutputInstruction(int line, int column, Value value) : Instruction(line, column)
+    internal record class OutputInstruction(Position Position, Value Value) : Instruction(Position)
     {
-        public override (string?, string?, string?, string?) ToQuad() => ("out", value.ToString(), null, null);
+        public override (string?, string?, string?, string?) ToQuad() => ("out", Value.ToString(), null, null);
     }
 }

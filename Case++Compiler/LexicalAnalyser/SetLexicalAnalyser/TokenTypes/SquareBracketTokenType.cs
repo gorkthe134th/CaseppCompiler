@@ -14,14 +14,13 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes
 
         public override int Limit => 1;
 
-        public override Token GenerateToken(string text, int line, int column) =>
-            new SquareBracketToken(
+        public override Token GenerateToken(Position position, string text) =>
+            new SquareBracketToken(position,
                 text switch
                 {
                     "[" => RegionMarkType.Start,
                     "]" => RegionMarkType.End,
-                    _   => throw new LexicalAnalyserException($"Line {line} Column {column}: Invalid Bracket Mark \"{text}\"")
-                },
-                line, column);
+                    _   => throw new LexicalAnalyserException(position, $"Invalid Bracket Mark \"{text}\"")
+                });
     }
 }

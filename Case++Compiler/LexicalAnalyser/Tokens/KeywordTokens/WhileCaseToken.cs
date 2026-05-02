@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class WhileCaseToken(int line, int column) : Token(line, column)
+    public record class WhileCaseToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} WhileCase";
+        public override string ToString() => $"WhileCase";
     }
 }

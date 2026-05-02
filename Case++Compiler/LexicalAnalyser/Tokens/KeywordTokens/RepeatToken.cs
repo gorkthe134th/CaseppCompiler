@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class RepeatToken(int line, int column) : Token(line, column)
+    public record class RepeatToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Repeat";
+        public override string ToString() => $"Repeat";
     }
 }

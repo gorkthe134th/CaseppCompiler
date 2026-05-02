@@ -11,7 +11,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 
         public override Predicate<char>? Trim => null;
 
-        public override Token GenerateToken(string text, int line, int column) =>
-            new ConstantToken(uint.Parse(text), line, column);
+        public override Token GenerateToken(Position position, string text) =>
+            new ConstantToken(position, uint.Parse(text));
     }
 }

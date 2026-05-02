@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class IfToken(int line, int column) : Token(line, column)
+    public record class IfToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} If";
+        public override string ToString() => $"If";
     }
 }

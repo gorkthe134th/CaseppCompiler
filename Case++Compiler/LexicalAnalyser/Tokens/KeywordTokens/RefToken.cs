@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class RefToken(int line, int column) : Token(line, column)
+    public record class RefToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Ref";
+        public override string ToString() => $"Ref";
     }
 }

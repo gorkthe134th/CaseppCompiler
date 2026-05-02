@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens
 {
-    public class HashToken(int line, int column) : Token(line, column)
+    public record class HashToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} Hash";
+        public override string ToString() => $"Hash";
     }
 }

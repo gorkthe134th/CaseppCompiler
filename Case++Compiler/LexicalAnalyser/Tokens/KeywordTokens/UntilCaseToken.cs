@@ -1,7 +1,7 @@
 ﻿namespace CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens
 {
-    public class UntilCaseToken(int line, int column) : Token(line, column)
+    public record class UntilCaseToken(Position Position) : Token(Position)
     {
-        public override string ToString() => $"{base.ToString()} UntilCase";
+        public override string ToString() => $"UntilCase";
     }
 }

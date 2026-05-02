@@ -1,4 +1,5 @@
-﻿using CaseppCompiler.LexicalAnalyser;
+﻿using CaseppCompiler;
+using CaseppCompiler.LexicalAnalyser;
 using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
@@ -24,25 +25,25 @@ namespace CaseppCompilerTest
             new object[] { "SingleLineComment.c++",
                 "Matcher" %
                 [ -"",
-                    "Divide" % OperatorToken.OperationType.Divide,
-                    "Divide" % OperatorToken.OperationType.Divide,
+                    "Divide" % OperationType.Divide,
+                    "Divide" % OperationType.Divide,
                     "EOF" % typeof(EOFToken),
                 ]
             },
             new object[] { "MultiLineComment.c++",
                 "Matcher" %
                 [ -"",
-                    "Multiply" % OperatorToken.OperationType.Multiply,
-                    "Divide" % OperatorToken.OperationType.Divide,
+                    "Multiply" % OperationType.Multiply,
+                    "Divide" % OperationType.Divide,
                     "EOF" % typeof(EOFToken),
                 ]
             },
             new object[] { "Identifier.c++",
                 "Matcher" %
                 [ -"",
-                    "And1" % OperatorToken.OperationType.And,
-                    "Not1" % OperatorToken.OperationType.Not,
-                    "Or1" % OperatorToken.OperationType.Or,
+                    "And1" % OperationType.And,
+                    "Not1" % OperationType.Not,
+                    "Or1" % OperationType.Or,
                     "Program" % typeof(ProgramToken),
                     new IdentifierTokenMatcher("andnot"),
                     new IdentifierTokenMatcher("ornot"),
@@ -54,7 +55,7 @@ namespace CaseppCompilerTest
                     new ConstantTokenMatcher("2(3)", 2),
                     new IdentifierTokenMatcher("program2"),
                     new IdentifierTokenMatcher("a23456789012345678901234567890"),
-                    "And3" % OperatorToken.OperationType.And,
+                    "And3" % OperationType.And,
                     "EOF" % typeof(EOFToken),
                 ]
             },
@@ -91,8 +92,8 @@ namespace CaseppCompilerTest
                 [ -"",
                     new IdentifierTokenMatcher("a"),
                     new ConstantTokenMatcher("1", 1),
-                    "+" % OperatorToken.OperationType.Add,
-                    ">" % OperatorToken.OperationType.GreaterThan,
+                    "+" % OperationType.Add,
+                    ">" % OperationType.GreaterThan,
                     "}" % typeof(BlockToken),
                     new IdentifierTokenMatcher("a23456789012345678901234567890"),
                     new IdentifierTokenMatcher("a23456789012345678901234567890"),
@@ -102,8 +103,8 @@ namespace CaseppCompilerTest
         ];
         private static readonly object[] sadTests =
         [
-            new object[] { "InvalidCharacter.c++"  , Does.StartWith("Line 1 Column 1: Invalid Token") },
-            new object[] { "ConstantOutOfRange.c++", Is.EqualTo("Line 1 Column 1: Constants must be in range [-32767, 32767]") },
+            new object[] { "InvalidCharacter.c++"  , Does.StartWith("Line 1, Column 1: Invalid Token") },
+            new object[] { "ConstantOutOfRange.c++", Is.EqualTo("Line 1, Column 1: Constants must be in range [-32767, 32767].") },
         ];
 
         [SetUp]
@@ -137,7 +138,8 @@ namespace CaseppCompilerTest
             {
                 if (tokens.Current is not IdentifierToken identifier || identifier.Name != Name) return false;
 
-                if (!tokens.MoveNext()) throw new LexicalAnalyserException($"Expected EOF Token");
+                Position currentPosition = tokens.Current.Position;
+                if (!tokens.MoveNext()) throw new LexicalAnalyserException(currentPosition + 1, $"Expected EOF Token");
 
                 return true;
             }
@@ -149,7 +151,8 @@ namespace CaseppCompilerTest
             {
                 if (tokens.Current is not ConstantToken constant || constant.Constant != c) return false;
 
-                if (!tokens.MoveNext()) throw new LexicalAnalyserException($"Expected EOF Token");
+                Position currentPosition = tokens.Current.Position;
+                if (!tokens.MoveNext()) throw new LexicalAnalyserException(currentPosition, $"Expected EOF Token");
 
                 return true;
             }
@@ -161,7 +164,8 @@ namespace CaseppCompilerTest
             {
                 if (tokens.Current is not BoolConstantToken constant || constant.Constant != c) return false;
 
-                if (!tokens.MoveNext()) throw new LexicalAnalyserException($"Expected EOF Token");
+                Position currentPosition = tokens.Current.Position;
+                if (!tokens.MoveNext()) throw new LexicalAnalyserException(currentPosition, $"Expected EOF Token");
 
                 return true;
             }

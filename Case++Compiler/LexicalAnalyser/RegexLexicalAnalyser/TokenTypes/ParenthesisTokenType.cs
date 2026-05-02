@@ -11,14 +11,13 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes
 
         public override Predicate<char>? Trim => null;
 
-        public override Token GenerateToken(string text, int line, int column) =>
-            new ParenthesisToken(
+        public override Token GenerateToken(Position position, string text) =>
+            new ParenthesisToken(position, 
                 text switch
                 {
                     "(" => RegionMarkType.Start,
                     ")" => RegionMarkType.End,
-                    _   => throw new LexicalAnalyserException($"Line {line} Column {column}: Invalid Parenthesis \"{text}\"")
-                },
-                line, column);
+                    _   => throw new LexicalAnalyserException(position, $"Invalid Parenthesis \"{text}\"")
+                });
     }
 }
