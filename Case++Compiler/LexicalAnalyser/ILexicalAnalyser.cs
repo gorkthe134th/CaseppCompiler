@@ -1,14 +1,11 @@
-﻿using CaseppCompiler.LexicalAnalyser.Tokens;
-using CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser;
+﻿using CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser;
 using CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser;
-
-using System.Collections.Concurrent;
 
 namespace CaseppCompiler.LexicalAnalyser
 {
     public interface ILexicalAnalyser
     {
-        public void Analyse(Stream input, BlockingCollection<Token>? output = null);
+        public void Analyse(Stream input, TokenStream? output = null);
     }
 
     public static class LexicalAnalyserFactory

@@ -31,10 +31,11 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
         /// </returns>
         public bool? TryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
         {
+            Position currentPosition = tokens.Current.Position;
             bool? result = BaseTryMatch(tokens, program);
             if (result == true && program != null && FinalAction != null)
             {
-                program.Position = tokens.Current.Position;
+                program.Position = currentPosition;
                 FinalAction.Invoke(program);
             }
             return result;

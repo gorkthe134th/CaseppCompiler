@@ -3,6 +3,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Xml.Linq;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
@@ -28,10 +29,16 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         {
             Function newFunction = new(name, Scopes, currentFunction) { IsMain = isMain };
 
-            if (currentFunction != null && !currentFunction.TryAddSymbol(newFunction))
-                throw new SyntaxAnalyserException(Position, $"Symbol \"{name}\" already exists.");
+            if (currentFunction != null)
+                try
+                {
+                    currentFunction.AddSymbol(newFunction);
+                }
+                catch (ArgumentException e)
+                {
+                    throw new SyntaxAnalyserException(Position, $"Invalid Function \"{name}\" for the current Function.", e);
+                }
 
-            compilerVariables.Push(newFunction);
             currentFunction = newFunction;
         }
 
@@ -41,9 +48,9 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             {
                 CurrentFunction.AddParameter(formalParameter);
             }
-            catch (InvalidOperationException e)
+            catch (ArgumentException e)
             {
-                throw new SyntaxAnalyserException(Position, $"Cannot add formal parameter \"{formalParameter}\" to function \"{CurrentFunction.Name}\".", e);
+                throw new SyntaxAnalyserException(Position, $"Invalid Formal Parameter \"{formalParameter}\" for Function \"{CurrentFunction.Name}\".", e);
             }
         }
 
@@ -93,16 +100,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void SetRepeatPoint() => CurrentFunction.SetRepeatPoint();
 
-        internal void SetLabel(string labelName)
-        {
-            if (!CurrentFunction.TryGetSymbol(labelName, out Symbol? symbol))
-            {
-                AddSymbol(new Label(labelName, CurrentInstructionIndex));
-                return;
-            }
-            if (symbol is not Label label) throw new SyntaxAnalyserException(Position, $"Symbol \"{labelName}\" already exists.");
-            if (!label.TrySet(CurrentInstructionIndex)) throw new SyntaxAnalyserException(Position, $"Label \"{labelName}\" already exists.");
-        }
+        internal void SetLabel(string labelName) => AddSymbol(new Label(labelName, CurrentInstructionIndex));
 
         internal void EnterScope() => CurrentFunction.EnterScope();
 
@@ -110,28 +108,42 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void AddSymbol(Symbol symbol)
         {
-            if (!CurrentFunction.TryAddSymbol(symbol)) throw new SyntaxAnalyserException(Position, $"Symbol \"{symbol.Name}\" already exists.");
+            try
+            {
+                CurrentFunction.AddSymbol(symbol);
+            }
+            catch (ArgumentException e)
+            {
+                throw new SyntaxAnalyserException(Position, $"Invalid {symbol.GetType().Name} \"{symbol.Name}\" for the current Function.", e);
+            }
         }
 
-        internal T GetSymbolInScope<T>(string name) where T : Symbol
+        internal T GetAccessibleSymbol<T>(string name) where T : Symbol
         {
-            if (!CurrentFunction.TryGetSymbol(name, out Symbol? symbol))
-                throw new SyntaxAnalyserException(Position, $"Symbol \"{name}\" does not exists in the current scope.");
-            if (symbol is not T s)
-                throw new SyntaxAnalyserException(Position, $"Symbol \"{name}\" is not a {typeof(T).Name.Replace("Symbol", null)}.");
+            Symbol symbol;
+
+            try
+            {
+                symbol = CurrentFunction.GetSymbol(name);
+            }
+            catch (ArgumentException e)
+            {
+                throw new SyntaxAnalyserException(Position, $"Inaccessible {typeof(T).Name} \"{name}\" from the current Function.", e);
+            }
+
+            if (symbol is not T s) throw new SyntaxAnalyserException(Position, $"Symbol \"{name}\" is not a {typeof(T).Name}.");
+
             return s;
         }
 
-        internal bool TryGetSymbolInScope<T>(string name, [NotNullWhen(true)] out T? symbol) where T : Symbol
-        {
-            if (!CurrentFunction.TryGetSymbol(name, out Symbol? s) || s is not T ts)
-            {
-                symbol = null;
-                return false;
-            }
-            symbol = ts;
-            return true;
-        }
+        /// <summary>
+        /// Gets the <see cref="Symbol"/> accessible from the current <see cref="Function"/> with the specified name, if it exists;
+        /// otherwise, calls <paramref name="symbolFactory"/> and adds the result to the accessible <see cref="Symbol"/>s of the current <see cref="Function"/>.
+        /// </summary>
+        /// <param name="name">The name of the <see cref="Symbol"/> to search.</param>
+        /// <param name="symbolFactory">The method to call if the requested <see cref="Symbol"/> is not found.</param>
+        /// <returns>The <see cref="Symbol"/> accessible from the current <see cref="Function"/> with the specified name or the result of calling <paramref name="symbolFactory"/>.</returns>
+        internal Symbol GetOrAddAccessibleSymbol(string name, Func<Symbol> symbolFactory) => CurrentFunction.GetOrAddSymbol(name, symbolFactory);
 
         internal void InitialiseVariable(Variable variable) => CurrentFunction.InitialiseVariable(variable);
 
@@ -177,6 +189,16 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             });
         }
 
-        public void Dispose() => Functions.Dispose();
+        public void CompleteAdding()
+        {
+            Functions.CompleteAdding();
+            Scopes.CompleteAdding();
+        }
+
+        public void Dispose()
+        {
+            Functions.Dispose();
+            Scopes.Dispose();
+        }
     }
 }

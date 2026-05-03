@@ -5,6 +5,8 @@ using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
+using NUnit.Framework.Constraints;
+
 using System.Collections.Concurrent;
 
 namespace CaseppCompilerTest
@@ -103,8 +105,8 @@ namespace CaseppCompilerTest
         ];
         private static readonly object[] sadTests =
         [
-            new object[] { "InvalidCharacter.c++"  , Does.StartWith("Line 1, Column 1: Invalid Token") },
-            new object[] { "ConstantOutOfRange.c++", Is.EqualTo("Line 1, Column 1: Constants must be in range [-32767, 32767].") },
+            new object[] { "InvalidCharacter.c++"  , new IResolveConstraint[] { Does.StartWith("Line 1, Column 1: Invalid Token") } },
+            new object[] { "ConstantOutOfRange.c++", new IResolveConstraint[] { Is.EqualTo("Line 1, Column 1: Constants must be in range [-32767, 32767].") } },
         ];
 
         [SetUp]
@@ -124,12 +126,17 @@ namespace CaseppCompilerTest
         }
 
         [TestCaseSource(nameof(sadTests))]
-        public void SadTest(string file, NUnit.Framework.Constraints.IResolveConstraint messageConstraint)
+        public void SadTest(string file, IEnumerable<IResolveConstraint> messageConstraints)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Sad\{file}");
 
-            var e = Assert.Throws<LexicalAnalyserException>(() => analyser.Analyse(File.OpenRead(path)), $"Expected LexicalAnalyserException");
-            Assert.That(e.Message, messageConstraint);
+            Exception? e = Assert.Throws<LexicalAnalyserException>(() => analyser.Analyse(File.OpenRead(path)), $"Expected LexicalAnalyserException.");
+            foreach (var messageConstraint in messageConstraints)
+            {
+                Assert.That(e, Is.Not.Null, $"Expected more Inner Exceptions.");
+                Assert.That(e.Message, messageConstraint);
+                e = e.InnerException;
+            }
         }
 
         private class IdentifierTokenMatcher(string name) : TokenMatcher(name)

@@ -299,6 +299,9 @@
     <Content Include="IntermediateLanguageTests\Sad\Initialisation\InitialiseFromFunctionNoCall.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ParameterAlreadyExists.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Conditions\Condition.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -9,8 +9,6 @@ namespace CaseppCompiler
 {
     internal class Program
     {
-        private record CompilationTask(Task Task, string ErrorMessagePrefix);
-
         private static void Main(string[] args)
         {
             if (args.Length < 1)
@@ -46,24 +44,43 @@ namespace CaseppCompiler
             ILexicalAnalyser lexicalAnalyser = LexicalAnalyserFactory.Create(lexicalAnalyserType);
             ISyntaxAnalyser  syntaxAnalyser  = SyntaxAnalyserFactory .Create(syntaxAnalyserType );
 
-            using BlockingCollection<Token> tokens = new(new ConcurrentQueue<Token>(), boundedCapacity: 128);
+            using CancellationTokenSource cancellationTokenSource = new();
+            using TokenStream tokens = new(128, cancellationTokenSource.Token);
             using IntermediateProgram program = new(functionCapacity: 4);
 
-            IList<CompilationTask> compilationTasks = [
-                new(Task.Run(() => lexicalAnalyser.Analyse(input , tokens )), "Lexical Analyser Exception"),
-                new(Task.Run(() => syntaxAnalyser .Analyse(tokens, program)),  "Syntax Analyser Exception"),
+            IList<Task> compilationTasks = [
+                Task.Run(() => lexicalAnalyser.Analyse(input , tokens ), cancellationTokenSource.Token),
+                Task.Run(() => syntaxAnalyser .Analyse(tokens, program), cancellationTokenSource.Token),
             ];
 
             while (compilationTasks.Count > 0)
             {
-                int finishedTaskIndex = Task.WaitAny([.. compilationTasks.Select(ct => ct.Task)]);
-                CompilationTask finishedTask = compilationTasks[finishedTaskIndex];
+                int finishedTaskIndex = Task.WaitAny([.. compilationTasks]);
+                Task finishedTask = compilationTasks[finishedTaskIndex];
                 compilationTasks.RemoveAt(finishedTaskIndex);
-                AggregateException? aggregateException = finishedTask.Task.Exception;
-                if (aggregateException != null)
+
+                if (finishedTask.IsFaulted)
                 {
-                    foreach (var exception in aggregateException.InnerExceptions)
-                        Console.WriteLine($"{finishedTask.ErrorMessagePrefix}: {exception.Message}");
+                    foreach (var e in finishedTask.Exception.InnerExceptions)
+                    {
+                        int tabCount = 0;
+                        Exception? exception = e;
+                        while (exception != null)
+                        {
+                            Console.WriteLine($"{new string('\t', tabCount++)}{exception.GetType().Name}: {exception.Message}");
+                            exception = exception.InnerException;
+                        }
+                    }
+                    cancellationTokenSource.Cancel();
+                    try
+                    {
+                        Task.WaitAll(compilationTasks);
+                    }
+                    catch (AggregateException e)
+                    {
+                        foreach (var exception in e.InnerExceptions) if (exception is not OperationCanceledException) throw;
+                        // No need to log which Tasks were Canceled; the main Exception is enough
+                    }
                     return;
                 }
             }

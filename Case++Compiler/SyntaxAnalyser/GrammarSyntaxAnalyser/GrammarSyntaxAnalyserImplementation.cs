@@ -1,4 +1,5 @@
-﻿using CaseppCompiler.LexicalAnalyser.Tokens;
+﻿using CaseppCompiler.LexicalAnalyser;
+using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
@@ -48,7 +49,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     ] | (program => {
                         string id = program.PopCompilerVariable<string>();
                         Variable variable = new(id, false);
-                        program.PeekCompilerVariable<Function>().AddParameter(new TypeRestrictedFormalParameter<InParameter>(variable));
+                        program.AddFormalParameter(new TypeRestrictedFormalParameter<InParameter>(variable));
                         program.InitialiseVariable(variable);
                     }),
                     "Out Parameter" %
@@ -58,7 +59,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     ] | (program => {
                         string id = program.PopCompilerVariable<string>();
                         Variable variable = new(id, true);
-                        program.PeekCompilerVariable<Function>().AddParameter(new TypeRestrictedFormalParameter<OutParameter>(variable));
+                        program.AddFormalParameter(new TypeRestrictedFormalParameter<OutParameter>(variable));
                     }),
                     "InOut Parameter" %
                     [
@@ -67,7 +68,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     ] | (program => {
                         string id = program.PopCompilerVariable<string>();
                         Variable variable = new(id, true);
-                        program.PeekCompilerVariable<Function>().AddParameter(new TypeRestrictedFormalParameter<InOutParameter>(variable));
+                        program.AddFormalParameter(new TypeRestrictedFormalParameter<InOutParameter>(variable));
                         program.InitialiseVariable(variable);
                     }),
                 ];
@@ -90,7 +91,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                     "Comma" % typeof(CommaToken),
                                     formalParameterMatcher,
                                 ],
-                            ]) | (program => _ = program.PopCompilerVariable<Function>() /* End the Formal Parameter definition */),
+                            ]),
                         "Function Body" % statementMatcher,
                         "Optional Semi Colon" ^ typeof(SemiColonToken),
                     ] | (program => program.FinalizeFunction(p => new ReturnInstruction(p, 0)))
@@ -115,7 +116,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "\"out\" Keyword" % typeof(OutToken),
                         "Parameter ID" % typeof(IdentifierToken),
                     ] | (program => {
-                        Variable variable = program.GetSymbolInScope<Variable>(program.PopCompilerVariable<string>());
+                        Variable variable = program.GetAccessibleSymbol<Variable>(program.PopCompilerVariable<string>());
                         program.PeekCompilerVariable<FunctionCallBlockInfo>().AddParameter(new OutParameter(variable));
                     }),
                     "InOut Parameter" %
@@ -123,7 +124,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "\"inout\" Keyword" % typeof(InOutToken),
                         "Parameter ID" % typeof(IdentifierToken),
                     ] | (program => {
-                        Variable variable = program.GetSymbolInScope<Variable>(program.PopCompilerVariable<string>());
+                        Variable variable = program.GetAccessibleSymbol<Variable>(program.PopCompilerVariable<string>());
                         program.UseVariable(variable);
                         program.PeekCompilerVariable < FunctionCallBlockInfo >().AddParameter(new InOutParameter(variable));
                     }),
@@ -142,7 +143,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             "Actual Parameter List" >
                             [
                                 -"$function" | (program => {
-                                    program.PushCompilerVariable(new FunctionCallBlockInfo(program.GetSymbolInScope<Function>(program.PopCompilerVariable<string>()), program.CurrentInstructionIndex));
+                                    program.PushCompilerVariable(new FunctionCallBlockInfo(program.GetAccessibleSymbol<Function>(program.PopCompilerVariable<string>()), program.CurrentInstructionIndex));
                                 }),
                                 "Actual Parameters" ^
                                 [
@@ -169,7 +170,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             ],
                             -"$variable" | (program => {
                                 // If there are no parameters, expect an initialised variable
-                                Variable variable = program.GetSymbolInScope<Variable>(program.PopCompilerVariable<string>());
+                                Variable variable = program.GetAccessibleSymbol<Variable>(program.PopCompilerVariable<string>());
                                 program.UseVariable(variable);
                                 program.PushCompilerVariable(new ExpressionBlockInfo(variable, program.CurrentInstructionIndex));
                             }),
@@ -340,11 +341,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     "Constant" % typeof(ConstantToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(program.PopCompilerVariable<uint>()))),
                     "Symbol or Label" % typeof(IdentifierToken) | (program => {
                         string name = program.PopCompilerVariable<string>();
-                        if (!program.TryGetSymbolInScope<Symbol>(name, out var symbol))
-                        {
-                            symbol = new Label(name, []);
-                            program.AddSymbol(symbol);
-                        }
+                        Symbol symbol = program.GetOrAddAccessibleSymbol(name, () => new Label(name, []));
                         program.PushCompilerVariable(new InstructionFactory.Argument(symbol));
                     }),
                     "Underscore" % typeof(UnderscoreToken) | (program => program.PushCompilerVariable(new InstructionFactory.Argument(null))),
@@ -404,7 +401,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         expressionMatcher,
                     ] | (program => {
                         ExpressionBlockInfo expression = program.PopCompilerVariable<ExpressionBlockInfo>();
-                        Variable variable = program.GetSymbolInScope<Variable>(program.PopCompilerVariable<string>());
+                        Variable variable = program.GetAccessibleSymbol<Variable>(program.PopCompilerVariable<string>());
                         // Assume that the variable is initialised when the first assignment is encountered.
                         // It is possible that this assignment will be skipped, but it's hard to check initisation in a way that accounts for jumps.
                         // This assumption doesn't lead to false positives and catches the most obvious (but not uncommon) true positives.
@@ -693,7 +690,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "\"input\" Keyword" % typeof(InputToken),
                         "Variable ID" % typeof(IdentifierToken),
                     ] | (program => {
-                        Variable variable = program.GetSymbolInScope<Variable>(program.PopCompilerVariable<string>());
+                        Variable variable = program.GetAccessibleSymbol<Variable>(program.PopCompilerVariable<string>());
                         program.CreateInstruction(p => new InputInstruction(p, variable));
                         program.InitialiseVariable(variable);
                     }),
@@ -748,20 +745,26 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     "\"program\" Keyword" % typeof(ProgramToken),
                     "Program ID" % typeof(IdentifierToken) | (program => {
                         program.CreateFunction(program.PopCompilerVariable<string>(), true);
-                        _ = program.PopCompilerVariable<Function>(); // Ignore variable; program takes no arguments.
                     }),
                     "Program Body" % statementMatcher,
                     "EOF" % typeof(EOFToken) | (program => program.FinalizeFunction(p => new HaltInstruction(p))),
                 ];
         }
 
-        public void Analyse(BlockingCollection<Token> input, IntermediateProgram? output = null)
+        public void Analyse(TokenStream input, IntermediateProgram? output = null)
         {
-            var tokens = input.GetConsumingEnumerable().GetEnumerator();
-            if (!tokens.MoveNext()) throw new SyntaxAnalyserException(default, $"Expected EOF Token.");
-            if (superMatcher.TryMatch(tokens, output) == false)
-                throw new SyntaxAnalyserException(tokens.Current.Position, $"Expected {superMatcher.Name}, but got {tokens.Current}.");
-            output?.CheckNoLeftoverVariables();
+            try
+            {
+                var tokens = input.GetConsumingEnumerable().GetEnumerator();
+                if (!tokens.MoveNext()) throw new SyntaxAnalyserException(default, $"Expected EOF Token.");
+                if (superMatcher.TryMatch(tokens, output) == false)
+                    throw new SyntaxAnalyserException(tokens.Current.Position, $"Expected {superMatcher.Name}, but got {tokens.Current}.");
+                output?.CheckNoLeftoverVariables();
+            }
+            finally
+            {
+                output?.CompleteAdding();
+            }
         }
     }
 }

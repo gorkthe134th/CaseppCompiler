@@ -1,7 +1,6 @@
 ﻿using CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser.TokenTypes;
 using CaseppCompiler.LexicalAnalyser.Tokens;
 
-using System.Collections.Concurrent;
 using System.Text;
 
 namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
@@ -26,129 +25,135 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
             new MultiLineCommentTokenType(),
         ];
 
-        public void Analyse(Stream input, BlockingCollection<Token>? output = null)
+        public void Analyse(Stream input, TokenStream? output = null)
         {
-            StreamReader reader = new(input);
-            Queue<char> overflow = new();
-
-            Dictionary<TokenType, IEnumerator<Func<char, bool?>>> tokenTypePredicates;
-            StringBuilder currentText = new();
-            Queue<char> addedOverflow = new();
-            Position currentPosition = new(1, 0);
-            Position matchStart = new(1, 1);
-            Position matchEnd = new(-1, -1);
-
-            bool IsOnlyWhiteSpace()
+            try
             {
-                char character;
-                do
+                StreamReader reader = new(input);
+                Queue<char> overflow = new();
+
+                Dictionary<TokenType, IEnumerator<Func<char, bool?>>> tokenTypePredicates;
+                StringBuilder currentText = new();
+                Queue<char> addedOverflow = new();
+                Position currentPosition = new(1, 0);
+                Position matchStart = new(1, 1);
+                Position matchEnd = new(-1, -1);
+
+                bool IsOnlyWhiteSpace()
                 {
-                    if (!overflow.TryDequeue(out character))
+                    char character;
+                    do
                     {
-                        if (reader.EndOfStream) return true;
-                        character = (char)reader.Read();
-                    }
-                    if (character == '\n') currentPosition.GoToNextLine();
-                    else currentPosition++;
-                } while (char.IsWhiteSpace(character));
-
-                matchStart = currentPosition;
-
-                overflow.Enqueue(character);
-                currentPosition--;
-
-                return false;
-            }
-
-            while (!IsOnlyWhiteSpace())
-            {
-                char character;
-                bool eof;
-
-                tokenTypePredicates = tokenTypes.Select(t =>
-                    new KeyValuePair<TokenType, IEnumerator<Func<char, bool?>>>(t, t.CharacterPredicates.GetEnumerator()))
-                    .ToDictionary();
-                TokenType? longestMatchingType = null;
-
-                do
-                {
-                    eof = true;
-                    if (overflow.TryDequeue(out character)) eof = false;
-                    else
-                    { 
-                        int readResult = reader.Read();
-                        if (readResult != -1)
+                        if (!overflow.TryDequeue(out character))
                         {
-                            character = (char)readResult;
-                            eof = false;
+                            if (reader.EndOfStream) return true;
+                            character = (char)reader.Read();
                         }
-                    }
-                    if (!eof)
-                    {
                         if (character == '\n') currentPosition.GoToNextLine();
                         else currentPosition++;
-                    }
+                    } while (char.IsWhiteSpace(character));
 
-                    bool updatedLongestMatchingType = false;
-                    int? limit = null;
-                    foreach ((TokenType type, IEnumerator<Func<char, bool?>> predicates) in tokenTypePredicates)
+                    matchStart = currentPosition;
+
+                    overflow.Enqueue(character);
+                    currentPosition--;
+
+                    return false;
+                }
+
+                while (!IsOnlyWhiteSpace())
+                {
+                    char character;
+                    bool eof;
+
+                    tokenTypePredicates = tokenTypes.Select(t =>
+                        new KeyValuePair<TokenType, IEnumerator<Func<char, bool?>>>(t, t.CharacterPredicates.GetEnumerator()))
+                        .ToDictionary();
+                    TokenType? longestMatchingType = null;
+
+                    do
                     {
-                        if (!predicates.MoveNext())
+                        eof = true;
+                        if (overflow.TryDequeue(out character)) eof = false;
+                        else
                         {
-                            longestMatchingType = type;
-                            updatedLongestMatchingType = true;
-                            matchEnd = currentPosition - 1;
-                            addedOverflow.Clear();
-                            if (!eof)
+                            int readResult = reader.Read();
+                            if (readResult != -1)
                             {
-                                addedOverflow.Enqueue(character);
-                                if (character == '\n') matchEnd.GoToPreviousLine();
+                                character = (char)readResult;
+                                eof = false;
                             }
-                            tokenTypePredicates.Remove(type);
-                            continue;
                         }
-                        switch (eof ? false : predicates.Current(character))
+                        if (!eof)
                         {
-                            case false:
-                                tokenTypePredicates.Remove(type);
-                                break;
-                            case null:
+                            if (character == '\n') currentPosition.GoToNextLine();
+                            else currentPosition++;
+                        }
+
+                        bool updatedLongestMatchingType = false;
+                        int? limit = null;
+                        foreach ((TokenType type, IEnumerator<Func<char, bool?>> predicates) in tokenTypePredicates)
+                        {
+                            if (!predicates.MoveNext())
+                            {
                                 longestMatchingType = type;
                                 updatedLongestMatchingType = true;
-                                if (limit == null || type.Limit > limit) limit = type.Limit;
-                                matchEnd = currentPosition;
+                                matchEnd = currentPosition - 1;
                                 addedOverflow.Clear();
-                                break;
-                            case true:
-                                if (limit == null || type.Limit > limit) limit = type.Limit;
-                                break;
+                                if (!eof)
+                                {
+                                    addedOverflow.Enqueue(character);
+                                    if (character == '\n') matchEnd.GoToPreviousLine();
+                                }
+                                tokenTypePredicates.Remove(type);
+                                continue;
+                            }
+                            switch (eof ? false : predicates.Current(character))
+                            {
+                                case false:
+                                    tokenTypePredicates.Remove(type);
+                                    break;
+                                case null:
+                                    longestMatchingType = type;
+                                    updatedLongestMatchingType = true;
+                                    if (limit == null || type.Limit > limit) limit = type.Limit;
+                                    matchEnd = currentPosition;
+                                    addedOverflow.Clear();
+                                    break;
+                                case true:
+                                    if (limit == null || type.Limit > limit) limit = type.Limit;
+                                    break;
+                            }
                         }
-                    }
 
-                    if (!eof)
-                    {
-                        if (!updatedLongestMatchingType) addedOverflow.Enqueue(character);
-                        currentText.Append(character);
-                        if (limit != null && currentText.Length > (int)limit)
-                            currentText.Remove((int)limit, currentText.Length - (int)limit);
-                    }
-                } while (tokenTypePredicates.Count > 0);
+                        if (!eof)
+                        {
+                            if (!updatedLongestMatchingType) addedOverflow.Enqueue(character);
+                            currentText.Append(character);
+                            if (limit != null && currentText.Length > (int)limit)
+                                currentText.Remove((int)limit, currentText.Length - (int)limit);
+                        }
+                    } while (tokenTypePredicates.Count > 0);
 
-                if (longestMatchingType == null)
-                    throw new LexicalAnalyserException(currentPosition, $"Invalid Token \"{currentText}\"");
+                    if (longestMatchingType == null)
+                        throw new LexicalAnalyserException(currentPosition, $"Invalid Token \"{currentText}\"");
 
-                currentText.Remove(currentText.Length - addedOverflow.Count, addedOverflow.Count);
-                Token? token = longestMatchingType.GenerateToken(matchStart, currentText.ToString());
-                if (token != null) output?.Add(token);
+                    currentText.Remove(currentText.Length - addedOverflow.Count, addedOverflow.Count);
+                    Token? token = longestMatchingType.GenerateToken(matchStart, currentText.ToString());
+                    if (token != null) output?.Add(token);
 
-                currentText.Clear();
+                    currentText.Clear();
 
-                currentPosition = matchEnd;
+                    currentPosition = matchEnd;
 
-                while (addedOverflow.TryDequeue(out character)) overflow.Enqueue(character);
+                    while (addedOverflow.TryDequeue(out character)) overflow.Enqueue(character);
+                }
+                output?.Add(new EOFToken(currentPosition + 1));
             }
-            output?.Add(new EOFToken(currentPosition + 1));
-            output?.CompleteAdding();
+            finally
+            {
+                output?.CompleteAdding();
+            }
         }
     }
 }

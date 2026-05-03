@@ -5,13 +5,27 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
-    // TODO: Replace error code with exceptions
+    /// <summary>
+    /// Represents a list of <see cref="Instruction"/>s.
+    /// </summary>
     internal class Function : Symbol
     {
+        /// <summary>
+        /// The <see cref="Function"/> in which this <see cref="Function"/> was defined, if any.
+        /// </summary>
         public Function? Parent { get; }
 
+        /// <summary>
+        /// A name that uniquely identifies the <see cref="Function"/>.
+        /// </summary>
         public string FullName => Parent != null ? Parent.FullName + "_" + Name : Name;
 
+        /// <summary>
+        /// Indicates whether the <see cref="Function"/> is the first to be called when the final code is executed.
+        /// </summary>
+        /// <remarks>
+        /// There must be only one <see cref="Function"/> marked as "Main" in a given program.
+        /// </remarks>
         internal bool IsMain { get; init; } = false;
 
         private readonly IList<FormalParameter> formalParameters = [];
@@ -22,12 +36,18 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         private readonly HashSet<Variable> variablesInitialised = [];
         private readonly HashSet<Variable> variablesUsed = [];
 
+        /// <summary>
+        /// The <see cref="Variable"/> containing the result of the <see cref="Function"/> execution, if any.
+        /// </summary>
         internal Variable? ReturnVariable { get; }
 
         private Dictionary<JumpInstruction, uint> breakOrigins = [];
         private readonly Stack<int> repeatTargets = [];
         private readonly BlockingCollection<Scope> scopes;
 
+        /// <param name="name">The name that the <see cref="Function"/> will be identified by.</param>
+        /// <param name="scopes">The collection that will receive the <see cref="Scope"/>s created by the <see cref="Function"/>.</param>
+        /// <param name="parent">The <see cref="Function"/> in which this <see cref="Function"/> was defined, if any.</param>
         public Function(string name, BlockingCollection<Scope> scopes, Function? parent = null) : base(name)
         {
             this.Parent = parent;
@@ -36,19 +56,42 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             this.scopes = scopes;
         }
 
+        /// <summary>
+        /// The <see cref="FormalParameter"/>s of the <see cref="Function"/>.
+        /// </summary>
         internal IReadOnlyList<FormalParameter> FormalParameters => formalParameters.AsReadOnly();
 
+        /// <summary>
+        /// The <see cref="Instruction"/>s that will be executed when the <see cref="Function"/> is called.
+        /// </summary>
         public IReadOnlyList<Instruction> Instructions => instructions.AsReadOnly();
 
-        public int CurrentInstructionIndex => instructions.Count;
+        /// <summary>
+        /// The Instruction Index of the next <see cref="Instruction"/> to be added.
+        /// </summary>
+        internal int CurrentInstructionIndex => instructions.Count;
 
-        public int QuadCount => instructions.Count + 2;
+        /// <summary>
+        /// The number of Quads that whould be produced if the <see cref="ToQuads(int)"/> method was called on this <see cref="Function"/>.
+        /// </summary>
+        internal int QuadCount => instructions.Count + 2;
 
+        /// <summary>
+        /// Adds a <see cref="FormalParameter"/> to the <see cref="Function"/>.
+        /// </summary>
+        /// <param name="formalParameter">The <see cref="FormalParameter"/> to add.</param>
+        /// <exception cref="ArgumentException">Invalid Formal Parameter.</exception>
         internal void AddParameter(FormalParameter formalParameter)
         {
             formalParameters.Add(formalParameter);
-            if (!TryAddSymbol(formalParameter.AssociatedVariable))
-                throw new InvalidOperationException($"Parameter \"{formalParameter.AssociatedVariable.Name}\" already exists.");
+            try
+            {
+                currentScope.AddSymbol(formalParameter.AssociatedVariable);
+            }
+            catch (ArgumentException e)
+            {
+                throw new ArgumentException($"Invalid Formal Parameter \"{formalParameter}\".", e);
+            }
         }
 
         internal void AddInstruction(Instruction instruction) => instructions.Add(instruction);
@@ -102,9 +145,48 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         // Could check parent nullability first to skip detaching the variables in case it is null,
         // but it looks cleaner this way and the progenitor scope never has variables, anyway.
 
-        internal bool TryAddSymbol(Symbol symbol) => currentScope.TryAddSymbol(symbol);
+        /// <summary>
+        /// Adds a symbol to the current scope.
+        /// </summary>
+        /// <param name="symbol">The symbol to add.</param>
+        /// <exception cref="ArgumentException">Invalid Symbol for the current Scope.</exception>
+        internal void AddSymbol(Symbol symbol)
+        {
+            try
+            {
+                currentScope.AddSymbol(symbol);
+            }
+            catch (ArgumentException e)
+            {
+                throw new ArgumentException($"Invalid Symbol \"{symbol.Name}\" for the current Scope.", e);
+            }
+        }
 
-        internal bool TryGetSymbol(string name, [NotNullWhen(true)] out Symbol? symbol) => currentScope.TryGetSymbol(name, out symbol);
+        /// <summary>
+        /// Gets the <see cref="Symbol"/> in the current <see cref="Scope"/> with the specified name, if it exists; otherwise, calls <paramref name="symbolFactory"/> and adds the result to the current <see cref="Scope"/>.
+        /// </summary>
+        /// <param name="name">The name of the <see cref="Symbol"/> to search.</param>
+        /// <param name="symbolFactory">The method to call if the requested <see cref="Symbol"/> is not found.</param>
+        /// <returns>The <see cref="Symbol"/> in the current <see cref="Scope"/> with the specified name or the result of calling <paramref name="symbolFactory"/>.</returns>
+        internal Symbol GetOrAddSymbol(string name, Func<Symbol> symbolFactory) => currentScope.GetOrAddSymbol(name, symbolFactory);
+
+        /// <summary>
+        /// Gets the <see cref="Symbol"/> in the current <see cref="Scope"/> with the specified name.
+        /// </summary>
+        /// <param name="name">The name of the <see cref="Symbol"/> to search.</param>
+        /// <returns>The <see cref="Symbol"/> with the specified name defined in either this <see cref="Function"/> or any of its ancestors.</returns>
+        /// <exception cref="ArgumentException">Inaccessible Symbol from the current <see cref="Scope"/>.</exception>
+        internal Symbol GetSymbol(string name)
+        {
+            try
+            {
+                return currentScope[name];
+            }
+            catch (ArgumentException e)
+            {
+                throw new ArgumentException($"Inaccessible Symbol \"{name}\" from the current Scope.", e);
+            }
+        }
 
         internal void InitialiseVariable(Variable variable)
         {

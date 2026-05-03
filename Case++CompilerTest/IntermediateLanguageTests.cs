@@ -3,6 +3,8 @@ using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
+using NUnit.Framework.Constraints;
+
 using System.Collections.Concurrent;
 
 namespace CaseppCompilerTest
@@ -745,53 +747,59 @@ namespace CaseppCompilerTest
 
         private static readonly object[] sadTests =
         [
-            new object[] { @"ILInstructions\LabelAlreadyExists.c++", Is.EqualTo("Line 3, Column 12: Label \"l\" already exists.") },
+            new object[] { @"ParameterAlreadyExists.c++", new IResolveConstraint[]
+            {
+                Is.EqualTo("Line 3, Column 16: Invalid formal parameter \"Out Parameter x\" in function \"f\"."),
+                Is.EqualTo("Parameter \"x\" already exists."),
+            } },
 
-            new object[] { @"ILInstructions\Assignment\NoValue.c++", Is.EqualTo("Line 4, Column 15: Expected Constant or Variable ID for 1st argument.") },
-            new object[] { @"ILInstructions\Assignment\NoNull.c++", Is.EqualTo("Line 4, Column 15: Expected no 2nd argument.") },
-            new object[] { @"ILInstructions\Assignment\AssignToConstant.c++", Is.EqualTo("Line 4, Column 15: Expected Variable ID for 3rd argument.") },
+            new object[] { @"ILInstructions\LabelAlreadyExists.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 9: Label \"l\" already exists.") } },
 
-            new object[] { @"ILInstructions\Input\InputToConstant.c++", Is.EqualTo("Line 4, Column 15: Expected Variable ID for 1st argument.") },
-            new object[] { @"ILInstructions\Input\NoNull1.c++", Is.EqualTo("Line 4, Column 15: Expected no 2nd argument.") },
-            new object[] { @"ILInstructions\Input\NoNull2.c++", Is.EqualTo("Line 4, Column 15: Expected no 3rd argument.") },
+            new object[] { @"ILInstructions\Assignment\NoValue.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected Constant or Variable ID for 1st argument.") } },
+            new object[] { @"ILInstructions\Assignment\NoNull.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 2nd argument.") } },
+            new object[] { @"ILInstructions\Assignment\AssignToConstant.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected Variable ID for 3rd argument.") } },
 
-            new object[] { @"ILInstructions\Output\OutputNull.c++", Is.EqualTo("Line 4, Column 16: Expected Constant or Variable ID for 1st argument.") },
-            new object[] { @"ILInstructions\Output\NoNull1.c++", Is.EqualTo("Line 4, Column 16: Expected no 2nd argument.") },
-            new object[] { @"ILInstructions\Output\NoNull2.c++", Is.EqualTo("Line 4, Column 16: Expected no 3rd argument.") },
+            new object[] { @"ILInstructions\Input\InputToConstant.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected Variable ID for 1st argument.") } },
+            new object[] { @"ILInstructions\Input\NoNull1.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 2nd argument.") } },
+            new object[] { @"ILInstructions\Input\NoNull2.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 3rd argument.") } },
 
-            new object[] { @"ILInstructions\Halt\NoNull1.c++", Is.EqualTo("Line 3, Column 17: Expected no 1st argument.") },
-            new object[] { @"ILInstructions\Halt\NoNull2.c++", Is.EqualTo("Line 3, Column 17: Expected no 2nd argument.") },
-            new object[] { @"ILInstructions\Halt\NoNull3.c++", Is.EqualTo("Line 3, Column 17: Expected no 3rd argument.") },
+            new object[] { @"ILInstructions\Output\OutputNull.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected Constant or Variable ID for 1st argument.") } },
+            new object[] { @"ILInstructions\Output\NoNull1.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 2nd argument.") } },
+            new object[] { @"ILInstructions\Output\NoNull2.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 3rd argument.") } },
 
-            new object[] { @"ILInstructions\Par\NoValue.c++", Is.EqualTo("Line 3, Column 17: Expected Constant or Variable ID for 1st argument.") },
-            new object[] { @"ILInstructions\Par\NoType.c++", Is.EqualTo("Line 3, Column 16: Expected Parameter Type for 2nd argument.") },
-            new object[] { @"ILInstructions\Par\NoNull.c++", Is.EqualTo("Line 3, Column 17: Expected no 3rd argument.") },
+            new object[] { @"ILInstructions\Halt\NoNull1.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 4: Expected no 1st argument.") } },
+            new object[] { @"ILInstructions\Halt\NoNull2.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 4: Expected no 2nd argument.") } },
+            new object[] { @"ILInstructions\Halt\NoNull3.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 4: Expected no 3rd argument.") } },
 
-            new object[] { @"ILInstructions\Call\CallConstant.c++", Is.EqualTo("Line 4, Column 17: Expected Function Name for 1st argument.") },
-            new object[] { @"ILInstructions\Call\NoNull1.c++", Is.EqualTo("Line 4, Column 17: Expected no 2nd argument.") },
-            new object[] { @"ILInstructions\Call\NoNull2.c++", Is.EqualTo("Line 4, Column 17: Expected no 3rd argument.") },
+            new object[] { @"ILInstructions\Par\NoValue.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 4: Expected Constant or Variable ID for 1st argument.") } },
+            new object[] { @"ILInstructions\Par\NoType.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 4: Expected Parameter Type for 2nd argument.") } },
+            new object[] { @"ILInstructions\Par\NoNull.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 4: Expected no 3rd argument.") } },
 
-            new object[] { @"ILInstructions\Return\ReturnNull.c++", Is.EqualTo("Line 4, Column 17: Expected Constant or Variable ID for 1st argument.") },
-            new object[] { @"ILInstructions\Return\NoNull1.c++", Is.EqualTo("Line 4, Column 17: Expected no 2nd argument.") },
-            new object[] { @"ILInstructions\Return\NoNull2.c++", Is.EqualTo("Line 4, Column 17: Expected no 3rd argument.") },
+            new object[] { @"ILInstructions\Call\CallConstant.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected Function Name for 1st argument.") } },
+            new object[] { @"ILInstructions\Call\NoNull1.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 2nd argument.") } },
+            new object[] { @"ILInstructions\Call\NoNull2.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 3rd argument.") } },
 
-            new object[] { @"ILInstructions\Operation\NoOperand1.c++", Is.EqualTo("Line 3, Column 14: Expected Constant or Variable ID for 1st argument.") },
-            new object[] { @"ILInstructions\Operation\NoOperand2.c++", Is.EqualTo("Line 3, Column 14: Expected Constant or Variable ID for 2nd argument.") },
-            new object[] { @"ILInstructions\Operation\NoVariable.c++", Is.EqualTo("Line 3, Column 14: Expected Variable ID for 3rd argument.") },
+            new object[] { @"ILInstructions\Return\ReturnNull.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected Constant or Variable ID for 1st argument.") } },
+            new object[] { @"ILInstructions\Return\NoNull1.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 2nd argument.") } },
+            new object[] { @"ILInstructions\Return\NoNull2.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 3rd argument.") } },
 
-            new object[] { @"ILInstructions\Jump\NoNull1.c++", Is.EqualTo("Line 3, Column 20: Expected no 1st argument.") },
-            new object[] { @"ILInstructions\Jump\NoNull2.c++", Is.EqualTo("Line 3, Column 20: Expected no 2nd argument.") },
-            new object[] { @"ILInstructions\Jump\NotLabel.c++", Is.EqualTo("Line 3, Column 20: Expected Label Name for 3rd argument.") },
+            new object[] { @"ILInstructions\Operation\NoOperand1.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 4: Expected Constant or Variable ID for 1st argument.") } },
+            new object[] { @"ILInstructions\Operation\NoOperand2.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 4: Expected Constant or Variable ID for 2nd argument.") } },
+            new object[] { @"ILInstructions\Operation\NoVariable.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 4: Expected Variable ID for 3rd argument.") } },
 
-            new object[] { @"ILInstructions\Comparison\NoOperand1.c++", Is.EqualTo("Line 3, Column 17: Expected Constant or Variable ID for 1st argument.") },
-            new object[] { @"ILInstructions\Comparison\NoOperand2.c++", Is.EqualTo("Line 3, Column 18: Expected Constant or Variable ID for 2nd argument.") },
-            new object[] { @"ILInstructions\Comparison\NotLabel.c++", Is.EqualTo("Line 3, Column 17: Expected Label Name for 3rd argument.") },
+            new object[] { @"ILInstructions\Jump\NoNull1.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected no 1st argument.") } },
+            new object[] { @"ILInstructions\Jump\NoNull2.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected no 2nd argument.") } },
+            new object[] { @"ILInstructions\Jump\NotLabel.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected Label Name for 3rd argument.") } },
 
-            new object[] { @"Initialisation\NoInitialisation.c++", Is.EqualTo("Line 4, Column 9: Use of uninitialised variable x.") },
-            new object[] { @"Initialisation\InitialiseLocalInstead.c++", Is.EqualTo("Line 8, Column 9: Use of uninitialised variable x.") },
-            new object[] { @"Initialisation\InitialiseFromFunctionNoCall.c++", Is.EqualTo("Line 7, Column 9: Use of uninitialised variable x.") },
-            new object[] { @"Initialisation\InitialiseFromFunctionUseFirst.c++", Is.EqualTo("Line 7, Column 9: Use of uninitialised variables in function \"f\": \"x\".") },
-            new object[] { @"Initialisation\InitialiseFromFunctionAlreadyUsed.c++", Is.EqualTo("Line 13, Column 9: Use of uninitialised variables in function \"g\": \"x\".") },
+            new object[] { @"ILInstructions\Comparison\NoOperand1.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected Constant or Variable ID for 1st argument.") } },
+            new object[] { @"ILInstructions\Comparison\NoOperand2.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected Constant or Variable ID for 2nd argument.") } },
+            new object[] { @"ILInstructions\Comparison\NotLabel.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected Label Name for 3rd argument.") } },
+
+            new object[] { @"Initialisation\NoInitialisation.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 9: Use of uninitialised variable x.") } },
+            new object[] { @"Initialisation\InitialiseLocalInstead.c++", new IResolveConstraint[] { Is.EqualTo("Line 8, Column 9: Use of uninitialised variable x.") } },
+            new object[] { @"Initialisation\InitialiseFromFunctionNoCall.c++", new IResolveConstraint[] { Is.EqualTo("Line 7, Column 9: Use of uninitialised variable x.") } },
+            new object[] { @"Initialisation\InitialiseFromFunctionUseFirst.c++", new IResolveConstraint[] { Is.EqualTo("Line 7, Column 9: Use of uninitialised variables in function \"f\": \"x\".") } },
+            new object[] { @"Initialisation\InitialiseFromFunctionAlreadyUsed.c++", new IResolveConstraint[] { Is.EqualTo("Line 13, Column 9: Use of uninitialised variables in function \"g\": \"x\".") } },
         ];
 
         [SetUp]
@@ -830,11 +838,11 @@ namespace CaseppCompilerTest
         }
 
         [TestCaseSource(nameof(sadTests))]
-        public void Sad(string file, NUnit.Framework.Constraints.IResolveConstraint messageConstraint)
+        public void Sad(string file, IEnumerable<IResolveConstraint> messageConstraints)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"IntermediateLanguageTests\Sad\{file}");
 
-            var e = Assert.Throws<SyntaxAnalyserException>(() =>
+            Exception? e = Assert.Throws<SyntaxAnalyserException>(() =>
             {
                 using BlockingCollection<Token> tokenQueue = [];
                 using IntermediateProgram program = new();
@@ -842,8 +850,14 @@ namespace CaseppCompilerTest
                 lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
                 syntaxAnalyser.Analyse(tokenQueue, program);
             },
-            $"Expected SyntaxAnalyserException");
-            Assert.That(e.Message, messageConstraint);
+            $"Expected SyntaxAnalyserException.");
+
+            foreach (var messageConstraint in messageConstraints)
+            {
+                Assert.That(e, Is.Not.Null, $"Expected more Inner Exceptions.");
+                Assert.That(e.Message, messageConstraint);
+                e = e.InnerException;
+            }
         }
     }
 }

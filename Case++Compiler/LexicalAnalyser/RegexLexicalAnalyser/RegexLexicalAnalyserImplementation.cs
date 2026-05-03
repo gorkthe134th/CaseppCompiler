@@ -1,8 +1,6 @@
 ﻿using CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser.TokenTypes;
 using CaseppCompiler.LexicalAnalyser.Tokens;
 
-using System.Collections.Concurrent;
-
 namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
 {
     internal class RegexLexicalAnalyserImplementation : ILexicalAnalyser
@@ -42,30 +40,36 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
             ];
         }
 
-        public void Analyse(Stream input, BlockingCollection<Token>? output = null)
+        public void Analyse(Stream input, TokenStream? output = null)
         {
-            InputStream inputStream = new(input);
-            Position position = new(1, 1);
-            while (!inputStream.EndOfStream)
+            try
             {
-                inputStream.Trim(ref position);
-                if (inputStream.EndOfStream) break;
-                TokenType? matchedType = null;
-                if (inputStream.TryMatchFirst(tokenTypes.Select(type => (matchedType = type).Regex), out string text) && matchedType != null)
+                InputStream inputStream = new(input);
+                Position position = new(1, 1);
+                while (!inputStream.EndOfStream)
                 {
-                    var token = matchedType.GenerateToken(position, text);
-                    output?.Add(token);
-                    position += text.Length;
-                    Predicate<char>? trim = matchedType.Trim;
-                    if (trim != null) inputStream.Trim(trim, ref position);
+                    inputStream.Trim(ref position);
+                    if (inputStream.EndOfStream) break;
+                    TokenType? matchedType = null;
+                    if (inputStream.TryMatchFirst(tokenTypes.Select(type => (matchedType = type).Regex), out string text) && matchedType != null)
+                    {
+                        var token = matchedType.GenerateToken(position, text);
+                        output?.Add(token);
+                        position += text.Length;
+                        Predicate<char>? trim = matchedType.Trim;
+                        if (trim != null) inputStream.Trim(trim, ref position);
+                    }
+                    else
+                    {
+                        throw new LexicalAnalyserException(position, $"Invalid Token");
+                    }
                 }
-                else
-                {
-                    throw new LexicalAnalyserException(position, $"Invalid Token");
-                }
+                output?.Add(new EOFToken(position));
             }
-            output?.Add(new EOFToken(position));
-            output?.CompleteAdding();
+            finally
+            {
+                output?.CompleteAdding();
+            }
         }
     }
 }
