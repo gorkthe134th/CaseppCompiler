@@ -1,20 +1,65 @@
 ﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 {
     internal class StackFrame
     {
-        public static int extraBytes = 8; // Include 2 more words for the return address and the parent frame pointer
+        private const int baseFrameExtraBytes = 8;
 
-        public int Length { get; }
+        internal int Length { get; }
 
-        public IDictionary<Variable, int> VariableOffsets { get; }
+        internal int Start { get; }
 
-        public StackFrame(params IEnumerable<Variable> variables)
+        internal int End { get; }
+
+        private int firstVariableOffset;
+        private readonly Dictionary<Variable, int> variableOffsets;
+
+        internal delegate void MovedHandler(StackFrame sender);
+        internal event MovedHandler? Moved;
+
+        internal StackFrame(int start, int end, bool isBase, params IEnumerable<Variable> variables)
         {
+            firstVariableOffset = isBase ? baseFrameExtraBytes : 0;
+
             int length = 0;
-            VariableOffsets = variables.Select((v, i) => new KeyValuePair<Variable, int>(v, length = 4 * i + extraBytes)).ToDictionary();
-            Length = length;
+            variableOffsets = variables.Select((v, i) =>
+            {
+                var kvp = new KeyValuePair<Variable, int>(v, length);
+                length += 4;
+                return kvp;
+            }).ToDictionary();
+
+            Length = firstVariableOffset + length;
+            Start = start;
+            End = end;
+        }
+
+        internal int GetOffset(Variable variable) => variableOffsets[variable] + firstVariableOffset;
+
+        internal bool TryGetOffset(Variable variable, [NotNullWhen(true)] out int? offset)
+        {
+            if (!variableOffsets.TryGetValue(variable, out int variableOffset))
+            {
+                offset = null;
+                return false;
+            }
+            offset = variableOffset + firstVariableOffset;
+            return true;
+        }
+
+        internal void HandleStackFrameForParentAdded(StackFrame stackFrame)
+        {
+            UpdateOffset(stackFrame);
+            stackFrame.Moved += UpdateOffset;
+        }
+
+        private void UpdateOffset(StackFrame parent)
+        {
+            firstVariableOffset = parent.firstVariableOffset + parent.Length;
+            Moved?.Invoke(this);
         }
     }
 }

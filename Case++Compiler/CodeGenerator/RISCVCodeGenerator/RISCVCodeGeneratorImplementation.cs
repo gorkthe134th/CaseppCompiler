@@ -28,25 +28,17 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
             [OperationType.GreaterThanOrEqualTo] = "bge",
         }.ToImmutableDictionary();
 
-        private record StackFrameList(TaskCompletionSource Complete, List<StackFrame> StackFrames);
-
         public void Analyse(IntermediateProgram input, BlockingCollection<string>? output = null)
         {
             try
             {
-                ConcurrentDictionary<Function, StackFrameList> stackFrames = new(2, 3);
+                ConcurrentDictionary<Function, FunctionInfo> functionInfos = new(2, 3);
                 Task.Run(() =>
                 {
                     foreach (var scope in input.Scopes.GetConsumingEnumerable())
                     {
-                        StackFrameList list = stackFrames.GetOrAdd(scope.EncompassingFunction, f => new(new(), []));
-                        if (list.Complete.Task.IsCompleted)
-                            throw new ArgumentException($"Function \"{scope.EncompassingFunction}\" has been finalized, but got unprocessed scope for it: {scope}");
-                        list.StackFrames.Add(new(from symbol in scope.Symbols
-                                                 let variable = symbol as Variable
-                                                 where variable != null
-                                                 select variable));
-                        if (scope.IsBase) list.Complete.SetResult();
+                        FunctionInfo info = functionInfos.GetOrAdd(scope.EncompassingFunction, f => new(new(), []));
+                        info.AddStackFrameFromScope(scope);
                     }
                 });
 
@@ -54,36 +46,42 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 
                 foreach (Function function in input.Functions.GetConsumingEnumerable())
                 {
-                    StackFrameList stackFrameList = stackFrames.GetOrAdd(function, f => new(new(), []));
-                    stackFrameList.Complete.Task.Wait();
+                    FunctionInfo functionInfo = functionInfos.GetOrAdd(function, f => new(new(), []));
+                    functionInfo.Ready.Task.Wait();
 
                     if (function.IsMain) output?.Add($"main:");
                     output?.Add($"{function.FullName}:");
+                    output?.Add($"sw ra, 4(sp)");
 
-                    IList<ParameterInstruction> nextCallParameters = [];
-                    int currentIndex = 0;
+                    List<ParameterInstruction> nextCallParameters = [];
+                    List<StackFrame> loadedFrames = functionInfo.StackFrames.Count > 0 ? [functionInfo.StackFrames[0]] : [];
+                    int currentInstructionIndex = 0;
                     foreach (var instruction in function.Instructions)
                     {
-                        output?.Add($"l{currentIndex}:");
+                        output?.Add($"{function.FullName}_{currentInstructionIndex}:");
+
+                        loadedFrames.RemoveAll(sf => sf.End <= currentInstructionIndex);
+                        loadedFrames.AddRange(functionInfo.StackFrames.Where(sf => sf.Start == currentInstructionIndex));
+
                         switch (instruction)
                         {
                             case AssignmentInstruction assignmentInstruction:
-                                GenerateValueLoadingCode(assignmentInstruction.Value, "t1");
-                                GenerateVariableStoringCode(assignmentInstruction.Variable, "t1");
+                                GenerateValueLoadingCode(assignmentInstruction.Value, "t1", instruction.Position);
+                                GenerateVariableStoringCode(assignmentInstruction.Variable, "t1", instruction.Position);
                                 break;
                             case OperationInstruction operationInstruction:
-                                GenerateValueLoadingCode(operationInstruction.Operand1, "t1");
-                                GenerateValueLoadingCode(operationInstruction.Operand2, "t2");
+                                GenerateValueLoadingCode(operationInstruction.Operand1, "t1", instruction.Position);
+                                GenerateValueLoadingCode(operationInstruction.Operand2, "t2", instruction.Position);
                                 output?.Add($"{operationMap[operationInstruction.Operation]} t1, t1, t2");
-                                GenerateVariableStoringCode(operationInstruction.Result, "t1");
+                                GenerateVariableStoringCode(operationInstruction.Result, "t1", instruction.Position);
                                 break;
                             case InputInstruction inputInstruction:
                                 output?.Add($"li a7, 5");
                                 output?.Add($"ecall");
-                                GenerateVariableStoringCode(inputInstruction.Variable, "a0");
+                                GenerateVariableStoringCode(inputInstruction.Variable, "a0", instruction.Position);
                                 break;
                             case OutputInstruction outputInstruction:
-                                GenerateValueLoadingCode(outputInstruction.Value, "a0");
+                                GenerateValueLoadingCode(outputInstruction.Value, "a0", instruction.Position);
                                 output?.Add($"li a7, 1");
                                 output?.Add($"ecall");
                                 break;
@@ -99,14 +97,21 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                 {
                                     Function callee = callInstruction.Function;
 
-                                    if (!stackFrames.TryGetValue(callee, out StackFrameList? calleeList))
+                                    if (!functionInfos.TryGetValue(callee, out FunctionInfo? calleeList))
                                         throw new CodeGeneratorException(callInstruction.Position, $"Call of undefined function \"{callee.Name}\"");
 
                                     if (calleeList.StackFrames.Count > 0)
                                     {
-                                        StackFrame firstFrame = calleeList.StackFrames[0];
+                                        StackFrame baseFrame = calleeList.StackFrames[^1];
 
-                                        output?.Add($"addi fp, sp, {firstFrame.Length}");
+                                        output?.Add($"addi fp, sp, {loadedFrames.Sum(f => f.Length)}");
+                                        if (callee.Parent == function) output?.Add($"sw sp, 0(fp)");
+                                        else if (callee.Parent == function.Parent)
+                                        {
+                                            output?.Add($"lw t0, 0(sp)");
+                                            output?.Add($"sw t0, 0(fp)");
+                                        }
+                                        else throw new CodeGeneratorException(callInstruction.Position, $"Inaccessible Parent Function \"{callee.Parent?.Name}\" from Function \"{function.Name}\"");
 
                                         if (nextCallParameters.Count != callee.FormalParameters.Count)
                                             throw new CodeGeneratorException(callInstruction.Position,
@@ -129,21 +134,22 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                             switch (actualParameter)
                                             {
                                                 case InParameter inParameter:
-                                                    GenerateValueLoadingCode(inParameter.Value, "t1");
+                                                    GenerateValueLoadingCode(inParameter.Value, "t1", instruction.Position);
                                                     break;
                                                 case InOutParameter inOutParameter:
-                                                    GenerateVariableFetchingCode(inOutParameter.Variable);
+                                                    GenerateVariableFetchingCode(inOutParameter.Variable, instruction.Position);
                                                     output?.Add($"mv t1, t0");
                                                     break;
                                                 case OutParameter outParameter:
-                                                    GenerateVariableFetchingCode(outParameter.Variable);
+                                                    GenerateVariableFetchingCode(outParameter.Variable, instruction.Position);
                                                     output?.Add($"mv t1, t0");
                                                     break;
                                                 default:
                                                     throw new ArgumentException($"Invalid parameter: {actualParameter}");
                                             }
-                                            GenerateVariableStoringCode(formalParameter.AssociatedVariable, "t1");
+                                            output?.Add($"sw t1, {baseFrame.GetOffset(formalParameter.AssociatedVariable)}(fp)");
                                         }
+                                        output?.Add($"mv sp, fp");
                                         nextCallParameters = [];
                                     }
                                     output?.Add($"jal ra, {callee.FullName}");
@@ -153,8 +159,8 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                 switch ((function.ReturnVariable == null, returnInstruction.Value == null))
                                 {
                                     case (false, false):
-                                        GenerateValueLoadingCode(returnInstruction.Value!, "t1");
-                                        GenerateVariableStoringCode(function.ReturnVariable!, "t1");
+                                        GenerateValueLoadingCode(returnInstruction.Value!, "t1", instruction.Position);
+                                        GenerateVariableStoringCode(function.ReturnVariable!, "t1", instruction.Position);
                                         break;
                                     case (true, true):
                                         break;
@@ -163,38 +169,40 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                     case (true, false):
                                         throw new CodeGeneratorException(returnInstruction.Position, $"Procedures cannot return a value");
                                 }
+                                output?.Add($"lw ra, 4(sp)");
+                                output?.Add($"jr ra");
                                 break;
                             case UnconditionalJumpInstruction unconditionalJumpInstruction:
-                                output?.Add($"j l{unconditionalJumpInstruction.Target}");
+                                output?.Add($"j {function.FullName}_{unconditionalJumpInstruction.Target}");
                                 break;
                             case ComparisonJumpInstruction comparisonJumpInstruction:
-                                GenerateValueLoadingCode(comparisonJumpInstruction.Operand1, "t1");
-                                GenerateValueLoadingCode(comparisonJumpInstruction.Operand1, "t2");
-                                output?.Add($"{comparisonMap[comparisonJumpInstruction.Operation]} t1, t2, l{comparisonJumpInstruction.Target}");
+                                GenerateValueLoadingCode(comparisonJumpInstruction.Operand1, "t1", instruction.Position);
+                                GenerateValueLoadingCode(comparisonJumpInstruction.Operand2, "t2", instruction.Position);
+                                output?.Add($"{comparisonMap[comparisonJumpInstruction.Operation]} t1, t2, {function.FullName}_{comparisonJumpInstruction.Target}");
                                 break;
                             default:
                                 throw new ArgumentException($"Invalid Intermediate Language Instruction: {instruction}");
                         }
-                        currentIndex++;
+                        currentInstructionIndex++;
                     }
 
-                    void GenerateValueLoadingCode(Value value, string register)
+                    void GenerateValueLoadingCode(Value value, string register, Position position)
                     {
                         if (value.IsConstant(out var constant))
                             output?.Add($"li {register}, {constant}");
                         else if (value.IsVariable(out var variable))
-                            GenerateVariableLoadingCode(variable, register);
+                            GenerateVariableLoadingCode(variable, register, position);
                     }
 
-                    void GenerateVariableLoadingCode(Variable variable, string register)
+                    void GenerateVariableLoadingCode(Variable variable, string register, Position position)
                     {
-                        GenerateVariableFetchingCode(variable);
+                        GenerateVariableFetchingCode(variable, position);
                         output?.Add($"lw {register}, 0(t0)");
                     }
 
-                    void GenerateVariableStoringCode(Variable variable, string register)
+                    void GenerateVariableStoringCode(Variable variable, string register, Position position)
                     {
-                        GenerateVariableFetchingCode(variable);
+                        GenerateVariableFetchingCode(variable, position);
                         output?.Add($"sw {register}, 0(t0)");
                     }
 
@@ -205,10 +213,24 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                     /// </summary>
                     /// <param name="variable">The variable to locate.</param>
                     /// <param name="output">The collection to store the generated code.</param>
-                    void GenerateVariableFetchingCode(Variable variable)
+                    void GenerateVariableFetchingCode(Variable variable, Position position)
                     {
-                        // Dummy
-                        output?.Add($"lw t0, 0(sp)");
+                        output?.Add($"mv t0, sp");
+                        List<StackFrame> currentFrames = loadedFrames;
+                        int variableOffset = 0;
+                        while (!currentFrames.Any(f =>
+                        {
+                            if (!f.TryGetOffset(variable, out int? offset)) return false;
+                            variableOffset = (int)offset;
+                            return true;
+                        }))
+                        {
+                            Function parent = function.Parent ??
+                                throw new CodeGeneratorException(position, $"Inaccessible Variable \"{variable.Name}\" from Function \"{function.Name}\"");
+                            currentFrames = functionInfos[parent].StackFrames;
+                            output?.Add($"lw t0, 0(t0)");
+                        }
+                        output?.Add($"addi t0, t0, {variableOffset}");
                     }
                 }
             }
