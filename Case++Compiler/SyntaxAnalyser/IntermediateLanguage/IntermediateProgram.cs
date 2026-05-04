@@ -2,8 +2,6 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Xml.Linq;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
@@ -59,6 +57,9 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             Function function = CurrentFunction;
             function.SetAllBreakTargets();
             CreateInstruction(create);
+            function.ExitScope();
+            function.AddReturnValueParameter();
+
             Functions.Add(function);
             currentFunction = function.Parent;
         }
@@ -100,7 +101,20 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void SetRepeatPoint() => CurrentFunction.SetRepeatPoint();
 
-        internal void SetLabel(string labelName) => AddSymbol(new Label(labelName, CurrentInstructionIndex));
+        internal void SetLabel(string labelName)
+        {
+            bool created = false;
+            Symbol symbol = GetOrAddAccessibleSymbol(labelName, () =>
+            {
+                created = true;
+                return new Label(labelName, CurrentInstructionIndex);
+            });
+            if (!created)
+            {
+                if (symbol is not Label label) throw new SyntaxAnalyserException(Position, $"Symbol \"{labelName}\" already exists.");
+                if (!label.TrySet(CurrentInstructionIndex)) throw new SyntaxAnalyserException(Position, $"Label \"{labelName}\" is already set.");
+            }
+        }
 
         internal void EnterScope() => CurrentFunction.EnterScope();
 
@@ -180,11 +194,11 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         public IEnumerable<(string?, string?, string?, string?)> ToQuads()
         {
-            int i = 0;
-            return Functions.SelectMany(function =>
+            int offset = 0;
+            return Functions.GetConsumingEnumerable().SelectMany(function =>
             {
-                var ret = function.ToQuads(i);
-                i += function.QuadCount;
+                var ret = function.ToQuads(offset);
+                offset += function.QuadCount;
                 return ret;
             });
         }

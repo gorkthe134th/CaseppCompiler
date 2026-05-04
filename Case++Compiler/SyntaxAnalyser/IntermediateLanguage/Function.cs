@@ -32,9 +32,11 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         private readonly IList<Instruction> instructions = [];
 
-        private Scope currentScope;
+        private Scope? currentScope;
         private readonly HashSet<Variable> variablesInitialised = [];
         private readonly HashSet<Variable> variablesUsed = [];
+
+        private Scope CurrentScope => currentScope ?? throw new InvalidOperationException("No available scopes.");
 
         /// <summary>
         /// The <see cref="Variable"/> containing the result of the <see cref="Function"/> execution, if any.
@@ -86,12 +88,18 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             formalParameters.Add(formalParameter);
             try
             {
-                currentScope.AddSymbol(formalParameter.AssociatedVariable);
+                CurrentScope.AddSymbol(formalParameter.AssociatedVariable);
             }
             catch (ArgumentException e)
             {
                 throw new ArgumentException($"Invalid Formal Parameter \"{formalParameter}\".", e);
             }
+        }
+
+        internal void AddReturnValueParameter()
+        {
+            if (ReturnVariable != null)
+                formalParameters.Add(new TypeRestrictedFormalParameter<OutParameter>(ReturnVariable));
         }
 
         internal void AddInstruction(Instruction instruction) => instructions.Add(instruction);
@@ -138,9 +146,10 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void ExitScope()
         {
-            currentScope.Exit(CurrentInstructionIndex);
-            scopes.Add(currentScope);
-            currentScope = currentScope.Parent ?? throw new InvalidOperationException("Cannot exit progenitor scope.");
+            Scope scope = CurrentScope;
+            scope.Exit(CurrentInstructionIndex);
+            scopes.Add(scope);
+            currentScope = scope.Parent;
         }
         // Could check parent nullability first to skip detaching the variables in case it is null,
         // but it looks cleaner this way and the progenitor scope never has variables, anyway.
@@ -154,7 +163,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         {
             try
             {
-                currentScope.AddSymbol(symbol);
+                CurrentScope.AddSymbol(symbol);
             }
             catch (ArgumentException e)
             {
@@ -168,7 +177,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         /// <param name="name">The name of the <see cref="Symbol"/> to search.</param>
         /// <param name="symbolFactory">The method to call if the requested <see cref="Symbol"/> is not found.</param>
         /// <returns>The <see cref="Symbol"/> in the current <see cref="Scope"/> with the specified name or the result of calling <paramref name="symbolFactory"/>.</returns>
-        internal Symbol GetOrAddSymbol(string name, Func<Symbol> symbolFactory) => currentScope.GetOrAddSymbol(name, symbolFactory);
+        internal Symbol GetOrAddSymbol(string name, Func<Symbol> symbolFactory) => CurrentScope.GetOrAddSymbol(name, symbolFactory);
 
         /// <summary>
         /// Gets the <see cref="Symbol"/> in the current <see cref="Scope"/> with the specified name.
@@ -180,7 +189,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         {
             try
             {
-                return currentScope[name];
+                return CurrentScope[name];
             }
             catch (ArgumentException e)
             {
@@ -195,7 +204,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal bool TryUseVariable(Variable variable)
         {
-            if (variable.DeclaratingScope == currentScope && !variablesInitialised.Contains(variable)) return false;
+            if (variable.DeclaratingScope == CurrentScope && !variablesInitialised.Contains(variable)) return false;
             variablesUsed.Add(variable);
             return true;
         }
@@ -207,7 +216,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                                            select variable);
             var usedVariableGroups = from variable in other.variablesUsed
                                      where !variablesInitialised.Contains(variable)
-                                     group variable by variable.DeclaratingScope == currentScope;
+                                     group variable by variable.DeclaratingScope == CurrentScope;
             uninitialisedVariables = null;
             IEnumerable<Variable>? initialisedVariables = null;
             foreach (var group in usedVariableGroups)

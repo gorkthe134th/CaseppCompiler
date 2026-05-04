@@ -174,7 +174,7 @@ namespace CaseppCompilerTest
         public void HappyTest(string file)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"SyntaxAnalyserTests\Happy\{file}");
-            using BlockingCollection<Token> tokenQueue = [];
+            using TokenStream tokenQueue = new();
 
             lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
             syntaxAnalyser.Analyse(tokenQueue);
@@ -187,7 +187,7 @@ namespace CaseppCompilerTest
 
             Exception? e = Assert.Throws<SyntaxAnalyserException>(() =>
             {
-                using BlockingCollection<Token> tokenQueue = [];
+                using TokenStream tokenQueue = new();
                 lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
                 syntaxAnalyser.Analyse(tokenQueue);
             },

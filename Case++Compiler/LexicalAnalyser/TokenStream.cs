@@ -4,9 +4,17 @@ using System.Collections.Concurrent;
 
 namespace CaseppCompiler.LexicalAnalyser
 {
-    public class TokenStream(int capacity, CancellationToken? cancellationToken) : IDisposable
+    public class TokenStream : IDisposable
     {
-        private readonly BlockingCollection<Token> tokens = new(new ConcurrentQueue<Token>(), boundedCapacity: capacity);
+        private readonly BlockingCollection<Token> tokens;
+        private readonly CancellationToken? cancellationToken;
+
+        public TokenStream(int? capacity = null, CancellationToken? cancellationToken = null)
+        {
+            this.cancellationToken = cancellationToken;
+            ConcurrentQueue<Token> queque = new();
+            tokens = capacity == null ? new(queque) : new(queque, boundedCapacity: (int)capacity);
+        }
 
         public void Add(Token token)
         {

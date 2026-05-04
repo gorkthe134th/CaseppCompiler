@@ -749,11 +749,12 @@ namespace CaseppCompilerTest
         [
             new object[] { @"ParameterAlreadyExists.c++", new IResolveConstraint[]
             {
-                Is.EqualTo("Line 3, Column 16: Invalid formal parameter \"Out Parameter x\" in function \"f\"."),
-                Is.EqualTo("Parameter \"x\" already exists."),
+                Is.EqualTo("Line 3, Column 16: Invalid Formal Parameter \"Out Parameter x\" for Function \"f\"."),
+                Is.EqualTo("Invalid Formal Parameter \"Out Parameter x\"."),
+                Is.EqualTo("Symbol \"x\" already exists."),
             } },
 
-            new object[] { @"ILInstructions\LabelAlreadyExists.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 9: Label \"l\" already exists.") } },
+            new object[] { @"ILInstructions\LabelAlreadyExists.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 9: Label \"l\" is already set.") } },
 
             new object[] { @"ILInstructions\Assignment\NoValue.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected Constant or Variable ID for 1st argument.") } },
             new object[] { @"ILInstructions\Assignment\NoNull.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 2nd argument.") } },
@@ -813,7 +814,7 @@ namespace CaseppCompilerTest
         public void Happy(string file, (string?, string?, string?, string?)[]? expectedQuads)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"IntermediateLanguageTests\Happy\{file}");
-            using BlockingCollection<Token> tokenQueue = [];
+            using TokenStream tokenQueue = new();
             using IntermediateProgram program = new();
 
             lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
@@ -844,7 +845,7 @@ namespace CaseppCompilerTest
 
             Exception? e = Assert.Throws<SyntaxAnalyserException>(() =>
             {
-                using BlockingCollection<Token> tokenQueue = [];
+                using TokenStream tokenQueue = new();
                 using IntermediateProgram program = new();
 
                 lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);

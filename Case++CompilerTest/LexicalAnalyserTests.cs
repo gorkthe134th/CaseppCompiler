@@ -116,11 +116,11 @@ namespace CaseppCompilerTest
         public void HappyTest(string file, TokenMatcher matcher)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Happy\{file}");
-            using BlockingCollection<Token> tokenQueue = [];
+            using TokenStream tokenQueue = new();
 
             analyser.Analyse(File.OpenRead(path), tokenQueue);
 
-            var tokens = ((IEnumerable<Token>)tokenQueue).GetEnumerator();
+            var tokens = tokenQueue.GetConsumingEnumerable().GetEnumerator();
             Assert.That(tokens.MoveNext(), Is.True);
             Assert.That(matcher.TryMatch(tokens, null), Is.True);
         }

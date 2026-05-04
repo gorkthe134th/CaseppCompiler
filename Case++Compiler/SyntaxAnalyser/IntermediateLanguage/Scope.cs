@@ -61,7 +61,11 @@
         /// <returns>The <see cref="Symbol"/> in the <see cref="Scope"/> with the specified name or the result of calling <paramref name="symbolFactory"/>.</returns>
         internal Symbol GetOrAddSymbol(string name, Func<Symbol> symbolFactory)
         {
-            if (!symbols.TryGetValue(name, out Symbol? symbol)) symbol = symbolFactory.Invoke();
+            if (!symbols.TryGetValue(name, out Symbol? symbol))
+            {
+                symbol = symbolFactory.Invoke();
+                symbols.Add(symbol.Name, symbol);
+            }
             return symbol;
         }
 
