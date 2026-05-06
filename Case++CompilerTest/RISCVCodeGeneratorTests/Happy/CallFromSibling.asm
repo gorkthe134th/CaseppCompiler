@@ -13,7 +13,7 @@ p_g:            # start of function "g"
 sw ra, 4(sp)    # save the return address
 p_g_0:          # "par" does not produce code
 p_g_1:
-addi fp, sp, 32 # set the frame pointer to the start of the next frame
+addi fp, sp, 16 # set the frame pointer to the start of the next frame
 mv t0, sp
 lw t0, 0(t0)
 sw t0, 0(fp)    # since this is a call to a sibling, it has the same parent as the current function

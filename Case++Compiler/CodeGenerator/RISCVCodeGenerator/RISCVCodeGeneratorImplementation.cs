@@ -59,7 +59,10 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                         output?.Add($"{function.FullName}_{currentInstructionIndex}:");
 
                         loadedFrames.RemoveAll(sf => sf.End <= currentInstructionIndex);
-                        loadedFrames.AddRange(functionInfo.StackFrames.Where(sf => sf.Start == currentInstructionIndex));
+                        List<StackFrame> frames = functionInfo.StackFrames;
+                        for (int i = frames.Count - 1; i >= 0; i--)
+                            if (frames[i].Start == currentInstructionIndex)
+                                loadedFrames.Add(frames[i]);
 
                         switch (instruction)
                         {
