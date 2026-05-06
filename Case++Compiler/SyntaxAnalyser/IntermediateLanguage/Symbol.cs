@@ -4,13 +4,15 @@
     {
         public string Name { get; } = name;
 
-        private Scope? declaratingScope;
-        internal Scope DeclaratingScope
+        private Function? declaratingFunction;
+        internal Function DeclaratingFunction
         {
-            get => declaratingScope ?? throw new InvalidOperationException($"Variable \"{Name}\" is free. The Declarating Scope is unknown.");
-            set => declaratingScope = value;
+            get => declaratingFunction ??
+                throw new InvalidOperationException($"Variable \"{Name}\" is free. The Declarating Function is unknown.");
+            set => declaratingFunction = declaratingFunction == null ? value :
+                throw new InvalidOperationException("The Declarating Function has already been set.");
         }
 
-        internal virtual void ForgetScope() => declaratingScope = null;
+        internal virtual void ForgetScope() => declaratingFunction = null;
     }
 }

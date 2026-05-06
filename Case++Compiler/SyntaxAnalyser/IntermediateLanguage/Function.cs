@@ -82,18 +82,11 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         /// Adds a <see cref="FormalParameter"/> to the <see cref="Function"/>.
         /// </summary>
         /// <param name="formalParameter">The <see cref="FormalParameter"/> to add.</param>
-        /// <exception cref="ArgumentException">Invalid Formal Parameter.</exception>
+        /// <exception cref="ArgumentException">Invalid Symbol for the current Scope.</exception>
         internal void AddParameter(FormalParameter formalParameter)
         {
             formalParameters.Add(formalParameter);
-            try
-            {
-                CurrentScope.AddSymbol(formalParameter.AssociatedVariable);
-            }
-            catch (ArgumentException e)
-            {
-                throw new ArgumentException($"Invalid Formal Parameter \"{formalParameter}\".", e);
-            }
+            AddSymbol(formalParameter.AssociatedVariable);
         }
 
         internal void AddReturnValueParameter()
@@ -174,6 +167,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             {
                 throw new ArgumentException($"Invalid Symbol \"{symbol.Name}\" for the current Scope.", e);
             }
+            symbol.DeclaratingFunction = this;
         }
 
         /// <summary>
@@ -189,7 +183,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         /// </summary>
         /// <param name="name">The name of the <see cref="Symbol"/> to search.</param>
         /// <returns>The <see cref="Symbol"/> with the specified name defined in either this <see cref="Function"/> or any of its ancestors.</returns>
-        /// <exception cref="ArgumentException">Inaccessible Symbol from the current <see cref="Scope"/>.</exception>
+        /// <exception cref="ArgumentException">Inaccessible Symbol from the current Scope.<see cref="Scope"/>.</exception>
         internal Symbol GetSymbol(string name)
         {
             try
@@ -202,35 +196,45 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             }
         }
 
+        /// <summary>
+        /// Marks the specified <see cref="Variable"/> as initialised by the <see cref="Function"/>.
+        /// </summary>
+        /// <param name="variable">The <see cref="Variable"/> to mark as initialised.</param>
         internal void InitialiseVariable(Variable variable)
         {
             if (!variablesUsed.Contains(variable)) variablesInitialised.Add(variable);
         }
 
-        internal bool TryUseVariable(Variable variable)
+        /// <summary>
+        /// Marks the specified <see cref="Variable"/> as used by the <see cref="Function"/>.
+        /// </summary>
+        /// <param name="variable">The <see cref="Variable"/> to mark as used.</param>
+        /// <exception cref="InvalidOperationException">Use of uninitialised variable.</exception>
+        internal void UseVariable(Variable variable)
         {
-            if (variable.DeclaratingScope == CurrentScope && !variablesInitialised.Contains(variable)) return false;
+            if (variable.DeclaratingFunction == this && !variablesInitialised.Contains(variable))
+                throw new InvalidOperationException($"Use of uninitialised variable {variable.Name}.");
             variablesUsed.Add(variable);
-            return true;
         }
 
-        internal bool MergeVariableDependancies(Function other, [NotNullWhen(false)] out IEnumerable<Variable>? uninitialisedVariables)
+        /// <summary>
+        /// Marks <see cref="Variable"/>s as initialised or used by this <see cref="Function"/>, based on the initialisation or usage of them by <paramref name="other"/>.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <exception cref="InvalidOperationException">Use of uninitialised variables in function.</exception>
+        internal void MergeVariableDependancies(Function other)
         {
             variablesInitialised.UnionWith(from variable in other.variablesInitialised
                                            where !variablesUsed.Contains(variable)
                                            select variable);
             var usedVariableGroups = from variable in other.variablesUsed
                                      where !variablesInitialised.Contains(variable)
-                                     group variable by variable.DeclaratingScope == CurrentScope;
-            uninitialisedVariables = null;
-            IEnumerable<Variable>? initialisedVariables = null;
+                                     group variable by variable.DeclaratingFunction == this;
             foreach (var group in usedVariableGroups)
             {
-                if (group.Key) { uninitialisedVariables = group; return false; }
-                else initialisedVariables = group;
+                if (group.Key == false) variablesUsed.UnionWith(group);
+                else throw new InvalidOperationException($"Use of uninitialised variables in function \"{other.Name}\": {string.Join(", ", group.Select(v => $"\"{v.Name}\""))}.");
             }
-            if (initialisedVariables != null) variablesUsed.UnionWith(initialisedVariables);
-            return true;
         }
 
         public IEnumerable<(string?, string?, string?, string?)> ToQuads(int offset)

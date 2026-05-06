@@ -86,7 +86,6 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             {
                 throw new ArgumentException($"Symbol \"{symbol.Name}\" already exists.", e);
             }
-            symbol.DeclaratingScope = this;
         }
 
         /// <summary>

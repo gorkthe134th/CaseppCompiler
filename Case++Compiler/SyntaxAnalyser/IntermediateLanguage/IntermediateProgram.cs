@@ -173,12 +173,25 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void UseVariable(Variable variable)
         {
-            if (!CurrentFunction.TryUseVariable(variable)) throw new SyntaxAnalyserException(Position, $"Use of uninitialised variable {variable.Name}.");
+            try
+            {
+                CurrentFunction.UseVariable(variable);
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new SyntaxAnalyserException(Position, $"Cannot use variable {variable.Name}.", e);
+            }
         }
         internal void MergeVariableDependancies(Function calledFunction)
         {
-            if (!CurrentFunction.MergeVariableDependancies(calledFunction, out var uninitialisedVariables))
-                throw new SyntaxAnalyserException(Position, $"Use of uninitialised variables in function \"{calledFunction.Name}\": {string.Join(", ", uninitialisedVariables.Select(v => $"\"{v.Name}\""))}.");
+            try
+            {
+                CurrentFunction.MergeVariableDependancies(calledFunction);
+            }
+            catch(InvalidOperationException e)
+            {
+                throw new SyntaxAnalyserException(Position, $"Cannot use function \"{calledFunction.Name}\".", e);
+            }
         }
 
         internal void PushCompilerVariable(object variable) => compilerVariables.Push(variable);

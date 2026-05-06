@@ -748,7 +748,7 @@ namespace CaseppCompilerTest
             new object[] { @"ParameterAlreadyExists.c++", new IResolveConstraint[]
             {
                 Is.EqualTo("Line 3, Column 16: Invalid Formal Parameter \"Out Parameter x\" for Function \"f\"."),
-                Is.EqualTo("Invalid Formal Parameter \"Out Parameter x\"."),
+                Is.EqualTo("Invalid Symbol \"x\" for the current Scope."),
                 Is.EqualTo("Symbol \"x\" already exists."),
             } },
 
@@ -800,11 +800,32 @@ namespace CaseppCompilerTest
             new object[] { @"ILInstructions\Comparison\NoOperand2.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected Constant or Variable ID for 2nd argument.") } },
             new object[] { @"ILInstructions\Comparison\NotLabel.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected Label Name for 3rd argument.") } },
 
-            new object[] { @"Initialisation\NoInitialisation.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 9: Use of uninitialised variable x.") } },
-            new object[] { @"Initialisation\InitialiseLocalInstead.c++", new IResolveConstraint[] { Is.EqualTo("Line 8, Column 9: Use of uninitialised variable x.") } },
-            new object[] { @"Initialisation\InitialiseFromFunctionNoCall.c++", new IResolveConstraint[] { Is.EqualTo("Line 7, Column 9: Use of uninitialised variable x.") } },
-            new object[] { @"Initialisation\InitialiseFromFunctionUseFirst.c++", new IResolveConstraint[] { Is.EqualTo("Line 7, Column 9: Use of uninitialised variables in function \"f\": \"x\".") } },
-            new object[] { @"Initialisation\InitialiseFromFunctionAlreadyUsed.c++", new IResolveConstraint[] { Is.EqualTo("Line 13, Column 9: Use of uninitialised variables in function \"g\": \"x\".") } },
+            new object[] { @"Initialisation\NoInitialisation.c++", new IResolveConstraint[]
+            {
+                Is.EqualTo("Line 4, Column 9: Cannot use variable x."),
+                Is.EqualTo("Use of uninitialised variable x."),
+            } },
+            new object[] { @"Initialisation\InitialiseLocalInstead.c++", new IResolveConstraint[]
+            {
+                Is.EqualTo("Line 8, Column 9: Cannot use variable x."),
+                Is.EqualTo("Use of uninitialised variable x."),
+            } },
+            new object[] { @"Initialisation\InitialiseFromFunctionNoCall.c++", new IResolveConstraint[]
+            {
+                Is.EqualTo("Line 7, Column 9: Cannot use variable x."),
+                Is.EqualTo("Use of uninitialised variable x."),
+            } },
+            new object[] { @"Initialisation\InitialiseFromFunctionUseFirst.c++", new IResolveConstraint[]
+            {
+                Is.EqualTo("Line 7, Column 9: Cannot use function \"f\"."),
+                Is.EqualTo("Use of uninitialised variables in function \"f\": \"x\"."),
+            } },
+            new object[] { @"Initialisation\InitialiseFromFunctionAlreadyUsed.c++", new IResolveConstraint[]
+            {
+                Is.EqualTo("Line 13, Column 9: Cannot use function \"g\"."),
+                Is.EqualTo("Use of uninitialised variables in function \"g\": \"x\"."),
+            } },
+            new object[] { @"Initialisation\NoOutParameterAssignment.c++", new IResolveConstraint[] { Is.EqualTo("Line 6, Column 2: No assignment to Out Parameter \"x\".") } },
         ];
 
         [SetUp]

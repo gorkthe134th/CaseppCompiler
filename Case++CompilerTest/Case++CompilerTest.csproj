@@ -293,6 +293,9 @@
     <Content Include="IntermediateLanguageTests\Sad\Initialisation\InitialiseLocalInstead.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Sad\Initialisation\NoOutParameterAssignment.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Sad\Initialisation\NoInitialisation.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
