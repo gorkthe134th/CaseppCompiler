@@ -1,10 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using CaseppCompiler.CodeGenerator;
 
 namespace CaseppCompiler.CodeWriter
 {
     public class SimpleCodeWriterImplementation : ICodeWriter
     {
-        public void Write(BlockingCollection<string> input, Stream ouput, BlockingCollection<string>? forward = null)
+        public void Write(CodeStream input, Stream ouput, CodeStream? forward = null)
         {
             using StreamWriter writer = new(ouput);
             foreach (var line in input.GetConsumingEnumerable())

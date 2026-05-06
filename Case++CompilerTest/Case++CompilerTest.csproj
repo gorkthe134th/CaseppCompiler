@@ -248,9 +248,6 @@
     <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Return\NoNull2.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Return\ReturnNull.c++">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Par\NoType.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -300,6 +297,39 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="IntermediateLanguageTests\Sad\ParameterAlreadyExists.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromNephew.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromParent.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromParent.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromSibling.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromSibling.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromNephew.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Empty.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Empty.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Sad\FunctionReturnNull.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Sad\ParameterMismatch.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Sad\ParameterCountMismatch.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="SyntaxAnalyserTests\Happy\Conditions\Condition.c++">

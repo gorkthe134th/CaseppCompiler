@@ -64,7 +64,7 @@ namespace CaseppCompiler
             using TokenStream tokens = new(capacity: 128, cancellationTokenSource.Token);
             using IntermediateProgram program1 = new(functionCapacity: 4, scopeCapacity: 4);
             using IntermediateProgram program2 = new(functionCapacity: 4, scopeCapacity: 4);
-            using BlockingCollection<string> code = new(new ConcurrentQueue<string>(), boundedCapacity: 64);
+            using CodeStream code = new(capacity: 64, cancellationTokenSource.Token);
 
             IList<Task> compilationTasks = [
                 Task.Run(() => lexicalAnalyser.Analyse(          inFile  , tokens  ), cancellationTokenSource.Token),

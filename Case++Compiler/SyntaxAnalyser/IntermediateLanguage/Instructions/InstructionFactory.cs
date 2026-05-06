@@ -106,7 +106,8 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
                         }
                     case Opcode.Return:
                         {
-                            if (arg1.Value is null || !Value.TryCast(arg1.Value, out Value? value)) throw new SyntaxAnalyserException(position, $"Expected Constant or Variable ID for 1st argument.");
+                            Value? value = null;
+                            if (arg1.Value is not null && !Value.TryCast(arg1.Value, out value)) throw new SyntaxAnalyserException(position, $"Expected Constant or Variable ID for 1st argument.");
                             if (arg2.Value is not null) throw new SyntaxAnalyserException(position, $"Expected no 2nd argument.");
                             if (arg3.Value is not null) throw new SyntaxAnalyserException(position, $"Expected no 3rd argument.");
                             return new ReturnInstruction(position, value);

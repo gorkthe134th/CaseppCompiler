@@ -1,10 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using CaseppCompiler.CodeGenerator;
 
 namespace CaseppCompiler.CodeWriter
 {
     public interface ICodeWriter
     {
-        public void Write(BlockingCollection<string> input, Stream ouput, BlockingCollection<string>? forward = null);
+        public void Write(CodeStream input, Stream ouput, CodeStream? forward = null);
     }
 
     public static class CodeWriterFactory

@@ -1,10 +1,8 @@
-﻿using CaseppCompiler.LexicalAnalyser;
-using CaseppCompiler.LexicalAnalyser.Tokens;
+﻿using CaseppCompiler.CodeGenerator;
+using CaseppCompiler.LexicalAnalyser;
 using CaseppCompiler.SyntaxAnalyser;
 
 using NUnit.Framework.Constraints;
-
-using System.Collections.Concurrent;
 
 namespace CaseppCompilerTest
 {
@@ -174,10 +172,11 @@ namespace CaseppCompilerTest
         public void HappyTest(string file)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"SyntaxAnalyserTests\Happy\{file}");
-            using TokenStream tokenQueue = new();
 
-            lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
-            syntaxAnalyser.Analyse(tokenQueue);
+            using TokenStream tokens = new();
+
+            lexicalAnalyser.Analyse(File.OpenRead(path), tokens);
+            syntaxAnalyser.Analyse(tokens);
         }
 
         [TestCaseSource(nameof(sadTests))]

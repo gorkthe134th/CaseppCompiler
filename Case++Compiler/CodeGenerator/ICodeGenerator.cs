@@ -1,15 +1,11 @@
 ﻿using CaseppCompiler.CodeGenerator.RISCVCodeGenerator;
-using CaseppCompiler.LexicalAnalyser.Tokens;
-using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
-
-using System.Collections.Concurrent;
 
 namespace CaseppCompiler.CodeGenerator
 {
     public interface ICodeGenerator
     {
-        public void Analyse(IntermediateProgram input, BlockingCollection<string>? output = null);
+        public void Analyse(IntermediateProgram input, CodeStream? output = null);
     }
 
     public static class CodeGeneratorFactory

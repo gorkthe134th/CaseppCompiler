@@ -1,4 +1,5 @@
-﻿using CaseppCompiler.LexicalAnalyser;
+﻿using CaseppCompiler.CodeGenerator;
+using CaseppCompiler.LexicalAnalyser;
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 

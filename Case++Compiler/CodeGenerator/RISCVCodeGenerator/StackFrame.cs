@@ -20,6 +20,8 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
         internal delegate void MovedHandler(StackFrame sender);
         internal event MovedHandler? Moved;
 
+        internal int SkipOffset => firstVariableOffset + Length; 
+
         internal StackFrame(int start, int end, bool isBase, params IEnumerable<Variable> variables)
         {
             firstVariableOffset = isBase ? baseFrameExtraBytes : 0;
@@ -32,7 +34,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                 return kvp;
             }).ToDictionary();
 
-            Length = firstVariableOffset + length;
+            Length = length;
             Start = start;
             End = end;
         }

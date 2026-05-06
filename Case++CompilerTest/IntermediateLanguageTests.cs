@@ -1,11 +1,9 @@
-﻿using CaseppCompiler.LexicalAnalyser;
-using CaseppCompiler.LexicalAnalyser.Tokens;
+﻿using CaseppCompiler.CodeGenerator;
+using CaseppCompiler.LexicalAnalyser;
 using CaseppCompiler.SyntaxAnalyser;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
 using NUnit.Framework.Constraints;
-
-using System.Collections.Concurrent;
 
 namespace CaseppCompilerTest
 {
@@ -780,7 +778,6 @@ namespace CaseppCompilerTest
             new object[] { @"ILInstructions\Call\NoNull1.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 2nd argument.") } },
             new object[] { @"ILInstructions\Call\NoNull2.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 3rd argument.") } },
 
-            new object[] { @"ILInstructions\Return\ReturnNull.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected Constant or Variable ID for 1st argument.") } },
             new object[] { @"ILInstructions\Return\NoNull1.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 2nd argument.") } },
             new object[] { @"ILInstructions\Return\NoNull2.c++", new IResolveConstraint[] { Is.EqualTo("Line 4, Column 4: Expected no 3rd argument.") } },
 
@@ -814,6 +811,7 @@ namespace CaseppCompilerTest
         public void Happy(string file, (string?, string?, string?, string?)[]? expectedQuads)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"IntermediateLanguageTests\Happy\{file}");
+
             using TokenStream tokenQueue = new();
             using IntermediateProgram program = new();
 

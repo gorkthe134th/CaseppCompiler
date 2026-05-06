@@ -1,4 +1,5 @@
 ﻿using CaseppCompiler;
+using CaseppCompiler.CodeGenerator;
 using CaseppCompiler.LexicalAnalyser;
 using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
@@ -6,8 +7,6 @@ using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
 using NUnit.Framework.Constraints;
-
-using System.Collections.Concurrent;
 
 namespace CaseppCompilerTest
 {
@@ -116,13 +115,14 @@ namespace CaseppCompilerTest
         public void HappyTest(string file, TokenMatcher matcher)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Happy\{file}");
-            using TokenStream tokenQueue = new();
 
-            analyser.Analyse(File.OpenRead(path), tokenQueue);
+            using TokenStream tokens = new();
 
-            var tokens = tokenQueue.GetConsumingEnumerable().GetEnumerator();
-            Assert.That(tokens.MoveNext(), Is.True);
-            Assert.That(matcher.TryMatch(tokens, null), Is.True);
+            analyser.Analyse(File.OpenRead(path), tokens);
+
+            var e = tokens.GetConsumingEnumerable().GetEnumerator();
+            Assert.That(e.MoveNext(), Is.True);
+            Assert.That(matcher.TryMatch(e, null), Is.True);
         }
 
         [TestCaseSource(nameof(sadTests))]

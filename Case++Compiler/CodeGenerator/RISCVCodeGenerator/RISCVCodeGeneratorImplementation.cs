@@ -1,8 +1,6 @@
 ﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
-using Microsoft.Win32;
-
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 
@@ -28,7 +26,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
             [OperationType.GreaterThanOrEqualTo] = "bge",
         }.ToImmutableDictionary();
 
-        public void Analyse(IntermediateProgram input, BlockingCollection<string>? output = null)
+        public void Analyse(IntermediateProgram input, CodeStream? output = null)
         {
             try
             {
@@ -42,14 +40,14 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                     }
                 });
 
-                output?.Add($"j main");
+                output?.Add($"j _main");
 
                 foreach (Function function in input.Functions.GetConsumingEnumerable())
                 {
                     FunctionInfo functionInfo = functionInfos.GetOrAdd(function, f => new(new(), []));
                     functionInfo.Ready.Task.Wait();
 
-                    if (function.IsMain) output?.Add($"main:");
+                    if (function.IsMain) output?.Add($"_main:");
                     output?.Add($"{function.FullName}:");
                     output?.Add($"sw ra, 4(sp)");
 
@@ -93,29 +91,34 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                             case ParameterInstruction parameterInstruction:
                                 nextCallParameters.Add(parameterInstruction);
                                 break;
+                                // "par" does not produce code in this implementation.
+                                // Warning: This does not allow coditional parameter passing.
                             case CallInstruction callInstruction:
                                 {
                                     Function callee = callInstruction.Function;
 
                                     if (!functionInfos.TryGetValue(callee, out FunctionInfo? calleeList))
-                                        throw new CodeGeneratorException(callInstruction.Position, $"Call of undefined function \"{callee.Name}\"");
+                                        throw new CodeGeneratorException(callInstruction.Position, $"Call of undefined function \"{callee.Name}\".");
 
                                     if (calleeList.StackFrames.Count > 0)
                                     {
                                         StackFrame baseFrame = calleeList.StackFrames[^1];
 
-                                        output?.Add($"addi fp, sp, {loadedFrames.Sum(f => f.Length)}");
-                                        if (callee.Parent == function) output?.Add($"sw sp, 0(fp)");
-                                        else if (callee.Parent == function.Parent)
-                                        {
-                                            output?.Add($"lw t0, 0(sp)");
-                                            output?.Add($"sw t0, 0(fp)");
-                                        }
-                                        else throw new CodeGeneratorException(callInstruction.Position, $"Inaccessible Parent Function \"{callee.Parent?.Name}\" from Function \"{function.Name}\"");
+                                        output?.Add($"addi fp, sp, {loadedFrames[^1].SkipOffset}");
 
+                                        output?.Add($"mv t0, sp");
+                                        Function functionReached = function;
+                                        while (callee.Parent != functionReached)
+                                        {
+                                            output?.Add($"lw t0, 0(t0)");
+                                            functionReached = functionReached.Parent ??
+                                                throw new CodeGeneratorException(callInstruction.Position, $"Inaccessible Parent Function \"{callee.Parent?.Name}\" from Function \"{function.Name}\".");
+                                        }
+                                        output?.Add($"sw t0, 0(fp)");
+                                        
                                         if (nextCallParameters.Count != callee.FormalParameters.Count)
                                             throw new CodeGeneratorException(callInstruction.Position,
-                                                $"Function \"{callee.Name}\" requires {callee.FormalParameters.Count} parameters, but got {nextCallParameters.Count} parameters");
+                                                $"Function \"{callee.Name}\" requires {callee.FormalParameters.Count} parameters, but got {nextCallParameters.Count}.");
 
                                         foreach ((var parameterInstruction, var formalParameter) in nextCallParameters.Zip(callee.FormalParameters))
                                         {
@@ -128,7 +131,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                             catch (FormalParameter.MismatchException e)
                                             {
                                                 throw new CodeGeneratorException(parameterInstruction.Position,
-                                                    $"Function \"{callee.Name}\" actual parameter \"{actualParameter}\" does not match formal parameter \"{formalParameter}\"", e);
+                                                    $"Function \"{callee.Name}\" actual parameter \"{actualParameter}\" does not match formal parameter \"{formalParameter}\".", e);
                                             }
 
                                             switch (actualParameter)
@@ -165,9 +168,9 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                     case (true, true):
                                         break;
                                     case (false, true):
-                                        throw new CodeGeneratorException(returnInstruction.Position, $"Functions must return a value");
+                                        throw new CodeGeneratorException(returnInstruction.Position, $"Function \"{function.Name}\" must return a value.");
                                     case (true, false):
-                                        throw new CodeGeneratorException(returnInstruction.Position, $"Procedures cannot return a value");
+                                        throw new CodeGeneratorException(returnInstruction.Position, $"Procedure \"{function.Name}\" cannot return a value.");
                                 }
                                 output?.Add($"lw ra, 4(sp)");
                                 output?.Add($"jr ra");
@@ -208,7 +211,8 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 
                     /// <summary>
                     /// Generates a block of code that locates the specified variable in the stack.
-                    /// After the generated code is executed, t0 holds the location of the variable.
+                    /// After the generated code is executed, t0 holds the location of the data held by the variable.
+                    /// If the specified variable is a reference variable, the reference itself is returned.
                     /// The code uses only the register t0.
                     /// </summary>
                     /// <param name="variable">The variable to locate.</param>
@@ -226,11 +230,12 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                         }))
                         {
                             Function parent = function.Parent ??
-                                throw new CodeGeneratorException(position, $"Inaccessible Variable \"{variable.Name}\" from Function \"{function.Name}\"");
+                                throw new CodeGeneratorException(position, $"Inaccessible Variable \"{variable.Name}\" from Function \"{function.Name}\".");
                             currentFrames = functionInfos[parent].StackFrames;
                             output?.Add($"lw t0, 0(t0)");
                         }
                         output?.Add($"addi t0, t0, {variableOffset}");
+                        if (variable.IsReference) output?.Add($"lw t0, 0(t0)");
                     }
                 }
             }
