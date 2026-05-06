@@ -11,6 +11,6 @@
             set => declaratingScope = value;
         }
 
-        internal void ForgetScope() => declaratingScope = null;
+        internal virtual void ForgetScope() => declaratingScope = null;
     }
 }

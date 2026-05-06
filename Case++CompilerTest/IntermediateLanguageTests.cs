@@ -788,6 +788,13 @@ namespace CaseppCompilerTest
             new object[] { @"ILInstructions\Jump\NoNull1.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected no 1st argument.") } },
             new object[] { @"ILInstructions\Jump\NoNull2.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected no 2nd argument.") } },
             new object[] { @"ILInstructions\Jump\NotLabel.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected Label Name for 3rd argument.") } },
+            new object[] { @"ILInstructions\Jump\LabelNotSet.c++", new IResolveConstraint[]
+            {
+                Is.EqualTo("Line 4, Column 1: Cannot exit Scope in the current Function."),
+                Is.EqualTo("Cannot exit the current Scope."),
+                Is.EqualTo("Cannot exit Scope due to Symbol \"m\"."),
+                Is.EqualTo("This Label has not been set."),
+            } },
 
             new object[] { @"ILInstructions\Comparison\NoOperand1.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected Constant or Variable ID for 1st argument.") } },
             new object[] { @"ILInstructions\Comparison\NoOperand2.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected Constant or Variable ID for 2nd argument.") } },

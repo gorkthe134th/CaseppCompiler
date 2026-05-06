@@ -118,7 +118,17 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal void EnterScope() => CurrentFunction.EnterScope();
 
-        internal void ExitScope() => CurrentFunction.ExitScope();
+        internal void ExitScope()
+        {
+            try
+            {
+                CurrentFunction.ExitScope();
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new SyntaxAnalyserException(Position, $"Cannot exit Scope in the current Function.", e);
+            }
+        }
 
         internal void AddSymbol(Symbol symbol)
         {

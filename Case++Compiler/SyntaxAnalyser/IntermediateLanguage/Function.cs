@@ -147,12 +147,17 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         internal void ExitScope()
         {
             Scope scope = CurrentScope;
-            scope.Exit(CurrentInstructionIndex);
+            try
+            {
+                scope.Exit(CurrentInstructionIndex);
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new InvalidOperationException($"Cannot exit the current Scope.", e);
+            }
             scopes.Add(scope);
             currentScope = scope.Parent;
         }
-        // Could check parent nullability first to skip detaching the variables in case it is null,
-        // but it looks cleaner this way and the progenitor scope never has variables, anyway.
 
         /// <summary>
         /// Adds a symbol to the current scope.

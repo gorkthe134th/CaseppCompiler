@@ -35,5 +35,11 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             this.position = position;
             return true;
         }
+
+        internal override void ForgetScope()
+        {
+            if (position == null) throw new InvalidOperationException("This Label has not been set.");
+            base.ForgetScope();
+        }
     }
 }

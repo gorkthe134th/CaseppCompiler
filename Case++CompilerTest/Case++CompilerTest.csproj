@@ -203,6 +203,9 @@
     <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Comparison\NotLabel.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Jump\LabelNotSet.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Jump\NotLabel.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

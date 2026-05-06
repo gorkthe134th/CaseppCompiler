@@ -1,4 +1,6 @@
-﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
+﻿using System.Diagnostics;
+
+namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
     /// <summary>
     /// Provides a collection of <see cref="Symbol"/>s for a scecified region of code.
@@ -94,10 +96,23 @@
         /// <remarks>
         /// This methods also calls the <see cref="Symbol.ForgetScope"/> method on all the provided <see cref="Symbol"/>s, allowing the <see cref="Scope"/> to be Disposed by the Garbage Collector.
         /// </remarks>
+        /// <exception cref="InvalidOperationException"></exception>
         internal void Exit(int end)
         {
             End = end;
-            foreach ((string _, Symbol symbol) in symbols) symbol.ForgetScope();
+            Symbol? lastSymbol = null;
+            try
+            {
+                foreach ((string _, Symbol symbol) in symbols)
+                {
+                    lastSymbol = symbol;
+                    symbol.ForgetScope();
+                }
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new InvalidOperationException($"Cannot exit Scope due to Symbol \"{lastSymbol?.Name}\".", e);
+            }
         }
     }
 }
