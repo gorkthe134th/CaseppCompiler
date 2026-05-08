@@ -12,7 +12,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 
         public virtual string Name { get; set; } = name;
 
-        public Action<IntermediateProgram>? FinalAction { get; set; } = null;
+        public Func<IntermediateProgram, Task>? FinalAction { get; set; } = null;
 
         /// <summary>
         /// Tries to match the specified sequence.
@@ -29,24 +29,24 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
         /// <c>null</c> if the match was not successful but it's possible to skip this <see cref="TokenMatcher"/>.
         /// Throws <see cref="SyntaxAnalyserException"/> if the match was not successful and it's impossible to continue.
         /// </returns>
-        public bool? TryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
+        public async Task<bool?> TryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program)
         {
             Position currentPosition = tokens.Current.Position;
-            bool? result = BaseTryMatch(tokens, program);
+            bool? result = await BaseTryMatch(tokens, program);
             if (result == true && program != null && FinalAction != null)
             {
                 program.Position = currentPosition;
-                FinalAction.Invoke(program);
+                await FinalAction.Invoke(program);
             }
             return result;
         }
 
-        public abstract bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program);
+        public abstract Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program);
 
-        public static void MoveNext(IEnumerator<Token> tokens)
+        public static async Task MoveNext(IAsyncEnumerator<Token> tokens)
         {
             Position currentPosition = tokens.Current.Position;
-            if (!tokens.MoveNext()) throw new SyntaxAnalyserException(currentPosition + 1, $"Expected EOF Token.");
+            if (!await tokens.MoveNextAsync()) throw new SyntaxAnalyserException(currentPosition + 1, $"Expected EOF Token.");
         }
 
         public static implicit operator TokenMatcher(Type type)

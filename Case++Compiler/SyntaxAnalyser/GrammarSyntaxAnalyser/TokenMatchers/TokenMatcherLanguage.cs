@@ -48,7 +48,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 
         extension(TokenMatcher)
         {
-            public static TokenMatcher operator |(TokenMatcher matcher, Action<IntermediateProgram> finalAction)
+            public static TokenMatcher operator |(TokenMatcher matcher, Func<IntermediateProgram, Task> finalAction)
             {
                 matcher.FinalAction = finalAction;
                 return matcher;

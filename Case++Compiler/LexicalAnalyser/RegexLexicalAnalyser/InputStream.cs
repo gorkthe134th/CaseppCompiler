@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
 {
-    internal class InputStream(Stream byteStream, Encoding? encoding = null)
+    internal class InputStream(System.IO.Stream byteStream, Encoding? encoding = null)
     {
         private const int MAX_REGEX = 30;
 

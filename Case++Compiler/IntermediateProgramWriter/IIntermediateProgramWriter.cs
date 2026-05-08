@@ -4,7 +4,7 @@ namespace CaseppCompiler.IntermediateProgramWriter
 {
     public interface IIntermediateProgramWriter
     {
-        public void Write(IntermediateProgram input, Stream ouput, IntermediateProgram? forward = null);
+        public Task Write(IntermediateProgram input, Stream ouput);
     }
 
     public static class IntermediateProgramWriterFactory

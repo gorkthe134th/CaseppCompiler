@@ -25,7 +25,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
             new MultiLineCommentTokenType(),
         ];
 
-        public void Analyse(Stream input, TokenStream? output = null)
+        public async Task Analyse(Stream input, Stream<Token>? output = null)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
 
                     currentText.Remove(currentText.Length - addedOverflow.Count, addedOverflow.Count);
                     Token? token = longestMatchingType.GenerateToken(matchStart, currentText.ToString());
-                    if (token != null) output?.Add(token);
+                    if (token != null && output != null) await output.AddAsync(token);
 
                     currentText.Clear();
 
@@ -148,11 +148,11 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
 
                     while (addedOverflow.TryDequeue(out character)) overflow.Enqueue(character);
                 }
-                output?.Add(new EOFToken(currentPosition + 1));
+                if (output != null) await output.AddAsync(new EOFToken(currentPosition + 1));
             }
             finally
             {
-                output?.CompleteAdding();
+                output?.Complete();
             }
         }
     }

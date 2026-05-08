@@ -1,8 +1,5 @@
 ﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
-using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
-
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
     /// <summary>
@@ -30,7 +27,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         private readonly IList<FormalParameter> formalParameters = [];
 
-        private readonly IList<Instruction> instructions = [];
+        public Stream<Instruction> Instructions { get; }
 
         private Scope? currentScope;
         private readonly HashSet<Variable> variablesInitialised = [];
@@ -45,17 +42,19 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         private Dictionary<JumpInstruction, uint> breakOrigins = [];
         private readonly Stack<int> repeatTargets = [];
-        private readonly BlockingCollection<Scope> scopes;
+        private readonly Stream<Scope> scopes;
 
         /// <param name="name">The name that the <see cref="Function"/> will be identified by.</param>
         /// <param name="scopes">The collection that will receive the <see cref="Scope"/>s created by the <see cref="Function"/>.</param>
         /// <param name="parent">The <see cref="Function"/> in which this <see cref="Function"/> was defined, if any.</param>
-        public Function(string name, BlockingCollection<Scope> scopes, Function? parent = null) : base(name)
+        public Function(string name, Stream<Scope> scopes, Function? parent = null, int? instructionCapacity = null, CancellationToken? cancellationToken = null) : base(name)
         {
             this.Parent = parent;
             this.ReturnVariable = new("_RET", true);
             this.currentScope = new(this, 0, parent?.currentScope, ReturnVariable) { IsBase = true }; // Cannot use field initializer for this
+            scopes.AddAsync(CurrentScope).Wait();
             this.scopes = scopes;
+            this.Instructions = new(instructionCapacity, cancellationToken);
         }
 
         /// <summary>
@@ -64,19 +63,14 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         internal IReadOnlyList<FormalParameter> FormalParameters => formalParameters.AsReadOnly();
 
         /// <summary>
-        /// The <see cref="Instruction"/>s that will be executed when the <see cref="Function"/> is called.
-        /// </summary>
-        public IReadOnlyList<Instruction> Instructions => instructions.AsReadOnly();
-
-        /// <summary>
         /// The Instruction Index of the next <see cref="Instruction"/> to be added.
         /// </summary>
-        internal int CurrentInstructionIndex => instructions.Count;
+        internal int CurrentInstructionIndex { get; private set; }
 
         /// <summary>
         /// The number of Quads that whould be produced if the <see cref="ToQuads(int)"/> method was called on this <see cref="Function"/>.
         /// </summary>
-        internal int QuadCount => instructions.Count + 2;
+        internal int QuadCount => CurrentInstructionIndex + 2;
 
         /// <summary>
         /// Adds a <see cref="FormalParameter"/> to the <see cref="Function"/>.
@@ -95,11 +89,15 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                 formalParameters.Add(new TypeRestrictedFormalParameter<OutParameter>(ReturnVariable));
         }
 
-        internal void AddInstruction(Instruction instruction) => instructions.Add(instruction);
-
-        internal void AddBreak(JumpInstruction jump, uint count)
+        internal Task AddInstruction(Instruction instruction)
         {
-            instructions.Add(jump);
+            CurrentInstructionIndex++;
+            return Instructions.AddAsync(instruction);
+        }
+
+        internal async Task AddBreak(JumpInstruction jump, uint count)
+        {
+            await AddInstruction(jump);
             breakOrigins.Add(jump, count);
         }
 
@@ -135,7 +133,11 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             breakOrigins.Clear();
         }
 
-        internal void EnterScope() => currentScope = new Scope(this, CurrentInstructionIndex, currentScope);
+        internal Task EnterScope()
+        {
+            currentScope = new Scope(this, CurrentInstructionIndex, currentScope);
+            return scopes.AddAsync(CurrentScope);
+        }
 
         internal void ExitScope()
         {
@@ -148,8 +150,8 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             {
                 throw new InvalidOperationException($"Cannot exit the current Scope.", e);
             }
-            scopes.Add(scope);
             currentScope = scope.Parent;
+            if (scope.IsBase) Instructions.Complete();
         }
 
         /// <summary>
@@ -237,10 +239,10 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             }
         }
 
-        public IEnumerable<(string?, string?, string?, string?)> ToQuads(int offset)
+        public async IAsyncEnumerable<(string?, string?, string?, string?)> ToQuads(int offset)
         {
             yield return ("begin_block", FullName, null, null);
-            foreach (var instruction in instructions)
+            await foreach (var instruction in Instructions.GetAsyncEnumerable(i => i.Complete))
             {
                 if (instruction is JumpInstruction jump)
                 {

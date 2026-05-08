@@ -1,6 +1,8 @@
-﻿using CaseppCompiler.CodeGenerator;
+﻿using CaseppCompiler;
+using CaseppCompiler.CodeGenerator;
 using CaseppCompiler.CodeOptimiser;
 using CaseppCompiler.LexicalAnalyser;
+using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
@@ -39,24 +41,24 @@ namespace CaseppCompilerTest
         }
 
         [TestCaseSource(nameof(happyTests))]
-        public void Happy(string name)
+        public async Task HappyAsync(string name)
         {
             string cppPath = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"RISCVCodeGeneratorTests\Happy\{name}.c++");
             string asmPath = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"RISCVCodeGeneratorTests\Happy\{name}.asm");
 
-            using TokenStream tokens = new();
-            using IntermediateProgram program = new();
-            using CodeStream code = new();
+            Stream<Token> tokens = new();
+            IntermediateProgram program = new();
+            Stream<string> code = new();
 
-            lexicalAnalyser.Analyse(File.OpenRead(cppPath), tokens);
-            syntaxAnalyser.Analyse(tokens, program);
-            codeGenerator.Analyse(program, code);
+            await lexicalAnalyser.Analyse(File.OpenRead(cppPath), tokens);
+            await syntaxAnalyser.Analyse(tokens, program);
+            await codeGenerator.Analyse(program, code);
 
-            var ep = code.GetConsumingEnumerable().GetEnumerator();
+            var ep = code.GetAsyncEnumerable().GetAsyncEnumerator();
             var ee = ((IEnumerable<string>)File.ReadAllLines(asmPath)).GetEnumerator();
             int line = 0;
             while (true)
-                switch ((ep.MoveNext(), ee.MoveNext()))
+                switch ((await ep.MoveNextAsync(), ee.MoveNext()))
                 {
                     case (true, true):
                         Assert.That(ep.Current, Is.EqualTo(ee.Current.Split('#', 2, StringSplitOptions.TrimEntries)[0]), $"Difference in line {++line}");
@@ -74,15 +76,15 @@ namespace CaseppCompilerTest
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"RISCVCodeGeneratorTests\Sad\{file}");
 
-            Exception? e = Assert.Throws<CodeGeneratorException>(() =>
+            Exception? e = Assert.ThrowsAsync<CodeGeneratorException>(async () =>
             {
-                using TokenStream tokens = new();
-                using IntermediateProgram program = new();
-                using CodeStream code = new();
+                Stream<Token> tokens = new();
+                IntermediateProgram program = new();
+                Stream<string> code = new();
 
-                lexicalAnalyser.Analyse(File.OpenRead(path), tokens);
-                syntaxAnalyser.Analyse(tokens, program);
-                codeGenerator.Analyse(program, code);
+                await lexicalAnalyser.Analyse(File.OpenRead(path), tokens);
+                await syntaxAnalyser.Analyse(tokens, program);
+                await codeGenerator.Analyse(program, code);
             },
             $"Expected CodeGeneratorException.");
 

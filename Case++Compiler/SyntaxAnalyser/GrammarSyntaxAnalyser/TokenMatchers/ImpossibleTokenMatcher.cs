@@ -5,6 +5,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
     public class ImpossibleTokenMatcher(string name) : TokenMatcher(name)
     {
-        public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program) => false;
+        public override Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program) =>
+            Task.FromResult<bool?>(false);
     }
 }

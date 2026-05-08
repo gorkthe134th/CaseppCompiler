@@ -17,7 +17,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
             }
         }
 
-        public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
+        public override Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program)
         {
             if (matcher == null) throw new InvalidOperationException($"Matcher \"{Name}\" is Unresolved");
             return matcher.TryMatch(tokens, program);

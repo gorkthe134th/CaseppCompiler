@@ -13,6 +13,6 @@
                 throw new InvalidOperationException("The Declarating Function has already been set.");
         }
 
-        internal virtual void ForgetScope() => declaratingFunction = null;
+        internal virtual void ForgetFunction() => declaratingFunction = null;
     }
 }

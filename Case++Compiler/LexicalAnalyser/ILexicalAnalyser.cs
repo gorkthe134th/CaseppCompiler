@@ -1,11 +1,12 @@
 ﻿using CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser;
 using CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser;
+using CaseppCompiler.LexicalAnalyser.Tokens;
 
 namespace CaseppCompiler.LexicalAnalyser
 {
     public interface ILexicalAnalyser
     {
-        public void Analyse(Stream input, TokenStream? output = null);
+        public Task Analyse(Stream input, Stream<Token>? output = null);
     }
 
     public static class LexicalAnalyserFactory

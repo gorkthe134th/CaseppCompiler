@@ -112,17 +112,17 @@ namespace CaseppCompilerTest
         public void Setup() => analyser = LexicalAnalyserFactory.Create(type);
 
         [TestCaseSource(nameof(happyTests))]
-        public void HappyTest(string file, TokenMatcher matcher)
+        public async Task HappyTestAsync(string file, TokenMatcher matcher)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Happy\{file}");
 
-            using TokenStream tokens = new();
+            Stream<Token> tokens = new();
 
-            analyser.Analyse(File.OpenRead(path), tokens);
+            await analyser.Analyse(File.OpenRead(path), tokens);
 
-            var e = tokens.GetConsumingEnumerable().GetEnumerator();
-            Assert.That(e.MoveNext(), Is.True);
-            Assert.That(matcher.TryMatch(e, null), Is.True);
+            var e = tokens.GetAsyncEnumerable().GetAsyncEnumerator();
+            Assert.That(await e.MoveNextAsync(), Is.True);
+            Assert.That(await matcher.TryMatch(e, null), Is.True);
         }
 
         [TestCaseSource(nameof(sadTests))]
@@ -130,7 +130,7 @@ namespace CaseppCompilerTest
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"LexicalAnalyserTests\Sad\{file}");
 
-            Exception? e = Assert.Throws<LexicalAnalyserException>(() => analyser.Analyse(File.OpenRead(path)), $"Expected LexicalAnalyserException.");
+            Exception? e = Assert.ThrowsAsync<LexicalAnalyserException>(async () => await analyser.Analyse(File.OpenRead(path)), $"Expected LexicalAnalyserException.");
             foreach (var messageConstraint in messageConstraints)
             {
                 Assert.That(e, Is.Not.Null, $"Expected more Inner Exceptions.");
@@ -141,12 +141,12 @@ namespace CaseppCompilerTest
 
         private class IdentifierTokenMatcher(string name) : TokenMatcher(name)
         {
-            public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
+            public override async Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program)
             {
                 if (tokens.Current is not IdentifierToken identifier || identifier.Name != Name) return false;
 
                 Position currentPosition = tokens.Current.Position;
-                if (!tokens.MoveNext()) throw new LexicalAnalyserException(currentPosition + 1, $"Expected EOF Token");
+                if (!await tokens.MoveNextAsync()) throw new LexicalAnalyserException(currentPosition + 1, $"Expected EOF Token");
 
                 return true;
             }
@@ -154,12 +154,12 @@ namespace CaseppCompilerTest
 
         private class ConstantTokenMatcher(string name, int c) : TokenMatcher(name)
         {
-            public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
+            public override async Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program)
             {
                 if (tokens.Current is not ConstantToken constant || constant.Constant != c) return false;
 
                 Position currentPosition = tokens.Current.Position;
-                if (!tokens.MoveNext()) throw new LexicalAnalyserException(currentPosition, $"Expected EOF Token");
+                if (!await tokens.MoveNextAsync()) throw new LexicalAnalyserException(currentPosition, $"Expected EOF Token");
 
                 return true;
             }
@@ -167,12 +167,12 @@ namespace CaseppCompilerTest
 
         private class BoolConstantTokenMatcher(string name, bool c) : TokenMatcher(name)
         {
-            public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
+            public override async Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program)
             {
                 if (tokens.Current is not BoolConstantToken constant || constant.Constant != c) return false;
 
                 Position currentPosition = tokens.Current.Position;
-                if (!tokens.MoveNext()) throw new LexicalAnalyserException(currentPosition, $"Expected EOF Token");
+                if (!await tokens.MoveNextAsync()) throw new LexicalAnalyserException(currentPosition, $"Expected EOF Token");
 
                 return true;
             }

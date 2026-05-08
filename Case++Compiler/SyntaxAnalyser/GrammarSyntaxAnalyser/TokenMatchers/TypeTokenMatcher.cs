@@ -5,7 +5,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
     internal class TypeTokenMatcher<T>(string name) : TokenMatcher(name) where T : Token
     {
-        public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
+        public override async Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program)
         {
             if (tokens.Current is not T) return false;
 
@@ -18,7 +18,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
             }
 
             Position currentPosition = tokens.Current.Position;
-            if (!tokens.MoveNext() && !typeof(T).IsAssignableTo(typeof(EOFToken)))
+            if (!await tokens.MoveNextAsync() && !typeof(T).IsAssignableTo(typeof(EOFToken)))
                 throw new SyntaxAnalyserException(currentPosition + 1, $"Expected EOF Token.");
 
             return true;

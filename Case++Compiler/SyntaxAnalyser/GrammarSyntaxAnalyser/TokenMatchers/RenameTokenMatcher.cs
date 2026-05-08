@@ -5,7 +5,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
     internal class RenameTokenMatcher(string name, TokenMatcher matcher) : TokenMatcher(name)
     {
-        public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program) =>
+        public override Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program) =>
             matcher.TryMatch(tokens, program);
     }
 }

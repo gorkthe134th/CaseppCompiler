@@ -40,7 +40,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
             ];
         }
 
-        public void Analyse(Stream input, TokenStream? output = null)
+        public async Task Analyse(Stream input, Stream<Token>? output = null)
         {
             try
             {
@@ -54,7 +54,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                     if (inputStream.TryMatchFirst(tokenTypes.Select(type => (matchedType = type).Regex), out string text) && matchedType != null)
                     {
                         var token = matchedType.GenerateToken(position, text);
-                        output?.Add(token);
+                        if (output != null) await output.AddAsync(token);
                         position += text.Length;
                         Predicate<char>? trim = matchedType.Trim;
                         if (trim != null) inputStream.Trim(trim, ref position);
@@ -64,11 +64,11 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                         throw new LexicalAnalyserException(position, $"Invalid Token");
                     }
                 }
-                output?.Add(new EOFToken(position));
+                if (output != null) await output.AddAsync(new EOFToken(position));
             }
             finally
             {
-                output?.CompleteAdding();
+                output?.Complete();
             }
         }
     }

@@ -1,5 +1,7 @@
-﻿using CaseppCompiler.CodeGenerator;
+﻿using CaseppCompiler;
+using CaseppCompiler.CodeGenerator;
 using CaseppCompiler.LexicalAnalyser;
+using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
 
 using NUnit.Framework.Constraints;
@@ -169,14 +171,14 @@ namespace CaseppCompilerTest
         }
 
         [TestCaseSource(nameof(happyTests))]
-        public void HappyTest(string file)
+        public async Task HappyTestAsync(string file)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"SyntaxAnalyserTests\Happy\{file}");
 
-            using TokenStream tokens = new();
+            Stream<Token> tokens = new();
 
-            lexicalAnalyser.Analyse(File.OpenRead(path), tokens);
-            syntaxAnalyser.Analyse(tokens);
+            await lexicalAnalyser.Analyse(File.OpenRead(path), tokens);
+            await syntaxAnalyser.Analyse(tokens);
         }
 
         [TestCaseSource(nameof(sadTests))]
@@ -184,11 +186,11 @@ namespace CaseppCompilerTest
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"SyntaxAnalyserTests\Sad\{file}");
 
-            Exception? e = Assert.Throws<SyntaxAnalyserException>(() =>
+            Exception? e = Assert.ThrowsAsync<SyntaxAnalyserException>(async () =>
             {
-                using TokenStream tokenQueue = new();
-                lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
-                syntaxAnalyser.Analyse(tokenQueue);
+                Stream<Token> tokens = new();
+                await lexicalAnalyser.Analyse(File.OpenRead(path), tokens);
+                await syntaxAnalyser.Analyse(tokens);
             },
             $"Expected SyntaxAnalyserException.");
 

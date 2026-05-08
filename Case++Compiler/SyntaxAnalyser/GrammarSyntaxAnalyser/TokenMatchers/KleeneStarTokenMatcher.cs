@@ -5,10 +5,10 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
     internal class KleeneStarTokenMatcher(string name, TokenMatcher matcher) : TokenMatcher(name)
     {
-        public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
+        public override async Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program)
         {
             bool? match, matchSoFar = null;
-            do matchSoFar |= match = matcher.TryMatch(tokens, program); while (match == true);
+            do matchSoFar |= match = await matcher.TryMatch(tokens, program); while (match == true);
             return matchSoFar;
         }
     }

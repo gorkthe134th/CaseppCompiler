@@ -6,25 +6,22 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 {
     internal class StackFrame
     {
-        private const int baseFrameExtraBytes = 8;
+        internal const int baseFrameExtraBytes = 8;
 
-        internal int Length { get; }
+        internal int Length { get; private set; }
 
         internal int Start { get; }
 
-        internal int End { get; }
+        internal int? End { get; set; }
 
-        private int firstVariableOffset;
+        private readonly int firstVariableOffset;
         private readonly Dictionary<Variable, int> variableOffsets;
-
-        internal delegate void MovedHandler(StackFrame sender);
-        internal event MovedHandler? Moved;
 
         internal int SkipOffset => firstVariableOffset + Length; 
 
-        internal StackFrame(int start, int end, bool isBase, params IEnumerable<Variable> variables)
+        internal StackFrame(int start, int offset, params IEnumerable<Variable> variables)
         {
-            firstVariableOffset = isBase ? baseFrameExtraBytes : 0;
+            firstVariableOffset = offset;
 
             int length = 0;
             variableOffsets = variables.Select((v, i) =>
@@ -36,7 +33,20 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 
             Length = length;
             Start = start;
-            End = end;
+            End = null;
+        }
+
+        internal void AddVariable(Variable variable)
+        {
+            try
+            {
+                variableOffsets.Add(variable, Length);
+                Length += 4;
+            }
+            catch (ArgumentException e)
+            {
+                throw new ArgumentException($"Variable \"{variable.Name}\" alraedy exists in this Stack Frame.", e);
+            }
         }
 
         internal int GetOffset(Variable variable) => variableOffsets[variable] + firstVariableOffset;
@@ -50,18 +60,6 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
             }
             offset = variableOffset + firstVariableOffset;
             return true;
-        }
-
-        internal void HandleStackFrameForParentAdded(StackFrame stackFrame)
-        {
-            UpdateOffset(stackFrame);
-            stackFrame.Moved += UpdateOffset;
-        }
-
-        private void UpdateOffset(StackFrame parent)
-        {
-            firstVariableOffset = parent.firstVariableOffset + parent.Length;
-            Moved?.Invoke(this);
         }
     }
 }

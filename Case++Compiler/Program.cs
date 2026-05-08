@@ -1,5 +1,4 @@
 ﻿using CaseppCompiler.CodeGenerator;
-using CaseppCompiler.CodeOptimiser;
 using CaseppCompiler.CodeWriter;
 using CaseppCompiler.IntermediateProgramWriter;
 using CaseppCompiler.LexicalAnalyser;
@@ -7,13 +6,11 @@ using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
-using System.Collections.Concurrent;
-
 namespace CaseppCompiler
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
             if (args.Length < 1)
             {
@@ -26,8 +23,8 @@ namespace CaseppCompiler
                     "Example: Case++Compiler.exe program.c++ -c riscv -l regex\n");
                 return;
             }
-            
-            Stream inFile = File.OpenRead(args[0]);
+
+            using Stream inFile = File.OpenRead(args[0]);
 
             string lexicalAnalyserType = "";
             string syntaxAnalyserType  = "";
@@ -49,10 +46,10 @@ namespace CaseppCompiler
                         break;
                 }
             }
-            
-            Stream intFile  = File.OpenWrite("a.int");
-            Stream symFile  = File.OpenWrite("a.sym");
-            Stream codeFile = File.OpenWrite("a.asm");
+
+            using Stream intFile  = File.OpenWrite("a.int");
+            using Stream symFile  = File.OpenWrite("a.sym");
+            using Stream codeFile = File.OpenWrite("a.asm");
 
             ILexicalAnalyser           lexicalAnalyser = LexicalAnalyserFactory          .Create(lexicalAnalyserType);
             ISyntaxAnalyser            syntaxAnalyser  = SyntaxAnalyserFactory           .Create(syntaxAnalyserType );
@@ -62,25 +59,23 @@ namespace CaseppCompiler
             ICodeWriter                codeWriter      = CodeWriterFactory               .Create();
 
             using CancellationTokenSource cancellationTokenSource = new();
-            using TokenStream tokens = new(capacity: 128, cancellationTokenSource.Token);
-            using IntermediateProgram program1 = new(functionCapacity: 4, scopeCapacity: 4);
-            using IntermediateProgram program2 = new(functionCapacity: 4, scopeCapacity: 4);
-            using CodeStream code = new(capacity: 64, cancellationTokenSource.Token);
+            Stream<Token> tokens = new(capacity: 128, cancellationTokenSource.Token);
+            IntermediateProgram program = new(functionCapacity: 4, instructionCapacity: null, scopeCapacity: 6, cancellationTokenSource.Token);
+            Stream<string> code = new(capacity: 64, cancellationTokenSource.Token);
 
-            IList<Task> compilationTasks = [
-                Task.Run(() => lexicalAnalyser.Analyse(          inFile  , tokens  ), cancellationTokenSource.Token),
-                Task.Run(() => syntaxAnalyser .Analyse(tokens  ,           program1), cancellationTokenSource.Token),
-                Task.Run(() => functionWriter .Write  (program1, intFile , program2), cancellationTokenSource.Token),
-                Task.Run(() => scopeWriter    .Write  (program1, symFile , program2), cancellationTokenSource.Token),
-                Task.Run(() => codeGenerator  .Analyse(program2,           code    ), cancellationTokenSource.Token),
-                Task.Run(() => codeWriter     .Write  (code    , codeFile          ), cancellationTokenSource.Token),
+            List<Task> compilationTasks = [
+                codeWriter     .Write  (code   , codeFile),
+                scopeWriter    .Write  (program, symFile ),
+                functionWriter .Write  (program, intFile ),
+                codeGenerator  .Analyse(program, code    ),
+                syntaxAnalyser .Analyse(tokens , program ),
+                lexicalAnalyser.Analyse(inFile , tokens  ),
             ];
 
             while (compilationTasks.Count > 0)
             {
-                int finishedTaskIndex = Task.WaitAny([.. compilationTasks]);
-                Task finishedTask = compilationTasks[finishedTaskIndex];
-                compilationTasks.RemoveAt(finishedTaskIndex);
+                Task finishedTask = await Task.WhenAny([.. compilationTasks]);
+                compilationTasks.Remove(finishedTask);
 
                 if (finishedTask.IsFaulted)
                 {

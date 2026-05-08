@@ -1,10 +1,8 @@
-﻿using CaseppCompiler.CodeGenerator;
-
-namespace CaseppCompiler.CodeWriter
+﻿namespace CaseppCompiler.CodeWriter
 {
     public interface ICodeWriter
     {
-        public void Write(CodeStream input, Stream ouput, CodeStream? forward = null);
+        public Task Write(Stream<string> input, Stream ouput);
     }
 
     public static class CodeWriterFactory
@@ -12,8 +10,8 @@ namespace CaseppCompiler.CodeWriter
         public static ICodeWriter Create(string type = "") =>
             type switch
             {
-                "simple" => new SimpleCodeWriterImplementation(),
-                _ => new SimpleCodeWriterImplementation(),
+                "consume" => new ConsumingCodeWriterImplementation(),
+                _ => new ConsumingCodeWriterImplementation(),
             };
     }
 }

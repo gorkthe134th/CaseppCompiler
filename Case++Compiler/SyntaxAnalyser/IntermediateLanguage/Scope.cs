@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
+﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
     /// <summary>
     /// Provides a collection of <see cref="Symbol"/>s for a scecified region of code.
@@ -16,10 +14,8 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         /// </summary>
         internal int Start { get; } = start;
 
-        /// <summary>
-        /// The first Instruction Index for which this <see cref="Scope"/> does not apply, or null if the <see cref="Scope"/> is not closed yet.
-        /// </summary>
-        internal int? End { get; private set; }
+        internal delegate void EndedHandler(Scope sender, int end);
+        internal event EndedHandler? Ended;
 
         /// <summary>
         /// Indicates whether the <see cref="Scope"/> is the Base <see cref="Scope"/> of its Encompassing <see cref="Function"/>.
@@ -55,6 +51,9 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         internal Symbol this[string name] => symbols.TryGetValue(name, out Symbol? symbol) ? symbol : Parent?[name] ??
             throw new ArgumentException($"Cannot find Symbol \"{name}\" through this Scope.");
 
+        internal delegate void SymbolAddedHandler(Scope sender, Symbol symbol);
+        internal event SymbolAddedHandler? SymbolAdded;
+
         /// <summary>
         /// Gets the <see cref="Symbol"/> in the <see cref="Scope"/> with the specified name, if it exists; otherwise, calls <paramref name="symbolFactory"/> and adds the result to the <see cref="Scope"/>.
         /// </summary>
@@ -66,7 +65,13 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             if (!symbols.TryGetValue(name, out Symbol? symbol))
             {
                 symbol = symbolFactory.Invoke();
-                symbols.Add(symbol.Name, symbol);
+
+                lock (symbols)
+                {
+                    symbols.Add(symbol.Name, symbol);
+                }
+
+                SymbolAdded?.Invoke(this, symbol);
             }
             return symbol;
         }
@@ -80,12 +85,16 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         {
             try
             {
-                symbols.Add(symbol.Name, symbol);
+                lock (symbols)
+                {
+                    symbols.Add(symbol.Name, symbol);
+                }
             }
             catch (ArgumentException e)
             {
                 throw new ArgumentException($"Symbol \"{symbol.Name}\" already exists.", e);
             }
+            SymbolAdded?.Invoke(this, symbol);
         }
 
         /// <summary>
@@ -93,25 +102,25 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         /// </summary>
         /// <param name="end">The Instruction Index from which this <see cref="Scope"/> will no longer apply.</param>
         /// <remarks>
-        /// This methods also calls the <see cref="Symbol.ForgetScope"/> method on all the provided <see cref="Symbol"/>s, allowing the <see cref="Scope"/> to be Disposed by the Garbage Collector.
+        /// This methods also calls the <see cref="Symbol.ForgetFunction"/> method on all the provided <see cref="Symbol"/>s, allowing the <see cref="Scope"/> to be Disposed by the Garbage Collector.
         /// </remarks>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="InvalidOperationException">Cannot exit Scope due to Symbol.</exception>
         internal void Exit(int end)
         {
-            End = end;
             Symbol? lastSymbol = null;
             try
             {
                 foreach ((string _, Symbol symbol) in symbols)
                 {
                     lastSymbol = symbol;
-                    symbol.ForgetScope();
+                    symbol.ForgetFunction();
                 }
             }
             catch (InvalidOperationException e)
             {
                 throw new InvalidOperationException($"Cannot exit Scope due to Symbol \"{lastSymbol?.Name}\".", e);
             }
+            Ended?.Invoke(this, end);
         }
     }
 }

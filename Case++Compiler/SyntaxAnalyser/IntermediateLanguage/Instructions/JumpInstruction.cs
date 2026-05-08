@@ -2,7 +2,19 @@
 {
     internal abstract record class JumpInstruction(Position Position) : Instruction(Position)
     {
-        public int? Target { get; set; } = null;
+        protected TaskCompletionSource complete = new();
+
+        public override Task Complete => complete.Task;
+
+        public int? Target
+        {
+            get => field;
+            set
+            {
+                field = value;
+                complete.TrySetResult();
+            }
+        } = null;
     }
 
     internal static class JumpInstructionExtensions

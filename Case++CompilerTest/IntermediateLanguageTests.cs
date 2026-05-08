@@ -1,5 +1,7 @@
-﻿using CaseppCompiler.CodeGenerator;
+﻿using CaseppCompiler;
+using CaseppCompiler.CodeGenerator;
 using CaseppCompiler.LexicalAnalyser;
+using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
@@ -21,26 +23,26 @@ namespace CaseppCompilerTest
                 ("end_block", "p", null, null),
             } },
             new object[] { @"Functions\EmptyFunction.c++", new (string?, string?, string?, string?)[] {
-                ("begin_block", "p_f", null, null),
-                ("retv", "0", null, null),
-                ("end_block", "p_f", null, null),
                 ("begin_block", "p", null, null),
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
+                ("begin_block", "p_f", null, null),
+                ("retv", "0", null, null),
+                ("end_block", "p_f", null, null),
             } },
             new object[] { @"Functions\NestedFunctions.c++", new (string?, string?, string?, string?)[] {
-                ("begin_block", "p_f_g_h", null, null),
+                ("begin_block", "p", null, null),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+                ("begin_block", "p_f", null, null),
                 ("retv", "0", null, null),
-                ("end_block", "p_f_g_h", null, null),
+                ("end_block", "p_f", null, null),
                 ("begin_block", "p_f_g", null, null),
                 ("retv", "0", null, null),
                 ("end_block", "p_f_g", null, null),
-                ("begin_block", "p_f", null, null),
+                ("begin_block", "p_f_g_h", null, null),
                 ("retv", "0", null, null),
-                ("end_block", "p_f", null, null),
-                ("begin_block", "p", null, null),
-                ("halt", null, null, null),
-                ("end_block", "p", null, null),
+                ("end_block", "p_f_g_h", null, null),
             } },
             new object[] { @"Statements\Assignment\SimpleAssignment.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p", null, null),
@@ -104,31 +106,6 @@ namespace CaseppCompilerTest
                 ("end_block", "p", null, null),
             } },
             new object[] { @"Functions\FunctionCall.c++", new (string?, string?, string?, string?)[] {
-                ("begin_block", "p_f", null, null),
-                ("retv", "0", null, null),
-                ("end_block", "p_f", null, null),
-                ("begin_block", "p_gi", null, null),
-                ("retv", "v", null, null),
-                ("retv", "0", null, null),
-                ("end_block", "p_gi", null, null),
-                ("begin_block", "p_go", null, null),
-                ("par", "_T0", "ret", null),
-                ("call", "f", null, null),
-                (":=", "_T0", null, "v"),
-                ("retv", "0", null, null),
-                ("end_block", "p_go", null, null),
-                ("begin_block", "p_gio", null, null),
-                ("par", "v", "cv", null),
-                ("par", "_T1", "ret", null),
-                ("call", "gi", null, null),
-                (":=", "_T1", null, "v"),
-                ("retv", "0", null, null),
-                ("end_block", "p_gio", null, null),
-                ("begin_block", "p_h", null, null),
-                ("+", "v1", "v2", "_T2"),
-                (":=", "_T2", null, "v3"),
-                ("retv", "0", null, null),
-                ("end_block", "p_h", null, null),
                 ("begin_block", "p", null, null),
                 (":=", "1", null, "a"),
                 (":=", "2", null, "b"),
@@ -159,24 +136,33 @@ namespace CaseppCompilerTest
                 (":=", "_T8", null, "x"),
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
-            } },
-            new object[] { @"Functions\NestedFunctionCall.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p_f", null, null),
-                ("retv", "1", null, null),
                 ("retv", "0", null, null),
                 ("end_block", "p_f", null, null),
-                ("begin_block", "p_g", null, null),
-                ("retv", "2", null, null),
+                ("begin_block", "p_gi", null, null),
+                ("retv", "v", null, null),
                 ("retv", "0", null, null),
-                ("end_block", "p_g", null, null),
+                ("end_block", "p_gi", null, null),
+                ("begin_block", "p_go", null, null),
+                ("par", "_T0", "ret", null),
+                ("call", "f", null, null),
+                (":=", "_T0", null, "v"),
+                ("retv", "0", null, null),
+                ("end_block", "p_go", null, null),
+                ("begin_block", "p_gio", null, null),
+                ("par", "v", "cv", null),
+                ("par", "_T1", "ret", null),
+                ("call", "gi", null, null),
+                (":=", "_T1", null, "v"),
+                ("retv", "0", null, null),
+                ("end_block", "p_gio", null, null),
                 ("begin_block", "p_h", null, null),
-                ("retv", "3", null, null),
+                ("+", "v1", "v2", "_T2"),
+                (":=", "_T2", null, "v3"),
                 ("retv", "0", null, null),
                 ("end_block", "p_h", null, null),
-                ("begin_block", "p_F", null, null),
-                ("retv", "4", null, null),
-                ("retv", "0", null, null),
-                ("end_block", "p_F", null, null),
+            } },
+            new object[] { @"Functions\NestedFunctionCall.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p", null, null),
                 ("par", "_T0", "ret", null),
                 ("call", "f", null, null),
@@ -226,21 +212,37 @@ namespace CaseppCompilerTest
                 (":=", "_T12", null, "y"),
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
+                ("begin_block", "p_f", null, null),
+                ("retv", "1", null, null),
+                ("retv", "0", null, null),
+                ("end_block", "p_f", null, null),
+                ("begin_block", "p_g", null, null),
+                ("retv", "2", null, null),
+                ("retv", "0", null, null),
+                ("end_block", "p_g", null, null),
+                ("begin_block", "p_h", null, null),
+                ("retv", "3", null, null),
+                ("retv", "0", null, null),
+                ("end_block", "p_h", null, null),
+                ("begin_block", "p_F", null, null),
+                ("retv", "4", null, null),
+                ("retv", "0", null, null),
+                ("end_block", "p_F", null, null),
             } },
             new object[] { @"Functions\LocalFunctionCall.c++", new (string?, string?, string?, string?)[] {
-                ("begin_block", "p_f_g", null, null),
-                ("retv", "9", null, null),
-                ("retv", "0", null, null),
-                ("end_block", "p_f_g", null, null),
+                ("begin_block", "p", null, null),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
                 ("begin_block", "p_f", null, null),
                 ("par", "_T0", "ret", null),
                 ("call", "g", null, null),
                 (":=", "_T0", null, "x"),
                 ("retv", "0", null, null),
                 ("end_block", "p_f", null, null),
-                ("begin_block", "p", null, null),
-                ("halt", null, null, null),
-                ("end_block", "p", null, null),
+                ("begin_block", "p_f_g", null, null),
+                ("retv", "9", null, null),
+                ("retv", "0", null, null),
+                ("end_block", "p_f_g", null, null),
             } },
             new object[] { @"Conditions\SimpleCondition.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p", null, null),
@@ -587,16 +589,16 @@ namespace CaseppCompilerTest
                 ("end_block", "p", null, null),
             } },
             new object[] { @"Statements\Break\BreakFunction.c++", new (string?, string?, string?, string?)[] {
-                ("begin_block", "p_f", null, null),
-                ("jump", null, null, "5"),
-                (":=", "9", null, "x"),
-                ("jump", null, null, "5"),
-                (":=", "9", null, "x"),
-                ("retv", "0", null, null),
-                ("end_block", "p_f", null, null),
                 ("begin_block", "p", null, null),
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
+                ("begin_block", "p_f", null, null),
+                ("jump", null, null, "8"),
+                (":=", "9", null, "x"),
+                ("jump", null, null, "8"),
+                (":=", "9", null, "x"),
+                ("retv", "0", null, null),
+                ("end_block", "p_f", null, null),
             } },
             new object[] { @"Statements\Break\BreakBlock.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p", null, null),
@@ -629,16 +631,16 @@ namespace CaseppCompilerTest
                 ("end_block", "p", null, null),
             } },
             new object[] { @"Statements\Repeat\RepeatFunction.c++", new (string?, string?, string?, string?)[] {
-                ("begin_block", "p_f", null, null),
-                (":=", "9", null, "x"),
-                ("jump", null, null, "1"),
-                (":=", "9", null, "x"),
-                ("jump", null, null, "1"),
-                ("retv", "0", null, null),
-                ("end_block", "p_f", null, null),
                 ("begin_block", "p", null, null),
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
+                ("begin_block", "p_f", null, null),
+                (":=", "9", null, "x"),
+                ("jump", null, null, "4"),
+                (":=", "9", null, "x"),
+                ("jump", null, null, "4"),
+                ("retv", "0", null, null),
+                ("end_block", "p_f", null, null),
             } },
             new object[] { @"Statements\Repeat\RepeatBlock.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p", null, null),
@@ -694,14 +696,14 @@ namespace CaseppCompilerTest
                 ("end_block", "p", null, null),
             } },
             new object[] { @"ILInstructions\Call\Call.c++", new (string?, string?, string?, string?)[] {
-                ("begin_block", "p_f", null, null),
-                ("retv", "9", null, null),
-                ("retv", "0", null, null),
-                ("end_block", "p_f", null, null),
                 ("begin_block", "p", null, null),
                 ("call", "f", null, null),
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
+                ("begin_block", "p_f", null, null),
+                ("retv", "9", null, null),
+                ("retv", "0", null, null),
+                ("end_block", "p_f", null, null),
             } },
             new object[] { @"ILInstructions\Return\Return.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p", null, null),
@@ -836,22 +838,22 @@ namespace CaseppCompilerTest
         }
 
         [TestCaseSource(nameof(happyTests))]
-        public void Happy(string file, (string?, string?, string?, string?)[]? expectedQuads)
+        public async Task HappyAsync(string file, (string?, string?, string?, string?)[]? expectedQuads)
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"IntermediateLanguageTests\Happy\{file}");
 
-            using TokenStream tokenQueue = new();
-            using IntermediateProgram program = new();
+            Stream<Token> tokens = new();
+            IntermediateProgram program = new();
 
-            lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
-            syntaxAnalyser.Analyse(tokenQueue, program);
+            await lexicalAnalyser.Analyse(File.OpenRead(path), tokens);
+            await syntaxAnalyser.Analyse(tokens, program);
 
             if (expectedQuads == null) return;
 
-            var ep = program.ToQuads().GetEnumerator();
+            var ep = program.ToQuads().GetAsyncEnumerator();
             var ee = expectedQuads.GetEnumerator();
             while (true)
-                switch ((ep.MoveNext(), ee.MoveNext()))
+                switch ((await ep.MoveNextAsync(), ee.MoveNext()))
                 {
                     case (true, true):
                         Assert.That(ep.Current, Is.EqualTo(ee.Current));
@@ -869,13 +871,13 @@ namespace CaseppCompilerTest
         {
             string path = Path.Combine(TestContext.CurrentContext.TestDirectory, $@"IntermediateLanguageTests\Sad\{file}");
 
-            Exception? e = Assert.Throws<SyntaxAnalyserException>(() =>
+            Exception? e = Assert.ThrowsAsync<SyntaxAnalyserException>(async () =>
             {
-                using TokenStream tokenQueue = new();
-                using IntermediateProgram program = new();
+                Stream<Token> tokens = new();
+                IntermediateProgram program = new();
 
-                lexicalAnalyser.Analyse(File.OpenRead(path), tokenQueue);
-                syntaxAnalyser.Analyse(tokenQueue, program);
+                await lexicalAnalyser.Analyse(File.OpenRead(path), tokens);
+                await syntaxAnalyser.Analyse(tokens, program);
             },
             $"Expected SyntaxAnalyserException.");
 

@@ -5,12 +5,12 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
 {
     internal class AlternativeTokenMatcher(string name, TokenMatcher[] matchers) : TokenMatcher(name)
     {
-        public override bool? BaseTryMatch(IEnumerator<Token> tokens, IntermediateProgram? program)
+        public override async Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program)
         {
             bool? matchSoFar = false;
             foreach (var matcher in matchers)
             {
-                bool? match = matcher.TryMatch(tokens, program);
+                bool? match = await matcher.TryMatch(tokens, program);
                 if (match == true) return true;
                 matchSoFar |= match;
             }

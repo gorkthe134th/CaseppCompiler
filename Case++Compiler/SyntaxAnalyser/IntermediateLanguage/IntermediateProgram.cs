@@ -1,19 +1,16 @@
 ﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
-using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 {
-    public class IntermediateProgram(int? functionCapacity = null, int? scopeCapacity = null) : IDisposable
+    public class IntermediateProgram(int? functionCapacity = null, int? instructionCapacity = null, int? scopeCapacity = null, CancellationToken? cancellationToken = null)
     {
         internal Position Position { get; set; } = new(0, 0);
 
-        internal BlockingCollection<Function> Functions { get; } =
-            functionCapacity == null ? new(new ConcurrentQueue<Function>()) : new(new ConcurrentQueue<Function>(), (int)functionCapacity);
+        internal Stream<Function> Functions { get; } = new(functionCapacity, cancellationToken);
 
-        internal BlockingCollection<Scope> Scopes { get; } =
-            scopeCapacity == null ? new(new ConcurrentQueue<Scope>()) : new(new ConcurrentQueue<Scope>(), (int)scopeCapacity);
+        internal Stream<Scope> Scopes { get; } = new(scopeCapacity, cancellationToken);
 
         private Function? currentFunction = null;
         private readonly Stack<object> compilerVariables = [];
@@ -23,9 +20,9 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal int CurrentInstructionIndex => CurrentFunction.CurrentInstructionIndex;
 
-        internal void CreateFunction(string name, bool isMain = false)
+        internal Task CreateFunction(string name, bool isMain = false)
         {
-            Function newFunction = new(name, Scopes, currentFunction) { IsMain = isMain };
+            Function newFunction = new(name, Scopes, currentFunction, instructionCapacity, cancellationToken) { IsMain = isMain };
 
             if (currentFunction != null)
                 try
@@ -38,6 +35,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                 }
 
             currentFunction = newFunction;
+            return Functions.AddAsync(newFunction);
         }
 
         internal void AddFormalParameter(FormalParameter formalParameter)
@@ -52,53 +50,44 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             }
         }
 
-        internal void FinalizeFunction<T>(Func<Position, T> create) where T : Instruction
+        internal async Task FinalizeFunction<T>(Func<Position, T> create) where T : Instruction
         {
             Function function = CurrentFunction;
             function.SetAllBreakTargets();
-            CreateInstruction(create);
+            await CreateInstruction(create);
             function.ExitScope();
             function.AddReturnValueParameter();
 
-            Functions.Add(function);
             currentFunction = function.Parent;
         }
 
-        internal T CreateInstruction<T>(Func<Position, T> create) where T : Instruction
+        internal async Task<T> CreateInstruction<T>(Func<Position, T> create) where T : Instruction
         {
             T instruction = create(Position);
-            CurrentFunction.AddInstruction(instruction);
+            await CurrentFunction.AddInstruction(instruction);
             return instruction;
         }
 
-        internal void AddIntermediateLanguageInstruction(InstructionFactory.Argument arg0, InstructionFactory.Argument arg1, InstructionFactory.Argument arg2, InstructionFactory.Argument arg3) =>
+        internal Task AddIntermediateLanguageInstruction(InstructionFactory.Argument arg0, InstructionFactory.Argument arg1, InstructionFactory.Argument arg2, InstructionFactory.Argument arg3) =>
             CurrentFunction.AddInstruction(InstructionFactory.Create(arg0, arg1, arg2, arg3, Position));
 
-        internal void AddJumpInstructions<T>(Func<Position, T> create, int start) where T : JumpInstruction
+        internal async Task AddJumpInstructions<T>(Func<Position, T> create, int start) where T : JumpInstruction
         {
             Function currentFunction = CurrentFunction;
-            JumpInstruction trueJump = CreateInstruction(create);
+            JumpInstruction trueJump = await CreateInstruction(create);
             JumpInstruction falseJump = new UnconditionalJumpInstruction(Position);
-            currentFunction.AddInstruction(falseJump);
+            await currentFunction.AddInstruction(falseJump);
             compilerVariables.Push(new JumpBlockInfo([trueJump], [falseJump], start));
         }
 
-        internal void AddBreakInstruction(uint count)
-        {
-            if (count == 0) return;
-            Function currentFunction = CurrentFunction;
-            currentFunction.AddBreak(new UnconditionalJumpInstruction(Position), count);
-        }
+        internal Task AddBreakInstruction(uint count) =>
+            count == 0 ? Task.CompletedTask : CurrentFunction.AddBreak(new UnconditionalJumpInstruction(Position), count);
 
         internal void SetBreakPoint() => CurrentFunction.SetBreakPoint();
 
-        internal void AddRepeatInstruction(uint index)
-        {
-            if (index == 0) return;
-            Function currentFunction = CurrentFunction;
-            currentFunction.AddInstruction(new UnconditionalJumpInstruction(Position) { Target = currentFunction.GetRepeatPoint(index) });
-        }
-
+        internal Task AddRepeatInstruction(uint index) =>
+            index == 0 ? Task.CompletedTask : CurrentFunction.AddInstruction(new UnconditionalJumpInstruction(Position) { Target = CurrentFunction.GetRepeatPoint(index) });
+        
         internal void SetRepeatPoint() => CurrentFunction.SetRepeatPoint();
 
         internal void SetLabel(string labelName)
@@ -116,7 +105,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             }
         }
 
-        internal void EnterScope() => CurrentFunction.EnterScope();
+        internal Task EnterScope() => CurrentFunction.EnterScope();
 
         internal void ExitScope()
         {
@@ -215,10 +204,10 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             if (compilerVariables.Count != 0) throw new UnreachableException($"Leftover Variables: {string.Join(',', compilerVariables)}.");
         }
 
-        public IEnumerable<(string?, string?, string?, string?)> ToQuads()
+        public IAsyncEnumerable<(string?, string?, string?, string?)> ToQuads()
         {
             int offset = 0;
-            return Functions.GetConsumingEnumerable().SelectMany(function =>
+            return Functions.GetAsyncEnumerable().SelectMany(function =>
             {
                 var ret = function.ToQuads(offset);
                 offset += function.QuadCount;
@@ -228,14 +217,8 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         public void CompleteAdding()
         {
-            Functions.CompleteAdding();
-            Scopes.CompleteAdding();
-        }
-
-        public void Dispose()
-        {
-            Functions.Dispose();
-            Scopes.Dispose();
+            Functions.Complete();
+            Scopes.Complete();
         }
     }
 }

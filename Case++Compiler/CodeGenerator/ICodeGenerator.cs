@@ -5,7 +5,7 @@ namespace CaseppCompiler.CodeGenerator
 {
     public interface ICodeGenerator
     {
-        public void Analyse(IntermediateProgram input, CodeStream? output = null);
+        public Task Analyse(IntermediateProgram input, Stream<string>? output = null);
     }
 
     public static class CodeGeneratorFactory
