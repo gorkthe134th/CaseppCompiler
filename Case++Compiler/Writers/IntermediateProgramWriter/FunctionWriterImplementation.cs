@@ -5,16 +5,17 @@ namespace CaseppCompiler.Writers.IntermediateProgramWriter
 {
     public class FunctionWriterImplementation : IIntermediateProgramWriter
     {
-        private record class FunctionWriteContext(StreamWriter Writer, int Line) : WriteContext(Writer)
+        private class FunctionWriteContext(StreamWriter writer, int line, CancellationToken? cancellationToken = null)
+            : WriteContext(writer, cancellationToken)
         {
-            public int Line { get; set; } = Line;
+            public int Line { get; set; } = line;
 
             public HashSet<Function> CompletedFunctions { get; } = [];
         }
 
-        public Task Write(IntermediateProgram input, Stream ouput)
+        public Task Write(IntermediateProgram input, Stream ouput, CancellationToken? cancellationToken = null)
         {
-            FunctionWriteContext context = new(new(ouput), 0);
+            FunctionWriteContext context = new(new(ouput), 0, cancellationToken);
             input.Functions.ItemAdded += (sender, function) => SubscribeToInstructions(function, context);
             input.Functions.Completed += (sender) => context.AllowDispose();
             return context.WriteComplete;
@@ -53,7 +54,8 @@ namespace CaseppCompiler.Writers.IntermediateProgramWriter
         {
             var quad = instruction.ToQuad();
             int newLine = context.Line + 1;
-            context.Writer.WriteLine($"{newLine}: {quad.Item1 ?? "_"}, {quad.Item2 ?? "_"}, {quad.Item3 ?? "_"}, {quad.Item4 ?? "_"}");
+            context.UseWriter(writer =>
+                writer.WriteLine($"{newLine}: {quad.Item1 ?? "_"}, {quad.Item2 ?? "_"}, {quad.Item3 ?? "_"}, {quad.Item4 ?? "_"}"));
             context.Line = newLine;
         }
     }

@@ -47,9 +47,9 @@ namespace CaseppCompiler
                 }
             }
 
-            using Stream intFile  = File.OpenWrite("a.int");
-            using Stream symFile  = File.OpenWrite("a.sym");
-            using Stream codeFile = File.OpenWrite("a.asm");
+            using Stream intFile  = File.Open("a.int", FileMode.Create);
+            using Stream symFile  = File.Open("a.sym", FileMode.Create);
+            using Stream codeFile = File.Open("a.asm", FileMode.Create);
 
             ILexicalAnalyser           lexicalAnalyser = LexicalAnalyserFactory          .Create(lexicalAnalyserType);
             ISyntaxAnalyser            syntaxAnalyser  = SyntaxAnalyserFactory           .Create(syntaxAnalyserType );
@@ -63,47 +63,48 @@ namespace CaseppCompiler
             IntermediateProgram program = new(functionCapacity: 4, instructionCapacity: null, scopeCapacity: 6, cancellationTokenSource.Token);
             Stream<string> code = new(capacity: 64, cancellationTokenSource.Token);
 
-            Task[] compilationTasks = [
-                codeWriter     .Write  (code   , codeFile),
-                scopeWriter    .Write  (program, symFile ),
-                functionWriter .Write  (program, intFile ),
-                codeGenerator  .Analyse(program, code    ),
-                syntaxAnalyser .Analyse(tokens , program ),
-                lexicalAnalyser.Analyse(inFile , tokens  ),
+            List<Task> compilationTasks = [
+                codeWriter     .Write  (code   , codeFile, cancellationTokenSource.Token),
+                scopeWriter    .Write  (program, symFile , cancellationTokenSource.Token),
+                functionWriter .Write  (program, intFile , cancellationTokenSource.Token),
+                codeGenerator  .Analyse(program, code    , cancellationTokenSource.Token),
+                syntaxAnalyser .Analyse(tokens , program , cancellationTokenSource.Token),
+                lexicalAnalyser.Analyse(inFile , tokens  , cancellationTokenSource.Token),
             ];
 
-            try
+            while (compilationTasks.Count > 0)
             {
-                await Task.WhenAll(compilationTasks);
-            }
-            catch
-            {
-                cancellationTokenSource.Cancel();
-
-                foreach (var task in compilationTasks)
-                {
-                    if (!task.IsFaulted) continue;
-
-                    foreach (var e in task.Exception.Flatten().InnerExceptions)
-                    {
-                        if (e is OperationCanceledException) continue;
-
-                        int tabCount = 0;
-                        Exception? exception = e;
-                        while (exception != null)
-                        {
-                            Console.WriteLine($"{new string('\t', tabCount++)}{exception.GetType().Name}: {exception.Message}");
-                            exception = exception.InnerException;
-                        }
-                    }
-                }
-
                 try
                 {
-                    await Task.WhenAll(compilationTasks);
-                    // Make sure every task is finished before disposing any resources
+                    Task finishedTask = await Task.WhenAny([.. compilationTasks]).ConfigureAwait(false);
+                    if (!finishedTask.IsCanceled) await finishedTask; // Propagate Exceptions
+                    compilationTasks.Remove(finishedTask);
                 }
-                catch { }
+                catch (OperationCanceledException) { } // Ignore OperationCanceledException
+                catch
+                {
+                    cancellationTokenSource.Cancel();
+
+                    compilationTasks.RemoveAll(task =>
+                    {
+                        if (!task.IsFaulted) return false;
+
+                        foreach (var e in task.Exception.Flatten().InnerExceptions)
+                        {
+                            if (e is OperationCanceledException) continue;
+
+                            int tabCount = 0;
+                            Exception? exception = e;
+                            while (exception != null)
+                            {
+                                Console.WriteLine($"{new string('\t', tabCount++)}{exception.GetType().Name}: {exception.Message}");
+                                exception = exception.InnerException;
+                            }
+                        }
+
+                        return true;
+                    });
+                }
             }
         }
     }

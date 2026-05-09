@@ -4,9 +4,9 @@ namespace CaseppCompiler.Writers.IntermediateProgramWriter
 {
     public class ScopeWriterImplementation : IIntermediateProgramWriter
     {
-        public Task Write(IntermediateProgram input, Stream ouput)
+        public Task Write(IntermediateProgram input, Stream ouput, CancellationToken? cancellationToken = null)
         {
-            WriteContext context = new(new(ouput));
+            WriteContext context = new(new(ouput), cancellationToken);
             input.Scopes.ItemAdded += (sender, scope) => SubscribeToScope(scope, context);
             input.Scopes.Completed += (sender) => context.AllowDispose();
             return context.WriteComplete;
@@ -20,7 +20,8 @@ namespace CaseppCompiler.Writers.IntermediateProgramWriter
 
         private static void WriteScope(Scope scope, int end, WriteContext context)
         {
-            context.Writer.WriteLine($"{scope.EncompassingFunction.Name} {(scope.IsBase ? '#' : '|')} {scope.Start} - {end}: {string.Join(", ", scope.Symbols.Select(s => s.Name))}");
+            context.UseWriter(writer =>
+                writer.WriteLine($"{scope.EncompassingFunction.Name} {(scope.IsBase ? '#' : '|')} {scope.Start} - {end}: {string.Join(", ", scope.Symbols.Select(s => s.Name))}"));
             context.RemoveUser();
         }
     }

@@ -2,7 +2,7 @@
 {
     internal class GlobalVariableOptimiser : IRISCVCodeOptimiser
     {
-        public async Task Analyse(Stream<string> input, Stream<string> output)
+        public async Task Analyse(Stream<string> input, Stream<string> output, CancellationToken? cancellationToken = null)
         {
             int? currentFunctionDepth = null;
             int? currentVariableSearchDepth = null;

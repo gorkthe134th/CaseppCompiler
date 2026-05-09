@@ -2,7 +2,7 @@
 {
     public interface ICodeWriter
     {
-        public Task Write(Stream<string> input, Stream ouput);
+        public Task Write(Stream<string> input, Stream ouput, CancellationToken? cancellationToken = null);
     }
 
     public static class CodeWriterFactory

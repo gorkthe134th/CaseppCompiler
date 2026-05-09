@@ -26,7 +26,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
             [OperationType.GreaterThanOrEqualTo] = "bge",
         }.ToImmutableDictionary();
 
-        public async Task Analyse(IntermediateProgram input, Stream<string>? output = null)
+        public async Task Analyse(IntermediateProgram input, Stream<string>? output = null, CancellationToken? cancellationToken = null)
         {
             try
             {
@@ -46,8 +46,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 
                 while (tasks.Count > 1)
                 {
-                    Task<Task> anyTaskComplete;
-                    anyTaskComplete = Task.WhenAny(tasks);
+                    var anyTaskComplete = Task.WhenAny(tasks).ConfigureAwait(false);
 
                     Monitor.Exit(tasks);
 
@@ -114,6 +113,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 
                 async Task ParseFunction(Function function)
                 {
+                    bool enteredSemaphore = false;
                     try
                     {
                         FunctionInfo functionInfo = functionInfos.GetOrAdd(function, functionInfo = new());
@@ -128,6 +128,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                 if (!addedHeader)
                                 {
                                     await functionSemaphore.WaitAsync(); // Only allow one thread to produce code at a time.
+                                    enteredSemaphore = true;
                                     if (function.IsMain) await output.AddAsync($"_main:");
                                     await output.AddAsync($"{function.FullName}:");
                                     await output.AddAsync($"sw ra, 4(sp)");
@@ -370,7 +371,8 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                     }
                     finally
                     {
-                        functionSemaphore.Release();
+                        if (enteredSemaphore)
+                            functionSemaphore.Release();
                     }
                 }
             }

@@ -2,7 +2,7 @@
 {
     public interface IRISCVCodeOptimiser
     {
-        public Task Analyse(Stream<string> input, Stream<string> output);
+        public Task Analyse(Stream<string> input, Stream<string> output, CancellationToken? cancellationToken = null);
     }
 
     public static class CodeOptimiserFactory

@@ -749,7 +749,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                 ];
         }
 
-        public async Task Analyse(Stream<Token> input, IntermediateProgram? output = null)
+        public async Task Analyse(Stream<Token> input, IntermediateProgram? output = null, CancellationToken? cancellationToken = null)
         {
             try
             {

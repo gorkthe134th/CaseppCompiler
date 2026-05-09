@@ -40,7 +40,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
             ];
         }
 
-        public async Task Analyse(Stream input, Stream<Token>? output = null)
+        public async Task Analyse(Stream input, Stream<Token>? output = null, CancellationToken? cancellationToken = null)
         {
             try
             {

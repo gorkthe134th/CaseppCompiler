@@ -6,7 +6,7 @@ namespace CaseppCompiler.LexicalAnalyser
 {
     public interface ILexicalAnalyser
     {
-        public Task Analyse(Stream input, Stream<Token>? output = null);
+        public Task Analyse(Stream input, Stream<Token>? output = null, CancellationToken? cancellationToken = null);
     }
 
     public static class LexicalAnalyserFactory

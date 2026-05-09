@@ -6,7 +6,7 @@ namespace CaseppCompiler.SyntaxAnalyser
 {
     public interface ISyntaxAnalyser
     {
-        public Task Analyse(Stream<Token> input, IntermediateProgram? output = null);
+        public Task Analyse(Stream<Token> input, IntermediateProgram? output = null, CancellationToken? cancellationToken = null);
     }
 
     public static class SyntaxAnalyserFactory
