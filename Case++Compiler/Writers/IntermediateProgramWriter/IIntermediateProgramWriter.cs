@@ -1,6 +1,6 @@
 ﻿using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
-namespace CaseppCompiler.IntermediateProgramWriter
+namespace CaseppCompiler.Writers.IntermediateProgramWriter
 {
     public interface IIntermediateProgramWriter
     {

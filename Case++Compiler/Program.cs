@@ -1,10 +1,10 @@
 ﻿using CaseppCompiler.CodeGenerator;
-using CaseppCompiler.CodeWriter;
-using CaseppCompiler.IntermediateProgramWriter;
 using CaseppCompiler.LexicalAnalyser;
 using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
+using CaseppCompiler.Writers.CodeWriter;
+using CaseppCompiler.Writers.IntermediateProgramWriter;
 
 namespace CaseppCompiler
 {
@@ -63,7 +63,7 @@ namespace CaseppCompiler
             IntermediateProgram program = new(functionCapacity: 4, instructionCapacity: null, scopeCapacity: 6, cancellationTokenSource.Token);
             Stream<string> code = new(capacity: 64, cancellationTokenSource.Token);
 
-            List<Task> compilationTasks = [
+            Task[] compilationTasks = [
                 codeWriter     .Write  (code   , codeFile),
                 scopeWriter    .Write  (program, symFile ),
                 functionWriter .Write  (program, intFile ),
@@ -72,15 +72,22 @@ namespace CaseppCompiler
                 lexicalAnalyser.Analyse(inFile , tokens  ),
             ];
 
-            while (compilationTasks.Count > 0)
+            try
             {
-                Task finishedTask = await Task.WhenAny([.. compilationTasks]);
-                compilationTasks.Remove(finishedTask);
+                await Task.WhenAll(compilationTasks);
+            }
+            catch
+            {
+                cancellationTokenSource.Cancel();
 
-                if (finishedTask.IsFaulted)
+                foreach (var task in compilationTasks)
                 {
-                    foreach (var e in finishedTask.Exception.InnerExceptions)
+                    if (!task.IsFaulted) continue;
+
+                    foreach (var e in task.Exception.Flatten().InnerExceptions)
                     {
+                        if (e is OperationCanceledException) continue;
+
                         int tabCount = 0;
                         Exception? exception = e;
                         while (exception != null)
@@ -89,18 +96,14 @@ namespace CaseppCompiler
                             exception = exception.InnerException;
                         }
                     }
-                    cancellationTokenSource.Cancel();
-                    try
-                    {
-                        Task.WaitAll(compilationTasks);
-                    }
-                    catch (AggregateException e)
-                    {
-                        foreach (var exception in e.InnerExceptions) if (exception is not OperationCanceledException) throw;
-                        // No need to log which Tasks were Canceled; the main Exception is enough
-                    }
-                    return;
                 }
+
+                try
+                {
+                    await Task.WhenAll(compilationTasks);
+                    // Make sure every task is finished before disposing any resources
+                }
+                catch { }
             }
         }
     }

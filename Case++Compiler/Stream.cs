@@ -1,13 +1,12 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading.Channels;
 
 namespace CaseppCompiler
 {
-    public class Stream<T>
+    public class Stream<T>(int? capacity = null, CancellationToken? cancellationToken = null)
     {
-        private readonly Channel<T> items;
-        private readonly CancellationToken? cancellationToken;
+        private readonly Channel<T> items = capacity == null ? Channel.CreateUnbounded<T>() : Channel.CreateBounded<T>((int)capacity);
+        private readonly CancellationToken? cancellationToken = cancellationToken;
 
         public delegate void ItemAddedHandler(Stream<T> sender, T item);
         public event ItemAddedHandler? ItemAdded;
@@ -18,11 +17,7 @@ namespace CaseppCompiler
         public delegate void CompletedHandler(Stream<T> sender);
         public event CompletedHandler? Completed;
 
-        public Stream(int? capacity = null, CancellationToken? cancellationToken = null)
-        {
-            this.cancellationToken = cancellationToken;
-            items = capacity == null ? Channel.CreateUnbounded<T>() : Channel.CreateBounded<T>((int)capacity);
-        }
+        public int Count => items.Reader.Count;
 
         public async Task AddAsync(T item)
         {
@@ -37,16 +32,6 @@ namespace CaseppCompiler
             ItemTaken?.Invoke(this, item);
             return item;
         }
-
-        internal bool TryTake([NotNullWhen(true)] out T? item, Func<T, bool>? ready = null)
-        {
-            if (!items.Reader.TryRead(out item)) return false;
-            if (ready != null && !ready(item)) return false;
-            ItemTaken?.Invoke(this, item);
-            return true;
-        }
-        // The warning here is caused by the method used having a "MaybeNullWhen(false)" Attribute instead of "NotNullWhen(true)".
-        // Technically, the two Attributes do not imply the same thing, but the intention is the same.
 
         public async IAsyncEnumerable<T> GetAsyncEnumerable(Func<T, Task>? waitReady = null)
         {

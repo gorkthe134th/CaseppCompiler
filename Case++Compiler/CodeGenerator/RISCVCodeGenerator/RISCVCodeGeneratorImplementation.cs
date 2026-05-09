@@ -38,22 +38,38 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                 TaskCompletionSource? scopesReady = null;
                 TaskCompletionSource? scopesReadyRequest = new();
                 List<Task> tasks = [taskAdded.Task];
+
+                Monitor.Enter(tasks);
+
                 tasks.Add(ParseFunctions());
                 tasks.Add(ParseScopes());
+
                 while (tasks.Count > 1)
                 {
-                    Task finishedTask = await Task.WhenAny(tasks);
+                    Task<Task> anyTaskComplete;
+                    anyTaskComplete = Task.WhenAny(tasks);
+
+                    Monitor.Exit(tasks);
+
+                    Task finishedTask = await anyTaskComplete;
                     if (finishedTask.IsFaulted) throw finishedTask.Exception.InnerException!;
+                    // There is no need to rethrow the whole AggregateException object.
                     // The tasks in the list originate from async methods (and a TaskCompletionSource).
-                    // Only single exceptions are expected from them; hence no need to throw the whole AggregateException.
+                    // Only one exception is expected to be thrown per task.
+
+                    Monitor.Enter(tasks);
+
                     tasks.Remove(finishedTask);
+
                     if (finishedTask == taskAdded.Task)
-                        lock (tasks)
-                        {
-                            taskAdded = new();
-                            tasks.Add(taskAdded.Task);
-                        }
+                    {
+                        taskAdded = new();
+                        tasks.Add(taskAdded.Task);
+                    }
                 }
+
+                Monitor.Exit(tasks);
+
 
                 void AddTask(Task task)
                 {

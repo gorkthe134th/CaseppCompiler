@@ -1,4 +1,4 @@
-﻿namespace CaseppCompiler.CodeWriter
+﻿namespace CaseppCompiler.Writers.CodeWriter
 {
     public interface ICodeWriter
     {
