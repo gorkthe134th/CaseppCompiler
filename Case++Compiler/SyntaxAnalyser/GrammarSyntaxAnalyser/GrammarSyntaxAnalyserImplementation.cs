@@ -388,12 +388,12 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     })
                 ]);
             
-            UnresolvedTokenMatcher blockBodyMatcher = new("Block Body");
+            UnresolvedTokenMatcher blockMatcher = new("Block");
 
             statementMatcher.Resolve(
                 "Statement" |
                 [
-                    blockBodyMatcher,
+                    blockMatcher,
                     "Assignment" %
                     [
                         "Variable ID" % typeof(IdentifierToken),
@@ -722,9 +722,9 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     ],
                 ];
 
-            blockBodyMatcher.Resolve(
-                "Body" >>
-                    "Body Contents" %
+            blockMatcher.Resolve(
+                "Block" >>
+                    "Block Contents" %
                     [
                         -"$start" | (async program => {
                             await program.EnterScope();

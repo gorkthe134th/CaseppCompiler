@@ -8,7 +8,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 
         internal void AddStackFrameFromScope(Scope scope)
         {
-            lock (scope.Symbols)
+            lock (scope.SymbolLock)
             {
                 StackFrame frame = new(scope.Start, scope.IsBase ? StackFrame.baseFrameExtraBytes : StackFrames[^1].SkipOffset,
                     from symbol in scope.Symbols

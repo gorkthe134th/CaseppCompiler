@@ -3,6 +3,7 @@ using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 {
@@ -33,10 +34,10 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                 if (output != null) await output.AddAsync($"j _main");
 
                 ConcurrentDictionary<Function, FunctionInfo> functionInfos = [];
-                SemaphoreSlim functionSemaphore = new(1, 1);
+                using SemaphoreSlim functionSemaphore = new(1, 1);
+                using SemaphoreSlim scopeProcessingSemaphore = new(1, 1);
+                int processingScopeCount = 0;
                 TaskCompletionSource taskAdded = new();
-                TaskCompletionSource? scopesReady = null;
-                TaskCompletionSource? scopesReadyRequest = new();
                 List<Task> tasks = [taskAdded.Task];
 
                 Monitor.Enter(tasks);
@@ -87,28 +88,23 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 
                 async Task ParseScopes()
                 {
-                    var e = input.Scopes.GetAsyncEnumerable().GetAsyncEnumerator();
-                    while (true)
+                    input.Scopes.ItemAdding += (sender, item) =>
                     {
-                        ValueTask<bool> next = e.MoveNextAsync();
-                        if (!next.IsCompleted)
+                        lock (scopeProcessingSemaphore)
                         {
-                            Task<bool> nextTask = next.AsTask();
-                            while (true)
-                            {
-                                Task finished = await Task.WhenAny(nextTask, scopesReadyRequest.Task);
-                                if (finished != scopesReadyRequest.Task || nextTask.IsCompleted) break;
-                                scopesReadyRequest = new();
-                                scopesReady?.SetResult();
-                            }
+                            if (processingScopeCount++ == 0) scopeProcessingSemaphore.Wait();
                         }
-                        if (next.Result == false) break;
-                        Scope scope = e.Current;
+                    };
+                    await foreach (var scope in input.Scopes.GetAsyncEnumerable())
+                    {
                         FunctionInfo info = functionInfos.GetOrAdd(scope.EncompassingFunction, info = new());
                         info.AddStackFrameFromScope(scope);
+                        lock (scopeProcessingSemaphore)
+                        {
+                            if (--processingScopeCount == 0) scopeProcessingSemaphore.Release();
+                            if (processingScopeCount < 0) throw new UnreachableException("Negative Scopes are being processed...");
+                        }
                     }
-                    scopesReadyRequest = null;
-                    scopesReady?.TrySetResult();
                 }
 
                 async Task ParseFunction(Function function)
@@ -138,12 +134,8 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                 await output.AddAsync($"{function.FullName}_{currentInstructionIndex}:");
                             }
 
-                            if (scopesReadyRequest != null)
-                            {
-                                scopesReady = new();
-                                scopesReadyRequest.SetResult();
-                                await scopesReady.Task;
-                            }
+                            await scopeProcessingSemaphore.WaitAsync(); // Ensure that there are no unprocessed scopes before parsing
+                            scopeProcessingSemaphore.Release(); // Allow new scopes to be processed
 
                             loadedFrames.RemoveAll(sf => sf.End <= currentInstructionIndex);
                             List<StackFrame> frames = functionInfo.StackFrames;

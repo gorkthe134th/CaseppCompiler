@@ -35,6 +35,7 @@
         /// </summary>
         internal Scope? Parent { get; } = parent;
 
+        public Lock SymbolLock { get; } = new();
         private readonly Dictionary<string, Symbol> symbols = initialSymbols.Select(s => new KeyValuePair<string, Symbol>(s.Name, s)).ToDictionary();
 
         /// <summary>
@@ -48,8 +49,17 @@
         /// <param name="name">The name of the <see cref="Symbol"/> to search.</param>
         /// <returns>The <see cref="Symbol"/> with the specified name provided by either this <see cref="Scope"/> or any of its ancestors.</returns>
         /// <exception cref="ArgumentException">Cannot find Symbol through this Scope.</exception>
-        internal Symbol this[string name] => symbols.TryGetValue(name, out Symbol? symbol) ? symbol : Parent?[name] ??
-            throw new ArgumentException($"Cannot find Symbol \"{name}\" through this Scope.");
+        internal Symbol this[string name]
+        {
+            get
+            {
+                lock (SymbolLock)
+                {
+                    return symbols.TryGetValue(name, out Symbol? symbol) ? symbol : Parent?[name] ??
+                        throw new ArgumentException($"Cannot find Symbol \"{name}\" through this Scope.");
+                }
+            }
+        }
 
         internal delegate void SymbolAddedHandler(Scope sender, Symbol symbol);
         internal event SymbolAddedHandler? SymbolAdded;
@@ -62,18 +72,18 @@
         /// <returns>The <see cref="Symbol"/> in the <see cref="Scope"/> with the specified name or the result of calling <paramref name="symbolFactory"/>.</returns>
         internal Symbol GetOrAddSymbol(string name, Func<Symbol> symbolFactory)
         {
-            if (!symbols.TryGetValue(name, out Symbol? symbol))
+            lock (SymbolLock)
             {
-                symbol = symbolFactory.Invoke();
-
-                lock (symbols)
+                if (!symbols.TryGetValue(name, out Symbol? symbol))
                 {
-                    symbols.Add(symbol.Name, symbol);
-                }
+                    symbol = symbolFactory.Invoke();
 
-                SymbolAdded?.Invoke(this, symbol);
+                    symbols.Add(symbol.Name, symbol);
+
+                    SymbolAdded?.Invoke(this, symbol);
+                }
+                return symbol;
             }
-            return symbol;
         }
 
         /// <summary>
@@ -83,18 +93,18 @@
         /// <exception cref="ArgumentException">Symbol already exists.</exception>
         internal void AddSymbol(Symbol symbol)
         {
-            try
+            lock (SymbolLock)
             {
-                lock (symbols)
+                try
                 {
                     symbols.Add(symbol.Name, symbol);
                 }
+                catch (ArgumentException e)
+                {
+                    throw new ArgumentException($"Symbol \"{symbol.Name}\" already exists.", e);
+                }
+                SymbolAdded?.Invoke(this, symbol);
             }
-            catch (ArgumentException e)
-            {
-                throw new ArgumentException($"Symbol \"{symbol.Name}\" already exists.", e);
-            }
-            SymbolAdded?.Invoke(this, symbol);
         }
 
         /// <summary>
@@ -107,20 +117,23 @@
         /// <exception cref="InvalidOperationException">Cannot exit Scope due to Symbol.</exception>
         internal void Exit(int end)
         {
-            Symbol? lastSymbol = null;
-            try
+            lock (SymbolLock)
             {
-                foreach ((string _, Symbol symbol) in symbols)
+                Symbol? lastSymbol = null;
+                try
                 {
-                    lastSymbol = symbol;
-                    symbol.ForgetFunction();
+                    foreach ((string _, Symbol symbol) in symbols)
+                    {
+                        lastSymbol = symbol;
+                        symbol.ForgetFunction();
+                    }
                 }
+                catch (InvalidOperationException e)
+                {
+                    throw new InvalidOperationException($"Cannot exit Scope due to Symbol \"{lastSymbol?.Name}\".", e);
+                }
+                Ended?.Invoke(this, end);
             }
-            catch (InvalidOperationException e)
-            {
-                throw new InvalidOperationException($"Cannot exit Scope due to Symbol \"{lastSymbol?.Name}\".", e);
-            }
-            Ended?.Invoke(this, end);
         }
     }
 }

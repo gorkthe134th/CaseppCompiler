@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 
 namespace CaseppCompiler
 {
@@ -7,6 +6,9 @@ namespace CaseppCompiler
     {
         private readonly Channel<T> items = capacity == null ? Channel.CreateUnbounded<T>() : Channel.CreateBounded<T>((int)capacity);
         private readonly CancellationToken? cancellationToken = cancellationToken;
+
+        public delegate void ItemAddingHandler(Stream<T> sender, T item);
+        public event ItemAddingHandler? ItemAdding;
 
         public delegate void ItemAddedHandler(Stream<T> sender, T item);
         public event ItemAddedHandler? ItemAdded;
@@ -21,6 +23,7 @@ namespace CaseppCompiler
 
         public async Task AddAsync(T item)
         {
+            ItemAdding?.Invoke(this, item);
             await items.Writer.WriteAsync(item, cancellationToken ?? default);
             ItemAdded?.Invoke(this, item);
         }
