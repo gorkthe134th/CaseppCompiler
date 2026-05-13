@@ -68,7 +68,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         internal int CurrentInstructionIndex { get; private set; }
 
         /// <summary>
-        /// The number of Quads that whould be produced if the <see cref="ToQuads(int)"/> method was called on this <see cref="Function"/>.
+        /// The number of Quads that whould be produced if the <see cref="Function"/> was converted to quads.
         /// </summary>
         internal int QuadCount => CurrentInstructionIndex + 2;
 
@@ -239,7 +239,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             }
         }
 
-        public async IAsyncEnumerable<(string?, string?, string?, string?)> ToQuads(int offset)
+        public async IAsyncEnumerable<(string?, string?, string?, string?)> ToQuadsConsuming(int offset)
         {
             yield return ("begin_block", FullName, null, null);
             await foreach (var instruction in Instructions.GetAsyncEnumerable(i => i.Complete))
@@ -256,6 +256,41 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                 yield return instruction.ToQuad();
             }
             yield return ("end_block", FullName, null, null);
+        }
+
+        // Warning: This function assumes that there is at least one instruction.
+        internal Task ToQuadsEvents(Func<int> nextOffest, Action<int, (string?, string?, string?, string?)> useQuad, Action? complete = null)
+        {
+            OperationMonitor operationMonitor = new();
+            bool started = false;
+            int start = 0;
+            Instructions.ItemAdding += (sender, instruction) => operationMonitor.Add();
+            Instructions.ItemTaken += (sender, instruction) => operationMonitor.Remove(() =>
+            {
+                if (!started)
+                {
+                    start = nextOffest();
+                    useQuad(start, ("begin_block", FullName, null, null));
+                    started = true;
+                }
+                if (instruction is JumpInstruction jump)
+                {
+                    var localTarget = jump.Target;
+                    jump.Target = localTarget + start + 1;
+                    (string?, string?, string?, string?) quad = jump.ToQuad();
+                    jump.Target = localTarget;
+                    useQuad(nextOffest(), quad);
+                    return;
+                }
+                useQuad(nextOffest(), instruction.ToQuad());
+            });
+            Instructions.Completed += (sender) => operationMonitor.AllowCompletion();
+            operationMonitor.Completed += () =>
+            {
+                useQuad(nextOffest(), ("end_block", FullName, null, null));
+                complete?.Invoke();
+            };
+            return operationMonitor.WaitAsync();
         }
     }
 }

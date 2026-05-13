@@ -6,23 +6,24 @@ namespace CaseppCompiler.Writers.IntermediateProgramWriter
     {
         public Task Write(IntermediateProgram input, Stream ouput, CancellationToken? cancellationToken = null)
         {
-            WriteContext context = new(new(ouput), cancellationToken);
-            input.Scopes.ItemAdded += (sender, scope) => SubscribeToScope(scope, context);
-            input.Scopes.Completed += (sender) => context.AllowDispose();
-            return context.WriteComplete;
-        }
+            OperationMonitor operationMonitor = new(cancellationToken);
+            StreamWriter writer = new(ouput);
+            input.Scopes.ItemAdded += SubscribeToScope;
+            input.Scopes.Completed += (sender) => operationMonitor.AllowCompletion();
+            operationMonitor.Completed += writer.Dispose;
+            return operationMonitor.WaitAsync();
 
-        private static void SubscribeToScope(Scope scope, WriteContext context)
-        {
-            context.AddUser();
-            scope.Ended += (sender, end) => WriteScope(sender, end, context);
-        }
+            void SubscribeToScope(Stream<Scope> sender, Scope scope)
+            {
+                operationMonitor.Add();
+                scope.Ended += WriteScope;
+            }
 
-        private static void WriteScope(Scope scope, int end, WriteContext context)
-        {
-            context.UseWriter(writer =>
-                writer.WriteLine($"{scope.EncompassingFunction.Name} {(scope.IsBase ? '#' : '|')} {scope.Start} - {end}: {string.Join(", ", scope.Symbols.Select(s => s.Name))}"));
-            context.RemoveUser();
+            void WriteScope(Scope scope, int end)
+            {
+                operationMonitor.Remove(() =>
+                    writer.WriteLine($"{scope.EncompassingFunction.Name} {(scope.IsBase ? '#' : '|')} {scope.Start} - {end}: {string.Join(", ", scope.Symbols.Select(s => s.Name))}"));
+            }
         }
     }
 }

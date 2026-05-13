@@ -204,18 +204,32 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             if (compilerVariables.Count != 0) throw new UnreachableException($"Leftover Variables: {string.Join(',', compilerVariables)}.");
         }
 
-        public IAsyncEnumerable<(string?, string?, string?, string?)> ToQuads()
+        public IAsyncEnumerable<(string?, string?, string?, string?)> ToQuadsConsuming()
         {
             int offset = 0;
             return Functions.GetAsyncEnumerable().SelectMany(function =>
             {
-                var ret = function.ToQuads(offset);
+                var ret = function.ToQuadsConsuming(offset);
                 offset += function.QuadCount;
                 return ret;
             });
         }
 
-        public void CompleteAdding()
+        internal Task ToQuadsEvents(Action<int, (string?, string?, string?, string?)> useQuad, Action? complete = null)
+        {
+            OperationMonitor operationMonitor = new();
+            int offset = 0;
+            Functions.ItemAdding += (sender, function) =>
+            {
+                operationMonitor.Add();
+                _ = function.ToQuadsEvents(() => offset++, useQuad, () => operationMonitor.Remove());
+            };
+            Functions.Completed += (sender) => operationMonitor.AllowCompletion();
+            operationMonitor.Completed += complete;
+            return operationMonitor.WaitAsync();
+        }
+
+        internal void CompleteAdding()
         {
             Functions.Complete();
             Scopes.Complete();

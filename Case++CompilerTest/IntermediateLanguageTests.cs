@@ -850,7 +850,7 @@ namespace CaseppCompilerTest
 
             if (expectedQuads == null) return;
 
-            var ep = program.ToQuads().GetAsyncEnumerator();
+            var ep = program.ToQuadsConsuming().GetAsyncEnumerator();
             var ee = expectedQuads.GetEnumerator();
             while (true)
                 switch ((await ep.MoveNextAsync(), ee.MoveNext()))

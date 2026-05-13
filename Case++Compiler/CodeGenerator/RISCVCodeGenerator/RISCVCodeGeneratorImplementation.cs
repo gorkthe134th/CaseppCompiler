@@ -31,7 +31,13 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
         {
             try
             {
-                if (output != null) await output.AddAsync($"j _main");
+                if (output != null)
+                {
+                    await output.AddAsync($".data");
+                    await output.AddAsync($@"new_line: .asciz ""\n""");
+                    await output.AddAsync($".text");
+                    await output.AddAsync($"j _main");
+                }
 
                 ConcurrentDictionary<Function, FunctionInfo> functionInfos = [];
                 using SemaphoreSlim functionSemaphore = new(1, 1);
@@ -117,20 +123,19 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                         List<StackFrame> loadedFrames = functionInfo.StackFrames.Count > 0 ? [functionInfo.StackFrames[0]] : [];
                         int currentInstructionIndex = 0;
                         bool addedHeader = false;
-                        await foreach (var instruction in function.Instructions.GetAsyncEnumerable(i => i.Complete))
+                        await foreach (var instruction in function.Instructions.GetAsyncEnumerable(async i =>
+                        {
+                            await i.Complete;
+                            if (output != null && !addedHeader)
+                            {
+                                await functionSemaphore.WaitAsync(); // Only allow one thread to produce code at a time.
+                                enteredSemaphore = true;
+                            }
+                        }))
                         {
                             if (output != null)
                             {
-                                if (!addedHeader)
-                                {
-                                    await functionSemaphore.WaitAsync(); // Only allow one thread to produce code at a time.
-                                    enteredSemaphore = true;
-                                    if (function.IsMain) await output.AddAsync($"_main:");
-                                    await output.AddAsync($"{function.FullName}:");
-                                    await output.AddAsync($"sw ra, 4(sp)");
-                                    addedHeader = true;
-                                }
-
+                                if (!addedHeader) await AddHeader();
                                 await output.AddAsync($"{function.FullName}_{currentInstructionIndex}:");
                             }
 
@@ -146,6 +151,14 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                             await ParseInstruction(instruction);
 
                             currentInstructionIndex++;
+                        }
+
+                        async Task AddHeader()
+                        {
+                            if (function.IsMain) await output.AddAsync($"_main:");
+                            await output.AddAsync($"{function.FullName}:");
+                            await output.AddAsync($"sw ra, 4(sp)");
+                            addedHeader = true;
                         }
 
                         async Task ParseInstruction(Instruction instruction)
@@ -181,6 +194,9 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                     {
                                         await GenerateValueLoadingCode(outputInstruction.Value, "a0", instruction.Position);
                                         await output.AddAsync($"li a7, 1");
+                                        await output.AddAsync($"ecall");
+                                        await output.AddAsync($"la a0, new_line");
+                                        await output.AddAsync($"li a7, 4");
                                         await output.AddAsync($"ecall");
                                     }
                                     break;
