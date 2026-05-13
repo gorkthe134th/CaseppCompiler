@@ -1,11 +1,8 @@
-﻿using CaseppCompiler.CodeGenerator;
-using CaseppCompiler.LexicalAnalyser.Tokens;
+﻿using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
 using CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
-
-using System.Collections.Concurrent;
 
 namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 {
@@ -94,7 +91,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             ]),
                         "Function Body" % statementMatcher,
                         "Optional Semi Colon" ^ typeof(SemiColonToken),
-                    ] | (program => program.FinalizeFunction(p => new ReturnInstruction(p, 0)))
+                    ] | (program => program.FinalizeFunction((p, ct) => new ReturnInstruction(p, 0)))
                 );
 
             UnresolvedTokenMatcher expressionMatcher = new("Expression");
@@ -160,10 +157,10 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                     callBlockInfo.AddParameter(new OutParameter(result));
                                     foreach (var parameter in callBlockInfo.Parameters)
                                     {
-                                        await program.CreateInstruction(p => new ParameterInstruction(p, parameter));
+                                        await program.CreateInstruction((p, ct) => new ParameterInstruction(p, parameter));
                                         if (parameter is OutParameter par) program.InitialiseVariable(par.Variable);
                                     }
-                                    await program.CreateInstruction(p => new CallInstruction(p, callBlockInfo.Function));
+                                    await program.CreateInstruction((p, ct) => new CallInstruction(p, callBlockInfo.Function));
                                     program.PushCompilerVariable(new ExpressionBlockInfo(result, callBlockInfo.Start));
                                     program.MergeVariableDependancies(callBlockInfo.Function);
                                 }),
@@ -196,7 +193,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             OperationType operation = program.PopCompilerVariable<OperationType>();
                             ExpressionBlockInfo operand1 = program.PopCompilerVariable<ExpressionBlockInfo>();
                             Variable temp = program.GenerateTemp();
-                            await program.CreateInstruction(p => new OperationInstruction(p, operation, operand1.Result, operand2.Result, temp));
+                            await program.CreateInstruction((p, ct) => new OperationInstruction(p, operation, operand1.Result, operand2.Result, temp));
                             program.PushCompilerVariable(new ExpressionBlockInfo(temp, operand1.Start));
                         })),
                 ];
@@ -218,7 +215,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 ExpressionBlockInfo term = program.PopCompilerVariable<ExpressionBlockInfo>();
                                 OperationType sign = program.PopCompilerVariable<OperationType>();
                                 Variable temp = program.GenerateTemp();
-                                await program.CreateInstruction(p => new OperationInstruction(p, sign, 0, term.Result, temp));
+                                await program.CreateInstruction((p, ct) => new OperationInstruction(p, sign, 0, term.Result, temp));
                                 program.PushCompilerVariable(new ExpressionBlockInfo(temp, term.Start));
                             }),
                         ],
@@ -238,7 +235,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             OperationType operation = program.PopCompilerVariable<OperationType>();
                             ExpressionBlockInfo operand1 = program.PopCompilerVariable<ExpressionBlockInfo>();
                             Variable temp = program.GenerateTemp();
-                            await program.CreateInstruction(p => new OperationInstruction(p, operation, operand1.Result, operand2.Result, temp));
+                            await program.CreateInstruction((p, ct) => new OperationInstruction(p, operation, operand1.Result, operand2.Result, temp));
                             program.PushCompilerVariable(new ExpressionBlockInfo(temp, operand1.Start));
                         })),
                 ]);
@@ -251,7 +248,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     "Constant" % typeof(BoolConstantToken) | (async program =>
                     {
                         int start = program.CurrentInstructionIndex;
-                        JumpInstruction jump = await program.CreateInstruction(p => new UnconditionalJumpInstruction(p));
+                        JumpInstruction jump = await program.CreateInstruction((p, ct) => new UnconditionalJumpInstruction(p, ct));
 
                         bool @bool = program.PopCompilerVariable<bool>();
                         List<JumpInstruction> trueOriginList  = [];
@@ -288,7 +285,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         OperationType operation = program.PopCompilerVariable<OperationType>();
                         ExpressionBlockInfo operand1 = program.PopCompilerVariable<ExpressionBlockInfo>();
                         return program.AddJumpInstructions(
-                            p => new ComparisonJumpInstruction(p, operation, operand1.Result, operand2.Result),
+                            (p, ct) => new ComparisonJumpInstruction(p, operation, operand1.Result, operand2.Result, ct),
                             operand1.Start);
                     }),
                 ];
@@ -405,7 +402,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         // Assume that the variable is initialised when the first assignment is encountered.
                         // It is possible that this assignment will be skipped, but it's hard to check initisation in a way that accounts for jumps.
                         // This assumption doesn't lead to false positives and catches the most obvious (but not uncommon) true positives.
-                        await program.CreateInstruction(p => new AssignmentInstruction(p, variable, expression.Result));
+                        await program.CreateInstruction((p, ct) => new AssignmentInstruction(p, variable, expression.Result));
                         program.InitialiseVariable(variable);
                     }),
                     "If" %
@@ -426,7 +423,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 "\"else\" Keyword" % typeof(ElseToken),
                                 -"$false target" | (async program => {
                                     int ifExit = program.CurrentInstructionIndex;
-                                    JumpInstruction exitJump = await program.CreateInstruction(p => new UnconditionalJumpInstruction(p));
+                                    JumpInstruction exitJump = await program.CreateInstruction((p, ct) => new UnconditionalJumpInstruction(p, ct));
 
                                     JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
                                     info.FalseOriginList.Targets = program.CurrentInstructionIndex;
@@ -459,7 +456,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             "When Body" ^ statementMatcher,
                             "Optional Semi Colon" ^ typeof(SemiColonToken),
                             -"$false target" | (async program => {
-                                JumpInstruction exitJump = await program.CreateInstruction(p => new UnconditionalJumpInstruction(p));
+                                JumpInstruction exitJump = await program.CreateInstruction((p, ct) => new UnconditionalJumpInstruction(p, ct));
 
                                 JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
                                 info.FalseOriginList.Targets = program.CurrentInstructionIndex;
@@ -487,7 +484,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "While Body" ^ statementMatcher,
                         -"$repeat" | (async program => {
                             JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
-                            await program.CreateInstruction(p => new UnconditionalJumpInstruction(p) { Target = info.Start });
+                            await program.CreateInstruction((p, ct) => new UnconditionalJumpInstruction(p, ct) { Target = info.Start });
                             info.FalseOriginList.Targets = program.CurrentInstructionIndex;
                         }),
                         "Optional Else" ^
@@ -522,7 +519,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             -"$repeat & false target" | (async program => {
                                 JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
                                 int start = program.PeekCompilerVariable<int>();
-                                await program.CreateInstruction(p => new UnconditionalJumpInstruction(p) { Target = start });
+                                await program.CreateInstruction((p, ct) => new UnconditionalJumpInstruction(p, ct) { Target = start });
                                 info.FalseOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                         ],
@@ -576,7 +573,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 
                             Variable exitFlag = program.GenerateTemp();
                             program.PushCompilerVariable(exitFlag);
-                            await program.CreateInstruction(p => new AssignmentInstruction(p, exitFlag, 0));
+                            await program.CreateInstruction((p, ct) => new AssignmentInstruction(p, exitFlag, 0));
                         }),
                         "Cases" *
                         [
@@ -595,7 +592,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
                                 Variable exitFlag = program.PeekCompilerVariable<Variable>();
 
-                                await program.CreateInstruction(p => new AssignmentInstruction(p, exitFlag, 1));
+                                await program.CreateInstruction((p, ct) => new AssignmentInstruction(p, exitFlag, 1));
                                 info.FalseOriginList.Targets = program.CurrentInstructionIndex;
                             }),
                         ],
@@ -603,7 +600,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         {
                             Variable exitFlag = program.PopCompilerVariable<Variable>();
                             int start = program.PopCompilerVariable<int>();
-                            await program.CreateInstruction(p => new ComparisonJumpInstruction(p, OperationType.NotEqualTo, exitFlag, 0) { Target = start });
+                            await program.CreateInstruction((p, ct) => new ComparisonJumpInstruction(p, OperationType.NotEqualTo, exitFlag, 0, ct) { Target = start });
 
                             program.SetBreakPoint();
                         }),
@@ -617,7 +614,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             program.AddSymbol(iterationVariable);
                             program.InitialiseVariable(iterationVariable);
                             program.PushCompilerVariable(iterationVariable);
-                            await program.CreateInstruction(p => new AssignmentInstruction(p, iterationVariable, 0));
+                            await program.CreateInstruction((p, ct) => new AssignmentInstruction(p, iterationVariable, 0));
                         }),
                         "Equals Sign" % OperationType.EqualTo | (async program => {
                             _ = program.PopCompilerVariable<OperationType>(); // Ignore Variable; it will always be an Equals Sign.
@@ -630,7 +627,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             ExpressionBlockInfo count = program.PopCompilerVariable<ExpressionBlockInfo>();
                             Variable iterationVariable = program.PopCompilerVariable<Variable>();
                             await program.AddJumpInstructions(
-                                p => new ComparisonJumpInstruction(p, OperationType.LessThan, iterationVariable, count.Result),
+                                (p, ct) => new ComparisonJumpInstruction(p, OperationType.LessThan, iterationVariable, count.Result, ct),
                                 program.CurrentInstructionIndex);
 
                             JumpBlockInfo info = program.PeekCompilerVariable<JumpBlockInfo>();
@@ -638,7 +635,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
 
                             // Increment
 
-                            await program.CreateInstruction(p => new OperationInstruction(p, OperationType.Add, iterationVariable, 1, iterationVariable));
+                            await program.CreateInstruction((p, ct) => new OperationInstruction(p, OperationType.Add, iterationVariable, 1, iterationVariable));
 
                             program.SetRepeatPoint();
                         }),
@@ -664,7 +661,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                             program.SetBreakPoint();
 
                             JumpBlockInfo info = program.PopCompilerVariable<JumpBlockInfo>();
-                            await program.CreateInstruction(p => new UnconditionalJumpInstruction(p) { Target = info.Start });
+                            await program.CreateInstruction((p, ct) => new UnconditionalJumpInstruction(p, ct) { Target = info.Start });
                             info.FalseOriginList.Targets = program.CurrentInstructionIndex;
 
                             program.SetBreakPoint();
@@ -684,21 +681,21 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     [
                         "\"return\" Keyword" % typeof(ReturnToken),
                         expressionMatcher,
-                    ] | (program => program.CreateInstruction(p => new ReturnInstruction(p, program.PopCompilerVariable < ExpressionBlockInfo >().Result))),
+                    ] | (program => program.CreateInstruction((p, ct) => new ReturnInstruction(p, program.PopCompilerVariable < ExpressionBlockInfo >().Result))),
                     "Input" %
                     [
                         "\"input\" Keyword" % typeof(InputToken),
                         "Variable ID" % typeof(IdentifierToken),
                     ] | (async program => {
                         Variable variable = program.GetAccessibleSymbol<Variable>(program.PopCompilerVariable<string>());
-                        await program.CreateInstruction(p => new InputInstruction(p, variable));
+                        await program.CreateInstruction((p, ct) => new InputInstruction(p, variable));
                         program.InitialiseVariable(variable);
                     }),
                     "Print" %
                     [
                         "\"print\" Keyword" % typeof(PrintToken),
                         expressionMatcher,
-                    ] | (program => program.CreateInstruction(p => new OutputInstruction(p, program.PopCompilerVariable < ExpressionBlockInfo >().Result))),
+                    ] | (program => program.CreateInstruction((p, ct) => new OutputInstruction(p, program.PopCompilerVariable < ExpressionBlockInfo >().Result))),
                     "Intermediate Language Instruction" %
                     [
                         "hash prefix" % typeof(HashToken),
@@ -745,7 +742,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     "\"program\" Keyword" % typeof(ProgramToken),
                     "Program ID" % typeof(IdentifierToken) | (program => program.CreateFunction(program.PopCompilerVariable<string>(), true)),
                     "Program Body" % statementMatcher,
-                    "EOF" % typeof(EOFToken) | (program => program.FinalizeFunction(p => new HaltInstruction(p))),
+                    "EOF" % typeof(EOFToken) | (program => program.FinalizeFunction((p, ct) => new HaltInstruction(p))),
                 ];
         }
 

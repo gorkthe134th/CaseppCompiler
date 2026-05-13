@@ -259,9 +259,9 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         }
 
         // Warning: This function assumes that there is at least one instruction.
-        internal Task ToQuadsEvents(Func<int> nextOffest, Action<int, (string?, string?, string?, string?)> useQuad, Action? complete = null)
+        internal Task ToQuadsEvents(Func<int> nextOffest, Action<int, (string?, string?, string?, string?)> useQuad, Action? complete = null, CancellationToken? cancellationToken = null)
         {
-            OperationMonitor operationMonitor = new();
+            OperationMonitor operationMonitor = new(cancellationToken);
             bool started = false;
             int start = 0;
             Instructions.ItemAdding += (sender, instruction) => operationMonitor.Add();

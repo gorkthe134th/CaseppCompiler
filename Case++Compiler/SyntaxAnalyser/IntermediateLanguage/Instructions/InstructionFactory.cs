@@ -1,6 +1,4 @@
-﻿using CaseppCompiler.LexicalAnalyser.Tokens;
-
-namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
+﻿namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
     internal static class InstructionFactory
     {
@@ -26,7 +24,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
         public record Argument(object? Value) { }
 
         // TODO: Add initialisation checking
-        public static Instruction Create(Argument arg0, Argument arg1, Argument arg2, Argument arg3, Position position)
+        public static Instruction Create(Argument arg0, Argument arg1, Argument arg2, Argument arg3, Position position, CancellationToken? cancellationToken = null)
         {
             if (arg0.Value is Opcode opcode)
             {
@@ -65,7 +63,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
                             if (arg1.Value is not null) throw new SyntaxAnalyserException(position, $"Expected no 1st argument.");
                             if (arg2.Value is not null) throw new SyntaxAnalyserException(position, $"Expected no 2nd argument.");
                             if (arg3.Value is not Label label) throw new SyntaxAnalyserException(position, $"Expected Label Name for 3rd argument.");
-                            UnconditionalJumpInstruction jump = new(position);
+                            UnconditionalJumpInstruction jump = new(position, cancellationToken);
                             label.AddJump(jump);
                             return jump;
                         }
@@ -133,7 +131,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
                             if (arg1.Value is null || !Value.TryCast(arg1.Value, out Value? value1)) throw new SyntaxAnalyserException(position, $"Expected Constant or Variable ID for 1st argument.");
                             if (arg2.Value is null || !Value.TryCast(arg2.Value, out Value? value2)) throw new SyntaxAnalyserException(position, $"Expected Constant or Variable ID for 2nd argument.");
                             if (arg3.Value is not Label label) throw new SyntaxAnalyserException(position, $"Expected Label Name for 3rd argument.");
-                            ComparisonJumpInstruction jump = new(position, operation, value1, value2);
+                            ComparisonJumpInstruction jump = new(position, operation, value1, value2, cancellationToken);
                             label.AddJump(jump);
                             return jump;
                         }

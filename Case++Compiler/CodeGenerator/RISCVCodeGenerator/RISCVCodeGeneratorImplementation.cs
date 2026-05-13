@@ -130,6 +130,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                             {
                                 await functionSemaphore.WaitAsync(); // Only allow one thread to produce code at a time.
                                 enteredSemaphore = true;
+                                cancellationToken?.ThrowIfCancellationRequested();
                             }
                         }))
                         {

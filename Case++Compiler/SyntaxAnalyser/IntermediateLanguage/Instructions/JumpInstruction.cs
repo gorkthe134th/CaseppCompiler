@@ -6,6 +6,11 @@
 
         public override Task Complete => complete.Task;
 
+        public JumpInstruction(Position Position, CancellationToken? CancellationToken) : this(Position)
+        {
+            CancellationToken?.Register(() => complete.TrySetCanceled());
+        }
+
         public int? Target
         {
             get => field;

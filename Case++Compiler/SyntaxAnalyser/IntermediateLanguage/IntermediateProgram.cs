@@ -50,7 +50,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             }
         }
 
-        internal async Task FinalizeFunction<T>(Func<Position, T> create) where T : Instruction
+        internal async Task FinalizeFunction<T>(Func<Position, CancellationToken?, T> create) where T : Instruction
         {
             Function function = CurrentFunction;
             function.SetAllBreakTargets();
@@ -61,32 +61,32 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             currentFunction = function.Parent;
         }
 
-        internal async Task<T> CreateInstruction<T>(Func<Position, T> create) where T : Instruction
+        internal async Task<T> CreateInstruction<T>(Func<Position, CancellationToken?, T> create) where T : Instruction
         {
-            T instruction = create(Position);
+            T instruction = create(Position, cancellationToken);
             await CurrentFunction.AddInstruction(instruction);
             return instruction;
         }
 
         internal Task AddIntermediateLanguageInstruction(InstructionFactory.Argument arg0, InstructionFactory.Argument arg1, InstructionFactory.Argument arg2, InstructionFactory.Argument arg3) =>
-            CurrentFunction.AddInstruction(InstructionFactory.Create(arg0, arg1, arg2, arg3, Position));
+            CurrentFunction.AddInstruction(InstructionFactory.Create(arg0, arg1, arg2, arg3, Position, cancellationToken));
 
-        internal async Task AddJumpInstructions<T>(Func<Position, T> create, int start) where T : JumpInstruction
+        internal async Task AddJumpInstructions<T>(Func<Position, CancellationToken?, T> create, int start) where T : JumpInstruction
         {
             Function currentFunction = CurrentFunction;
             JumpInstruction trueJump = await CreateInstruction(create);
-            JumpInstruction falseJump = new UnconditionalJumpInstruction(Position);
+            JumpInstruction falseJump = new UnconditionalJumpInstruction(Position, cancellationToken);
             await currentFunction.AddInstruction(falseJump);
             compilerVariables.Push(new JumpBlockInfo([trueJump], [falseJump], start));
         }
 
         internal Task AddBreakInstruction(uint count) =>
-            count == 0 ? Task.CompletedTask : CurrentFunction.AddBreak(new UnconditionalJumpInstruction(Position), count);
+            count == 0 ? Task.CompletedTask : CurrentFunction.AddBreak(new UnconditionalJumpInstruction(Position, cancellationToken), count);
 
         internal void SetBreakPoint() => CurrentFunction.SetBreakPoint();
 
         internal Task AddRepeatInstruction(uint index) =>
-            index == 0 ? Task.CompletedTask : CurrentFunction.AddInstruction(new UnconditionalJumpInstruction(Position) { Target = CurrentFunction.GetRepeatPoint(index) });
+            index == 0 ? Task.CompletedTask : CurrentFunction.AddInstruction(new UnconditionalJumpInstruction(Position, cancellationToken) { Target = CurrentFunction.GetRepeatPoint(index) });
         
         internal void SetRepeatPoint() => CurrentFunction.SetRepeatPoint();
 
@@ -215,14 +215,14 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             });
         }
 
-        internal Task ToQuadsEvents(Action<int, (string?, string?, string?, string?)> useQuad, Action? complete = null)
+        internal Task ToQuadsEvents(Action<int, (string?, string?, string?, string?)> useQuad, Action? complete = null, CancellationToken? cancellationToken = null)
         {
-            OperationMonitor operationMonitor = new();
+            OperationMonitor operationMonitor = new(cancellationToken);
             int offset = 0;
             Functions.ItemAdding += (sender, function) =>
             {
                 operationMonitor.Add();
-                _ = function.ToQuadsEvents(() => offset++, useQuad, () => operationMonitor.Remove());
+                _ = function.ToQuadsEvents(() => offset++, useQuad, () => operationMonitor.Remove(), cancellationToken);
             };
             Functions.Completed += (sender) => operationMonitor.AllowCompletion();
             operationMonitor.Completed += complete;

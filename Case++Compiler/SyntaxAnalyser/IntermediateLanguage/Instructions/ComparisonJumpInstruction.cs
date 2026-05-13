@@ -1,10 +1,9 @@
-﻿using CaseppCompiler.LexicalAnalyser.Tokens;
-
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 
 namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions
 {
-    internal record class ComparisonJumpInstruction(Position Position, OperationType Operation, Value Operand1, Value Operand2) : JumpInstruction(Position)
+    internal record class ComparisonJumpInstruction(Position Position, OperationType Operation, Value Operand1, Value Operand2, CancellationToken? CancellationToken = null)
+        : JumpInstruction(Position, CancellationToken)
     {
         private static readonly ImmutableDictionary<OperationType, string> operationMap = new Dictionary<OperationType, string>()
         {

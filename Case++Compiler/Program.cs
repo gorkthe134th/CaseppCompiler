@@ -83,7 +83,8 @@ namespace CaseppCompiler
                 catch (OperationCanceledException) { } // Ignore OperationCanceledException
                 catch
                 {
-                    cancellationTokenSource.Cancel();
+                    if (!cancellationTokenSource.IsCancellationRequested)
+                        cancellationTokenSource.Cancel();
 
                     compilationTasks.RemoveAll(task =>
                     {

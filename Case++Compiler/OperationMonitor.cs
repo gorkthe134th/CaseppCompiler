@@ -16,7 +16,7 @@
             {
                 lock (this)
                 {
-                    taskCompletionSource.SetCanceled();
+                    if (taskCompletionSource.TrySetCanceled()) Completed?.Invoke();
                 }
             });
         }
@@ -65,8 +65,7 @@
 
         private void Complete()
         {
-            Completed?.Invoke();
-            taskCompletionSource.SetResult();
+            if(taskCompletionSource.TrySetResult()) Completed?.Invoke();
         }
     }
 }
