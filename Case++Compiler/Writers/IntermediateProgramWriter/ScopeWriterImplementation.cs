@@ -6,6 +6,7 @@ namespace CaseppCompiler.Writers.IntermediateProgramWriter
     {
         public Task Write(IntermediateProgram input, Stream ouput, CancellationToken? cancellationToken = null)
         {
+            if (input.Scopes.Count > 0) throw new ArgumentException("Input already contains Scopes.");
             OperationMonitor operationMonitor = new(cancellationToken);
             StreamWriter writer = new(ouput);
             input.Scopes.ItemAdded += SubscribeToScope;

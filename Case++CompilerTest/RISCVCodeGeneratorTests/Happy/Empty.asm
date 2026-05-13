@@ -1,4 +1,7 @@
-﻿j _main         # skip function code (not necessary here)
+﻿.data
+new_line: .asciz "\n"
+.text
+j _main         # skip function code (not necessary here)
 _main:
 p:
 sw ra, 4(sp)    # save the return address (not necessary here)

@@ -4,6 +4,7 @@ using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage.Instructions;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 
 namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 {
@@ -41,8 +42,8 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 
                 ConcurrentDictionary<Function, FunctionInfo> functionInfos = [];
                 using SemaphoreSlim functionSemaphore = new(1, 1);
-                using SemaphoreSlim scopeProcessingSemaphore = new(1, 1);
-                int processingScopeCount = 0;
+                int processingScopeCount = input.Scopes.Count;
+                using SemaphoreSlim scopeProcessingSemaphore = new(processingScopeCount == 0 ? 1 : 0, 1);
                 TaskCompletionSource taskAdded = new();
                 List<Task> tasks = [taskAdded.Task];
 
@@ -58,7 +59,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                     Monitor.Exit(tasks);
 
                     Task finishedTask = await anyTaskComplete;
-                    if (finishedTask.IsFaulted) throw finishedTask.Exception.InnerException!;
+                    if (finishedTask.IsFaulted) ExceptionDispatchInfo.Capture(finishedTask.Exception.InnerException!).Throw();
                     // There is no need to rethrow the whole AggregateException object.
                     // The tasks in the list originate from async methods (and a TaskCompletionSource).
                     // Only one exception is expected to be thrown per task.
@@ -130,8 +131,8 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                             {
                                 await functionSemaphore.WaitAsync(); // Only allow one thread to produce code at a time.
                                 enteredSemaphore = true;
-                                cancellationToken?.ThrowIfCancellationRequested();
                             }
+                            cancellationToken?.ThrowIfCancellationRequested();
                         }))
                         {
                             if (output != null)
