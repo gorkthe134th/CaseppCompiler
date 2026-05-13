@@ -36,9 +36,9 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         private Scope CurrentScope => currentScope ?? throw new InvalidOperationException("No available scopes.");
 
         /// <summary>
-        /// The <see cref="Variable"/> containing the result of the <see cref="Function"/> execution, if any.
+        /// The <see cref="Variable"/> containing the result of the <see cref="Function"/> execution.
         /// </summary>
-        internal Variable? ReturnVariable { get; }
+        internal Variable ReturnVariable { get; }
 
         private Dictionary<JumpInstruction, uint> breakOrigins = [];
         private readonly Stack<int> repeatTargets = [];
@@ -83,11 +83,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             AddSymbol(formalParameter.AssociatedVariable);
         }
 
-        internal void AddReturnValueParameter()
-        {
-            if (ReturnVariable != null)
-                formalParameters.Add(new TypeRestrictedFormalParameter<OutParameter>(ReturnVariable));
-        }
+        internal void AddReturnValueParameter() => formalParameters.Add(new TypeRestrictedFormalParameter<OutParameter>(ReturnVariable));
 
         internal Task AddInstruction(Instruction instruction)
         {

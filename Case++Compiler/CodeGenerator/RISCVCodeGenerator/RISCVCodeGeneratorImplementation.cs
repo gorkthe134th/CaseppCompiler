@@ -40,6 +40,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                     await output.AddAsync($"j _main");
                 }
 
+                Function? mainFunction = null;
                 ConcurrentDictionary<Function, FunctionInfo> functionInfos = [];
                 using SemaphoreSlim functionSemaphore = new(1, 1);
                 int processingScopeCount = input.Scopes.Count;
@@ -76,6 +77,24 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                 }
 
                 Monitor.Exit(tasks);
+
+                if (output != null)
+                {
+                    if (mainFunction == null)
+                        throw new CodeGeneratorException(default, "No Main Function found.");
+
+                    if (!functionInfos.TryGetValue(mainFunction, out FunctionInfo? info))
+                        throw new CodeGeneratorException(default, "Main Function has no Scopes.");
+
+                    int? variableOffset = 0;
+                    if (!info.StackFrames.Any(f => f.TryGetOffset(mainFunction.ReturnVariable, out variableOffset)))
+                        throw new CodeGeneratorException(default, "Main Function must have a Return Variable.");
+
+                    await output.AddAsync($"_exit:");
+                    await output.AddAsync($"lw a0, 0(sp)");
+                    await output.AddAsync($"li a7, 93");
+                    await output.AddAsync($"ecall");
+                }
 
 
                 void AddTask(Task task)
@@ -135,14 +154,20 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                             cancellationToken?.ThrowIfCancellationRequested();
                         }))
                         {
+                            if (!addedHeader && function.IsMain)
+                            {
+                                if (mainFunction != null) throw new CodeGeneratorException(instruction.Position, "Secondary Main Function detected.");
+                                mainFunction = function;
+                            }
+
+                            await scopeProcessingSemaphore.WaitAsync(); // Ensure that there are no unprocessed scopes before parsing
+                            scopeProcessingSemaphore.Release(); // Allow new scopes to be processed
+
                             if (output != null)
                             {
                                 if (!addedHeader) await AddHeader();
                                 await output.AddAsync($"{function.FullName}_{currentInstructionIndex}:");
                             }
-
-                            await scopeProcessingSemaphore.WaitAsync(); // Ensure that there are no unprocessed scopes before parsing
-                            scopeProcessingSemaphore.Release(); // Allow new scopes to be processed
 
                             loadedFrames.RemoveAll(sf => sf.End <= currentInstructionIndex);
                             List<StackFrame> frames = functionInfo.StackFrames;
@@ -157,7 +182,19 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
 
                         async Task AddHeader()
                         {
-                            if (function.IsMain) await output.AddAsync($"_main:");
+                            if (function.IsMain)
+                            {
+                                if (!functionInfos.TryGetValue(function, out FunctionInfo? info))
+                                    throw new CodeGeneratorException(default, "Main Function has no Scopes.");
+
+                                int? variableOffset = 0;
+                                if (!info.StackFrames.Any(f => f.TryGetOffset(function.ReturnVariable, out variableOffset)))
+                                    throw new CodeGeneratorException(default, "Main Function must have a Return Variable.");
+
+                                await output.AddAsync($"_main:");
+                                await output.AddAsync($"la ra, _exit");
+                                await output.AddAsync($"sw sp, {variableOffset}(sp)");
+                            }
                             await output.AddAsync($"{function.FullName}:");
                             await output.AddAsync($"sw ra, 4(sp)");
                             addedHeader = true;
@@ -293,24 +330,12 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                     }
                                     break;
                                 case ReturnInstruction returnInstruction:
-                                    switch ((function.ReturnVariable == null, returnInstruction.Value == null))
-                                    {
-                                        case (false, false):
-                                            if (output != null)
-                                            {
-                                                await GenerateValueLoadingCode(returnInstruction.Value!, "t1", instruction.Position);
-                                                await GenerateVariableStoringCode(function.ReturnVariable!, "t1", instruction.Position);
-                                            }
-                                            break;
-                                        case (true, true):
-                                            break;
-                                        case (false, true):
-                                            throw new CodeGeneratorException(returnInstruction.Position, $"Function \"{function.Name}\" must return a value.");
-                                        case (true, false):
-                                            throw new CodeGeneratorException(returnInstruction.Position, $"Procedure \"{function.Name}\" cannot return a value.");
-                                    }
+                                    if (returnInstruction.Value == null)
+                                        throw new CodeGeneratorException(returnInstruction.Position, $"Function \"{function.Name}\" must return a value.");
                                     if (output != null)
                                     {
+                                        await GenerateValueLoadingCode(returnInstruction.Value, "t1", instruction.Position);
+                                        await GenerateVariableStoringCode(function.ReturnVariable, "t1", instruction.Position);
                                         await output.AddAsync($"lw ra, 4(sp)");
                                         await output.AddAsync($"jr ra");
                                     }
