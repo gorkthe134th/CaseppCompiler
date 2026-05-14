@@ -35,6 +35,42 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\DataUneffectedOut.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\GlobalFromChildOut.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\GlobalFromChildIn.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\GlobalFromFunctionOut.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\GlobalFromFunctionIn.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\DataUneffectedIn.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\LocalUneffectedOut.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\LocalUneffectedIn.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\MainOut.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\MainIn.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\UneffectedOut.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\UneffectedIn.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Happy\Conditions\InvertedCondition.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

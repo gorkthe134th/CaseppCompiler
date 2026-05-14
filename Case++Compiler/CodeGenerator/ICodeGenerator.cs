@@ -14,7 +14,7 @@ namespace CaseppCompiler.CodeGenerator
             type switch
             {
                 "riscv" => new RISCVCodeGeneratorImplementation(),
-                _ => new RISCVCodeGeneratorImplementation(),
+                _ => Create("riscv"),
             };
     }
 }

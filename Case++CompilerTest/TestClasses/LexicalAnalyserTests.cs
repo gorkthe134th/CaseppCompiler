@@ -8,7 +8,7 @@ using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
 using NUnit.Framework.Constraints;
 
-namespace CaseppCompilerTest
+namespace CaseppCompilerTest.TestClasses
 {
     [TestFixture("regex")]
     [TestFixture("set")]

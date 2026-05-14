@@ -1,4 +1,5 @@
 ﻿using CaseppCompiler.CodeGenerator;
+using CaseppCompiler.CodeOptimiser;
 using CaseppCompiler.LexicalAnalyser;
 using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
@@ -56,18 +57,21 @@ namespace CaseppCompiler
             IIntermediateProgramWriter functionWriter  = IntermediateProgramWriterFactory.Create("int");
             IIntermediateProgramWriter scopeWriter     = IntermediateProgramWriterFactory.Create("sym");
             ICodeGenerator             codeGenerator   = CodeGeneratorFactory            .Create(codeGeneratorType  );
+            ICodeOptimiser             codeOptimiser   = RISCVCodeOptimiserFactory       .Create(codeGeneratorType, "gp");
             ICodeWriter                codeWriter      = CodeWriterFactory               .Create();
 
             using CancellationTokenSource cancellationTokenSource = new();
             Stream<Token> tokens = new(capacity: 128, cancellationTokenSource.Token);
             IntermediateProgram program = new(functionCapacity: 4, instructionCapacity: null, scopeCapacity: 6, cancellationTokenSource.Token);
-            Stream<string> code = new(capacity: 64, cancellationTokenSource.Token);
+            Stream<string> code1 = new(capacity: 64, cancellationTokenSource.Token);
+            Stream<string> code2 = new(capacity: 64, cancellationTokenSource.Token);
 
             List<Task> compilationTasks = [
-                codeWriter     .Write  (code   , codeFile, cancellationTokenSource.Token),
+                codeWriter     .Write  (code2  , codeFile, cancellationTokenSource.Token),
                 scopeWriter    .Write  (program, symFile , cancellationTokenSource.Token),
                 functionWriter .Write  (program, intFile , cancellationTokenSource.Token),
-                codeGenerator  .Analyse(program, code    , cancellationTokenSource.Token),
+                codeOptimiser  .Analyse(code1  , code2   , cancellationTokenSource.Token),
+                codeGenerator  .Analyse(program, code1   , cancellationTokenSource.Token),
                 syntaxAnalyser .Analyse(tokens , program , cancellationTokenSource.Token),
                 lexicalAnalyser.Analyse(inFile , tokens  , cancellationTokenSource.Token),
             ];

@@ -215,18 +215,12 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             });
         }
 
-        internal Task ToQuadsEvents(Action<int, (string?, string?, string?, string?)> useQuad, Action? complete = null, CancellationToken? cancellationToken = null)
+        internal Task ToQuadsEvents(Action<int, (string?, string?, string?, string?)> useQuad, CancellationToken? cancellationToken = null)
         {
-            OperationMonitor operationMonitor = new(cancellationToken);
             int offset = 0;
-            Functions.ItemAdding += (sender, function) =>
-            {
-                operationMonitor.Add();
-                _ = function.ToQuadsEvents(() => offset++, useQuad, () => operationMonitor.Remove(), cancellationToken);
-            };
-            Functions.Completed += (sender) => operationMonitor.AllowCompletion();
-            operationMonitor.Completed += complete;
-            return operationMonitor.WaitAsync();
+            TaskList tasks = [Functions.Finish];
+            Functions.ItemAdding += (sender, function) => tasks.Add(function.ToQuadsEvents(() => offset++, useQuad, cancellationToken));
+            return tasks.WhenAll();
         }
 
         internal void CompleteAdding()

@@ -255,19 +255,15 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         }
 
         // Warning: This function assumes that there is at least one instruction.
-        internal Task ToQuadsEvents(Func<int> nextOffest, Action<int, (string?, string?, string?, string?)> useQuad, Action? complete = null, CancellationToken? cancellationToken = null)
+        internal Task ToQuadsEvents(Func<int> nextOffest, Action<int, (string?, string?, string?, string?)> useQuad, CancellationToken? cancellationToken = null)
         {
-            OperationMonitor operationMonitor = new(cancellationToken);
-            bool started = false;
-            int start = 0;
-            Instructions.ItemAdding += (sender, instruction) => operationMonitor.Add();
-            Instructions.ItemTaken += (sender, instruction) => operationMonitor.Remove(() =>
+            int? start = null;
+            Instructions.ItemTaken += (sender, instruction) =>
             {
-                if (!started)
+                if (start == null)
                 {
                     start = nextOffest();
-                    useQuad(start, ("begin_block", FullName, null, null));
-                    started = true;
+                    useQuad((int)start, ("begin_block", FullName, null, null));
                 }
                 if (instruction is JumpInstruction jump)
                 {
@@ -279,14 +275,8 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                     return;
                 }
                 useQuad(nextOffest(), instruction.ToQuad());
-            });
-            Instructions.Completed += (sender) => operationMonitor.AllowCompletion();
-            operationMonitor.Completed += () =>
-            {
-                useQuad(nextOffest(), ("end_block", FullName, null, null));
-                complete?.Invoke();
             };
-            return operationMonitor.WaitAsync();
+            return Instructions.Finish.ContinueWith(_ => useQuad(nextOffest(), ("end_block", FullName, null, null)));
         }
     }
 }

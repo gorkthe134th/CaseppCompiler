@@ -45,38 +45,11 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                 using SemaphoreSlim functionSemaphore = new(1, 1);
                 int processingScopeCount = input.Scopes.Count;
                 using SemaphoreSlim scopeProcessingSemaphore = new(processingScopeCount == 0 ? 1 : 0, 1);
-                TaskCompletionSource taskAdded = new();
-                List<Task> tasks = [taskAdded.Task];
-
-                Monitor.Enter(tasks);
-
+                TaskList tasks = new();
                 tasks.Add(ParseFunctions());
                 tasks.Add(ParseScopes());
 
-                while (tasks.Count > 1)
-                {
-                    var anyTaskComplete = Task.WhenAny(tasks).ConfigureAwait(false);
-
-                    Monitor.Exit(tasks);
-
-                    Task finishedTask = await anyTaskComplete;
-                    if (finishedTask.IsFaulted) ExceptionDispatchInfo.Capture(finishedTask.Exception.InnerException!).Throw();
-                    // There is no need to rethrow the whole AggregateException object.
-                    // The tasks in the list originate from async methods (and a TaskCompletionSource).
-                    // Only one exception is expected to be thrown per task.
-
-                    Monitor.Enter(tasks);
-
-                    tasks.Remove(finishedTask);
-
-                    if (finishedTask == taskAdded.Task)
-                    {
-                        taskAdded = new();
-                        tasks.Add(taskAdded.Task);
-                    }
-                }
-
-                Monitor.Exit(tasks);
+                await tasks.WhenAllCaptureException();
 
                 if (output != null)
                 {
@@ -97,19 +70,10 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                 }
 
 
-                void AddTask(Task task)
-                {
-                    lock (tasks)
-                    {
-                        tasks.Add(task);
-                        taskAdded.TrySetResult();
-                    }
-                }
-
                 async Task ParseFunctions()
                 {
                     await foreach (Function function in input.Functions.GetAsyncEnumerable())
-                        AddTask(ParseFunction(function));
+                        tasks.Add(ParseFunction(function));
                 }
 
                 async Task ParseScopes()

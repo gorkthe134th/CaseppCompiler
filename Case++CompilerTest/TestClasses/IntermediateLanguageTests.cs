@@ -1,5 +1,4 @@
 ﻿using CaseppCompiler;
-using CaseppCompiler.CodeGenerator;
 using CaseppCompiler.LexicalAnalyser;
 using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
@@ -7,7 +6,7 @@ using CaseppCompiler.SyntaxAnalyser.IntermediateLanguage;
 
 using NUnit.Framework.Constraints;
 
-namespace CaseppCompilerTest
+namespace CaseppCompilerTest.TestClasses
 {
     [TestFixture("grammar")]
     public class IntermediateLanguageTests(string type)

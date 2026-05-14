@@ -6,7 +6,7 @@ using CaseppCompiler.SyntaxAnalyser;
 
 using NUnit.Framework.Constraints;
 
-namespace CaseppCompilerTest
+namespace CaseppCompilerTest.TestClasses
 {
     [TestFixture("grammar")]
     public class SyntaxAnalyserTests(string type)
