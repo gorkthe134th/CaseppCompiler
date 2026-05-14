@@ -53,11 +53,11 @@ namespace CaseppCompiler
             using Stream codeFile = File.Open("a.asm", FileMode.Create);
 
             ILexicalAnalyser           lexicalAnalyser = LexicalAnalyserFactory          .Create(lexicalAnalyserType);
-            ISyntaxAnalyser            syntaxAnalyser  = SyntaxAnalyserFactory           .Create(syntaxAnalyserType );
+            ISyntaxAnalyser            syntaxAnalyser  = SyntaxAnalyserFactory           .Create(syntaxAnalyserType);
             IIntermediateProgramWriter functionWriter  = IntermediateProgramWriterFactory.Create("int");
             IIntermediateProgramWriter scopeWriter     = IntermediateProgramWriterFactory.Create("sym");
-            ICodeGenerator             codeGenerator   = CodeGeneratorFactory            .Create(codeGeneratorType  );
-            ICodeOptimiser             codeOptimiser   = RISCVCodeOptimiserFactory       .Create(codeGeneratorType, "gp");
+            ICodeGenerator             codeGenerator   = CodeGeneratorFactory            .Create(codeGeneratorType);
+            ICodeOptimiser             codeOptimiser   = RISCVCodeOptimiserFactory       .Create(codeGeneratorType);
             ICodeWriter                codeWriter      = CodeWriterFactory               .Create();
 
             using CancellationTokenSource cancellationTokenSource = new();

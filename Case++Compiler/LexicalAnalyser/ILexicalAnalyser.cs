@@ -16,7 +16,7 @@ namespace CaseppCompiler.LexicalAnalyser
             {
                 "regex" => new RegexLexicalAnalyserImplementation(),
                 "set" => new SetLexicalAnalyserImplementation(),
-                _ => new SetLexicalAnalyserImplementation(),
+                _ => Create("set"),
             };
     }
 }

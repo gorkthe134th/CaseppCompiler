@@ -15,7 +15,7 @@ namespace CaseppCompiler.SyntaxAnalyser
             type switch
             {
                 "grammar" => new GrammarSyntaxAnalyserImplementation(),
-                _ => new GrammarSyntaxAnalyserImplementation(),
+                _ => Create("grammar"),
             };
     }
 }

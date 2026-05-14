@@ -11,7 +11,7 @@
             type switch
             {
                 "consume" => new ConsumingCodeWriterImplementation(),
-                _ => new ConsumingCodeWriterImplementation(),
+                _ => Create("consume"),
             };
     }
 }

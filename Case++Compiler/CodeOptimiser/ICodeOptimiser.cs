@@ -12,7 +12,7 @@
                 "riscv" => optimiserType switch
                     {
                         "gp" => new RISCVCodeOptimiser.GlobalVariableOptimiser(),
-                        _ => throw new InvalidOperationException("An Optimiser Type is required."),
+                        _ => new RISCVCodeOptimiser.AggregateOptimiser(Create("riscv", "gp")),
                     },
                 _ => Create("riscv", optimiserType),
             };

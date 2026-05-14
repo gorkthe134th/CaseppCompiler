@@ -14,7 +14,7 @@ namespace CaseppCompiler.Writers.IntermediateProgramWriter
             {
                 "int" => new FunctionWriterImplementation(),
                 "sym" => new ScopeWriterImplementation(),
-                _ => new FunctionWriterImplementation(),
+                _ => Create("int"),
             };
     }
 }
