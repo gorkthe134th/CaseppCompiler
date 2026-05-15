@@ -31,7 +31,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                 }
                 catch (ArgumentException e)
                 {
-                    throw new SyntaxAnalyserException(Position, $"Invalid Function \"{name}\" for the current Function.", e);
+                    throw new SyntaxAnalyserException(Position, $"Invalid Function \"{name}\" for Function \"{CurrentFunction.Name}\".", e);
                 }
 
             currentFunction = newFunction;
@@ -53,12 +53,23 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         internal async Task FinalizeFunction<T>(Func<Position, CancellationToken?, T> create) where T : Instruction
         {
             Function function = CurrentFunction;
-            function.SetAllBreakTargets();
-            await CreateInstruction(create);
-            function.ExitScope();
-            function.AddReturnValueParameter();
+            try
+            {
+                function.SetAllBreakTargets();
+                await CreateInstruction(create);
+                function.ExitScope();
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new SyntaxAnalyserException(Position, $"Cannot Finalize Function \"{function.Name}\".", e);
+            }
 
             currentFunction = function.Parent;
+        }
+
+        public void AddReturnValueParameter()
+        {
+            CurrentFunction.AddReturnValueParameter();
         }
 
         internal async Task<T> CreateInstruction<T>(Func<Position, CancellationToken?, T> create) where T : Instruction
@@ -115,7 +126,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             }
             catch (InvalidOperationException e)
             {
-                throw new SyntaxAnalyserException(Position, $"Cannot exit Scope in the current Function.", e);
+                throw new SyntaxAnalyserException(Position, $"Cannot exit Scope in Function \"{CurrentFunction.Name}\".", e);
             }
         }
 
@@ -127,7 +138,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             }
             catch (ArgumentException e)
             {
-                throw new SyntaxAnalyserException(Position, $"Invalid {symbol.GetType().Name} \"{symbol.Name}\" for the current Function.", e);
+                throw new SyntaxAnalyserException(Position, $"Invalid {symbol.GetType().Name} \"{symbol.Name}\" for Function \"{CurrentFunction.Name}\".", e);
             }
         }
 
@@ -141,7 +152,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
             }
             catch (ArgumentException e)
             {
-                throw new SyntaxAnalyserException(Position, $"Inaccessible {typeof(T).Name} \"{name}\" from the current Function.", e);
+                throw new SyntaxAnalyserException(Position, $"Inaccessible {typeof(T).Name} \"{name}\" from Function \"{CurrentFunction.Name}\".", e);
             }
 
             if (symbol is not T s) throw new SyntaxAnalyserException(Position, $"Symbol \"{name}\" is not a {typeof(T).Name}.");
@@ -194,7 +205,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal Variable GenerateTemp()
         {
-            var temp = new Variable($"_T{nextTempIndex++}", false);
+            var temp = new Variable($"_T{nextTempIndex++}", false, false);
             AddSymbol(temp);
             return temp;
         }

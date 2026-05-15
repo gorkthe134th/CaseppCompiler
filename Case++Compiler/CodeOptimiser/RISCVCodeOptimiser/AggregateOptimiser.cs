@@ -2,7 +2,7 @@
 {
     internal class AggregateOptimiser(params IEnumerable<ICodeOptimiser> optimisers) : ICodeOptimiser
     {
-        private ICodeOptimiser[] optimisers = [.. optimisers];
+        private readonly ICodeOptimiser[] optimisers = [.. optimisers];
 
         public Task Analyse(Stream<string> input, Stream<string> output, CancellationToken? cancellationToken = null)
         {

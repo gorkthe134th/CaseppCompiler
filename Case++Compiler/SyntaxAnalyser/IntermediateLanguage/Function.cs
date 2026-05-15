@@ -50,7 +50,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         public Function(string name, Stream<Scope> scopes, Function? parent = null, int? instructionCapacity = null, CancellationToken? cancellationToken = null) : base(name)
         {
             this.Parent = parent;
-            this.ReturnVariable = new("_RET", true);
+            this.ReturnVariable = new("_RET", true, true);
             this.currentScope = new(this, 0, parent?.currentScope, ReturnVariable) { IsBase = true }; // Cannot use field initializer for this
             scopes.AddAsync(CurrentScope).Wait();
             this.scopes = scopes;
@@ -87,6 +87,11 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal Task AddInstruction(Instruction instruction)
         {
+            if (instruction is ReturnInstruction) ReturnVariable.Initialise();
+            else if (instruction is HaltInstruction)
+                foreach (var formalParameter in formalParameters)
+                    formalParameter.AssociatedVariable.Initialise();
+
             CurrentInstructionIndex++;
             return Instructions.AddAsync(instruction);
         }
@@ -200,7 +205,11 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         /// <param name="variable">The <see cref="Variable"/> to mark as initialised.</param>
         internal void InitialiseVariable(Variable variable)
         {
-            if (!variablesUsed.Contains(variable)) variablesInitialised.Add(variable);
+            if (!variablesUsed.Contains(variable))
+            {
+                variablesInitialised.Add(variable);
+                variable.Initialise();
+            }
         }
 
         /// <summary>

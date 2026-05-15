@@ -131,6 +131,9 @@
     <Content Include="IntermediateLanguageTests\Happy\Initialisation\Initialisation.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Happy\Initialisation\HaltInFunction.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Happy\Initialisation\InitialiseFromFunction.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -320,6 +323,9 @@
     <Content Include="IntermediateLanguageTests\Sad\ILInstructions\Assignment\NoNull.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Sad\Initialisation\InitialiseFromFunctionHalt.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Sad\Initialisation\InitialiseFromFunctionUseFirst.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -327,6 +333,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="IntermediateLanguageTests\Sad\Initialisation\InitialiseLocalInstead.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Sad\Initialisation\Halt.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="IntermediateLanguageTests\Sad\Initialisation\NoOutParameterAssignment.c++">

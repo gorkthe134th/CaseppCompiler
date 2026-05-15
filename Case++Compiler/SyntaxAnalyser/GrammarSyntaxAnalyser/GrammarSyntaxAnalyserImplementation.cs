@@ -21,13 +21,13 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Variable List" ^
                         [
                             "Variable ID" % typeof(IdentifierToken) | (async program => {
-                                program.AddSymbol(new Variable(program.PopCompilerVariable<string>(), false));
+                                program.AddSymbol(new Variable(program.PopCompilerVariable<string>(), false, false));
                             }),
                             "More Variables" *
                             [
                                 "Comma" % typeof(CommaToken),
                                 "Variable ID" % typeof(IdentifierToken) | (async program => {
-                                    program.AddSymbol(new Variable(program.PopCompilerVariable<string>(), false));
+                                    program.AddSymbol(new Variable(program.PopCompilerVariable<string>(), false, false));
                                 }),
                             ],
                         ],
@@ -45,7 +45,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Parameter ID" % typeof(IdentifierToken),
                     ] | (async program => {
                         string id = program.PopCompilerVariable<string>();
-                        Variable variable = new(id, false);
+                        Variable variable = new(id, false, false);
                         program.AddFormalParameter(new TypeRestrictedFormalParameter<InParameter>(variable));
                         program.InitialiseVariable(variable);
                     }),
@@ -55,7 +55,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Parameter ID" % typeof(IdentifierToken),
                     ] | (async program => {
                         string id = program.PopCompilerVariable<string>();
-                        Variable variable = new(id, true);
+                        Variable variable = new(id, true, true);
                         program.AddFormalParameter(new TypeRestrictedFormalParameter<OutParameter>(variable));
                     }),
                     "InOut Parameter" %
@@ -64,7 +64,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "Parameter ID" % typeof(IdentifierToken),
                     ] | (async program => {
                         string id = program.PopCompilerVariable<string>();
-                        Variable variable = new(id, true);
+                        Variable variable = new(id, true, false);
                         program.AddFormalParameter(new TypeRestrictedFormalParameter<InOutParameter>(variable));
                         program.InitialiseVariable(variable);
                     }),
@@ -88,7 +88,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                     "Comma" % typeof(CommaToken),
                                     formalParameterMatcher,
                                 ],
-                            ]),
+                            ]) | (async program => program.AddReturnValueParameter()),
                         "Function Body" % statementMatcher,
                         "Optional Semi Colon" ^ typeof(SemiColonToken),
                     ] | (program => program.FinalizeFunction((p, ct) => new ReturnInstruction(p, 0)))
@@ -610,7 +610,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "\"forcase\" Keyword" % typeof(ForCaseToken) | (async program => program.SetRepeatPoint()),
                         "Iteration Identifier" % typeof(IdentifierToken),
                         -"$initialize" | (async program => {
-                            Variable iterationVariable = new(program.PopCompilerVariable<string>(), false);
+                            Variable iterationVariable = new(program.PopCompilerVariable<string>(), false, false);
                             program.AddSymbol(iterationVariable);
                             program.InitialiseVariable(iterationVariable);
                             program.PushCompilerVariable(iterationVariable);
@@ -740,7 +740,11 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                 "Program" %
                 [
                     "\"program\" Keyword" % typeof(ProgramToken),
-                    "Program ID" % typeof(IdentifierToken) | (program => program.CreateFunction(program.PopCompilerVariable<string>(), true)),
+                    "Program ID" % typeof(IdentifierToken) | (async program =>
+                    {
+                        await program.CreateFunction(program.PopCompilerVariable<string>(), true);
+                        program.AddReturnValueParameter();
+                    }),
                     "Program Body" % statementMatcher,
                     "EOF" % typeof(EOFToken) | (program => program.FinalizeFunction((p, ct) => new HaltInstruction(p))),
                 ];

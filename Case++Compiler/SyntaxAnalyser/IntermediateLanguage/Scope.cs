@@ -38,6 +38,9 @@
         public Lock SymbolLock { get; } = new();
         private readonly Dictionary<string, Symbol> symbols = initialSymbols.Select(s => new KeyValuePair<string, Symbol>(s.Name, s)).ToDictionary();
 
+        internal delegate void SymbolAddedHandler(Scope sender, Symbol symbol);
+        internal event SymbolAddedHandler? SymbolAdded;
+
         /// <summary>
         /// The <see cref="Symbol"/>s provided by the <see cref="Scope"/>.
         /// </summary>
@@ -60,9 +63,6 @@
                 }
             }
         }
-
-        internal delegate void SymbolAddedHandler(Scope sender, Symbol symbol);
-        internal event SymbolAddedHandler? SymbolAdded;
 
         /// <summary>
         /// Gets the <see cref="Symbol"/> in the <see cref="Scope"/> with the specified name, if it exists; otherwise, calls <paramref name="symbolFactory"/> and adds the result to the <see cref="Scope"/>.

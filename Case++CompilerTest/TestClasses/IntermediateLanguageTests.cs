@@ -742,6 +742,7 @@ namespace CaseppCompilerTest.TestClasses
             new object[] { @"Scope\Scope.c++", null! },
             new object[] { @"Initialisation\Initialisation.c++", null! },
             new object[] { @"Initialisation\InitialiseFromFunction.c++", null! },
+            new object[] { @"Initialisation\HaltInFunction.c++", null! },
         ];
 
         private static readonly object[] sadTests =
@@ -791,7 +792,7 @@ namespace CaseppCompilerTest.TestClasses
             new object[] { @"ILInstructions\Jump\NotLabel.c++", new IResolveConstraint[] { Is.EqualTo("Line 3, Column 7: Expected Label Name for 3rd argument.") } },
             new object[] { @"ILInstructions\Jump\LabelNotSet.c++", new IResolveConstraint[]
             {
-                Is.EqualTo("Line 4, Column 1: Cannot exit Scope in the current Function."),
+                Is.EqualTo("Line 4, Column 1: Cannot exit Scope in Function \"p\"."),
                 Is.EqualTo("Cannot exit the current Scope."),
                 Is.EqualTo("Cannot exit Scope due to Symbol \"m\"."),
                 Is.EqualTo("This Label has not been set."),
@@ -811,6 +812,11 @@ namespace CaseppCompilerTest.TestClasses
                 Is.EqualTo("Line 8, Column 9: Cannot use variable x."),
                 Is.EqualTo("Use of uninitialised variable x."),
             } },
+            new object[] { @"Initialisation\Halt.c++", new IResolveConstraint[]
+            {
+                Is.EqualTo("Line 5, Column 9: Cannot use variable x."),
+                Is.EqualTo("Use of uninitialised variable x."),
+            } },
             new object[] { @"Initialisation\InitialiseFromFunctionNoCall.c++", new IResolveConstraint[]
             {
                 Is.EqualTo("Line 7, Column 9: Cannot use variable x."),
@@ -826,7 +832,18 @@ namespace CaseppCompilerTest.TestClasses
                 Is.EqualTo("Line 13, Column 9: Cannot use function \"g\"."),
                 Is.EqualTo("Use of uninitialised variables in function \"g\": \"x\"."),
             } },
-            new object[] { @"Initialisation\NoOutParameterAssignment.c++", new IResolveConstraint[] { Is.EqualTo("Line 6, Column 2: No assignment to Out Parameter \"x\".") } },
+            new object[] { @"Initialisation\InitialiseFromFunctionHalt.c++", new IResolveConstraint[]
+            {
+                Is.EqualTo("Line 11, Column 9: Cannot use variable x."),
+                Is.EqualTo("Use of uninitialised variable x."),
+            } },
+            new object[] { @"Initialisation\NoOutParameterAssignment.c++", new IResolveConstraint[]
+            {
+                Is.EqualTo("Line 3, Column 2: Cannot Finalize Function \"f\"."),
+                Is.EqualTo("Cannot exit the current Scope."),
+                Is.EqualTo("Cannot exit Scope due to Symbol \"x\"."),
+                Is.EqualTo("This Variable needs to be assigned a value."), }
+            },
         ];
 
         [SetUp]
