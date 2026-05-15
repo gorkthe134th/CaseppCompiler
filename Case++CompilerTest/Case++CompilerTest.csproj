@@ -143,6 +143,9 @@
     <Content Include="IntermediateLanguageTests\Happy\Statements\Break\BreakZero.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Happy\Statements\ForCase\IterationVariable.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Happy\Statements\Repeat\RepeatZero.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -338,7 +338,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     "Constant" % typeof(ConstantToken) | (async program => program.PushCompilerVariable(new InstructionFactory.Argument(program.PopCompilerVariable<uint>()))),
                     "Symbol or Label" % typeof(IdentifierToken) | (async program => {
                         string name = program.PopCompilerVariable<string>();
-                        Symbol symbol = program.GetOrAddAccessibleSymbol(name, () => new Label(name, []));
+                        Symbol symbol = program.GetOrAddAccessibleSymbol<Symbol>(name, () => new Label(name, []));
                         program.PushCompilerVariable(new InstructionFactory.Argument(symbol));
                     }),
                     "Underscore" % typeof(UnderscoreToken) | (async program => program.PushCompilerVariable(new InstructionFactory.Argument(null))),
@@ -610,8 +610,9 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                         "\"forcase\" Keyword" % typeof(ForCaseToken) | (async program => program.SetRepeatPoint()),
                         "Iteration Identifier" % typeof(IdentifierToken),
                         -"$initialize" | (async program => {
-                            Variable iterationVariable = new(program.PopCompilerVariable<string>(), false, false);
-                            program.AddSymbol(iterationVariable);
+                            string iterationVariableName = program.PopCompilerVariable<string>();
+                            Variable iterationVariable = program.GetOrAddAccessibleSymbol(iterationVariableName,
+                                () => new Variable(iterationVariableName, false, false));
                             program.InitialiseVariable(iterationVariable);
                             program.PushCompilerVariable(iterationVariable);
                             await program.CreateInstruction((p, ct) => new AssignmentInstruction(p, iterationVariable, 0));

@@ -48,9 +48,10 @@ namespace CaseppCompiler
                 }
             }
 
-            using Stream intFile  = File.Open("a.int", FileMode.Create);
-            using Stream symFile  = File.Open("a.sym", FileMode.Create);
-            using Stream codeFile = File.Open("a.asm", FileMode.Create);
+            string name = Path.GetFileNameWithoutExtension(args[0]);
+            using Stream intFile  = File.Open($"{name}.int", FileMode.Create);
+            using Stream symFile  = File.Open($"{name}.sym", FileMode.Create);
+            using Stream codeFile = File.Open($"{name}.asm", FileMode.Create);
 
             ILexicalAnalyser           lexicalAnalyser = LexicalAnalyserFactory          .Create(lexicalAnalyserType);
             ISyntaxAnalyser            syntaxAnalyser  = SyntaxAnalyserFactory           .Create(syntaxAnalyserType);

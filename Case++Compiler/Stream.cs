@@ -2,11 +2,20 @@
 
 namespace CaseppCompiler
 {
-    public class Stream<T>(int? capacity = null, CancellationToken? cancellationToken = null)
+    public class Stream<T>
     {
-        private readonly Channel<T> items = capacity == null ? Channel.CreateUnbounded<T>() : Channel.CreateBounded<T>((int)capacity);
-        private readonly TaskCompletionSource finish = new();
+        private readonly Channel<T> items;
+        private readonly TaskCompletionSource finish;
+        private readonly CancellationToken? cancellationToken;
         private bool isCompleted = false;
+
+        public Stream(int? capacity = null, CancellationToken? cancellationToken = null)
+        {
+            this.items = capacity == null ? Channel.CreateUnbounded<T>() : Channel.CreateBounded<T>((int)capacity);
+            this.cancellationToken = cancellationToken;
+            this.finish = new();
+            cancellationToken?.Register(() => finish.TrySetCanceled());
+        }
 
         public delegate void ItemAddingHandler(Stream<T> sender, T item);
         public event ItemAddingHandler? ItemAdding;

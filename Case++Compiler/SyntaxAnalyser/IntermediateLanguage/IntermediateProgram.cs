@@ -167,7 +167,12 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         /// <param name="name">The name of the <see cref="Symbol"/> to search.</param>
         /// <param name="symbolFactory">The method to call if the requested <see cref="Symbol"/> is not found.</param>
         /// <returns>The <see cref="Symbol"/> accessible from the current <see cref="Function"/> with the specified name or the result of calling <paramref name="symbolFactory"/>.</returns>
-        internal Symbol GetOrAddAccessibleSymbol(string name, Func<Symbol> symbolFactory) => CurrentFunction.GetOrAddSymbol(name, symbolFactory);
+        internal T GetOrAddAccessibleSymbol<T>(string name, Func<T> symbolFactory) where T : Symbol
+        {
+            Symbol symbol = CurrentFunction.GetOrAddSymbol(name, symbolFactory);
+            if (symbol is not T s) throw new SyntaxAnalyserException(Position, $"Symbol \"{name}\" is not a {typeof(T).Name}.");
+            return s;
+        }
 
         internal void InitialiseVariable(Variable variable) => CurrentFunction.InitialiseVariable(variable);
 

@@ -179,7 +179,12 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
         /// <param name="name">The name of the <see cref="Symbol"/> to search.</param>
         /// <param name="symbolFactory">The method to call if the requested <see cref="Symbol"/> is not found.</param>
         /// <returns>The <see cref="Symbol"/> in the current <see cref="Scope"/> with the specified name or the result of calling <paramref name="symbolFactory"/>.</returns>
-        internal Symbol GetOrAddSymbol(string name, Func<Symbol> symbolFactory) => CurrentScope.GetOrAddSymbol(name, symbolFactory);
+        internal Symbol GetOrAddSymbol(string name, Func<Symbol> symbolFactory) => CurrentScope.GetOrAddSymbol(name, () =>
+            {
+                Symbol symbol = symbolFactory.Invoke();
+                symbol.DeclaratingFunction = this;
+                return symbol;
+            });
 
         /// <summary>
         /// Gets the <see cref="Symbol"/> in the current <see cref="Scope"/> with the specified name.
@@ -285,7 +290,9 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
                 }
                 useQuad(nextOffest(), instruction.ToQuad());
             };
-            return Instructions.Finish.ContinueWith(_ => useQuad(nextOffest(), ("end_block", FullName, null, null)));
+            return Instructions.Finish.ContinueWith(
+                _ => useQuad(nextOffest(), ("end_block", FullName, null, null)),
+                TaskContinuationOptions.NotOnFaulted);
         }
     }
 }
