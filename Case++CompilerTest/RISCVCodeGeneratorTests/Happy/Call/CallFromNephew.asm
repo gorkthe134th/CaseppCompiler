@@ -1,5 +1,5 @@
 ﻿.data
-new_line: .asciz "\n"
+_new_line: .asciz "\n"
 .text
 j _main          # skip function code (not necessary here)
 _main:

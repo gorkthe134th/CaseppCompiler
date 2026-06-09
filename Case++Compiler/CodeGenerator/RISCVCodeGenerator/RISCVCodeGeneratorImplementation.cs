@@ -35,7 +35,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                 if (output != null)
                 {
                     await output.AddAsync($".data");
-                    await output.AddAsync($@"new_line: .asciz ""\n""");
+                    await output.AddAsync($@"_new_line: .asciz ""\n""");
                     await output.AddAsync($".text");
                     await output.AddAsync($"j _main");
                 }
@@ -198,7 +198,7 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                         await GenerateValueLoadingCode(outputInstruction.Value, "a0", instruction.Position);
                                         await output.AddAsync($"li a7, 1");
                                         await output.AddAsync($"ecall");
-                                        await output.AddAsync($"la a0, new_line");
+                                        await output.AddAsync($"la a0, _new_line");
                                         await output.AddAsync($"li a7, 4");
                                         await output.AddAsync($"ecall");
                                     }

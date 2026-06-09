@@ -1,6 +1,5 @@
 ﻿using CaseppCompiler;
 using CaseppCompiler.CodeGenerator;
-using CaseppCompiler.CodeOptimiser;
 using CaseppCompiler.LexicalAnalyser;
 using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.SyntaxAnalyser;
@@ -20,9 +19,19 @@ namespace CaseppCompilerTest.TestClasses
         private static readonly object[] happyTests =
         [
             new object[] { @"Empty" },
-            new object[] { @"CallFromParent" },
-            new object[] { @"CallFromSibling" },
-            new object[] { @"CallFromNephew" },
+            new object[] { @"Assignment\Assignment" },
+            new object[] { @"Operation\Operation" },
+            new object[] { @"Input\Input" },
+            new object[] { @"Output\Output" },
+            new object[] { @"Jump\Jump" },
+            new object[] { @"Parameter\In" },
+            new object[] { @"Parameter\InOut" },
+            new object[] { @"Parameter\Out" },
+            new object[] { @"Parameter\ParameterShadow" }, // This test has unexpected results. Consider adding a Warning.
+            new object[] { @"Call\CallFromSelf" },
+            new object[] { @"Call\CallFromParent" },
+            new object[] { @"Call\CallFromSibling" },
+            new object[] { @"Call\CallFromNephew" },
         ];
 
         private static readonly object[] sadTests =

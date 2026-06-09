@@ -35,6 +35,10 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <None Remove="RISCVCodeGeneratorTests\Happy\Parameter\ParameterShadow.c++" />
+  </ItemGroup>
+	
+  <ItemGroup>
     <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\DataUneffectedOut.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -353,28 +357,88 @@
     <Content Include="IntermediateLanguageTests\Sad\ParameterAlreadyExists.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromNephew.asm">
+    <Content Include="RISCVCodeGeneratorTests\Happy\Assignment\Assignment.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromParent.asm">
+    <Content Include="RISCVCodeGeneratorTests\Happy\Assignment\Assignment.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromParent.c++">
+    <Content Include="RISCVCodeGeneratorTests\Happy\Call\CallFromNephew.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromSibling.asm">
+    <Content Include="RISCVCodeGeneratorTests\Happy\Call\CallFromParent.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromSibling.c++">
+    <Content Include="RISCVCodeGeneratorTests\Happy\Call\CallFromParent.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="RISCVCodeGeneratorTests\Happy\CallFromNephew.c++">
+    <Content Include="RISCVCodeGeneratorTests\Happy\Call\CallFromSelf.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Call\CallFromSelf.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Call\CallFromSibling.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Call\CallFromSibling.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Call\CallFromNephew.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="RISCVCodeGeneratorTests\Happy\Empty.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="RISCVCodeGeneratorTests\Happy\Empty.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Input\Input.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Input\Input.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Jump\Jump.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Jump\Jump.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Operation\Operation.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Operation\Operation.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Output\Output.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Output\Output.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Parameter\ParameterShadow.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Parameter\Out.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Parameter\Out.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Parameter\InOut.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Parameter\InOut.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Parameter\In.asm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Parameter\In.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\Parameter\ParameterShadow.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="RISCVCodeGeneratorTests\Sad\FunctionReturnNull.c++">
