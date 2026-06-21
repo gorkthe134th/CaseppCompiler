@@ -15,6 +15,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser.TokenMatchers
                 if (tokens.Current is ConstantToken     constant) program.PushCompilerVariable(constant.Constant);
                 if (tokens.Current is BoolConstantToken    @bool) program.PushCompilerVariable(@bool.Constant);
                 if (tokens.Current is OperatorToken    @operator) program.PushCompilerVariable(@operator.Operation);
+                if (tokens.Current is CodeToken             code) program.PushCompilerVariable(code.Code);
             }
 
             Position currentPosition = tokens.Current.Position;

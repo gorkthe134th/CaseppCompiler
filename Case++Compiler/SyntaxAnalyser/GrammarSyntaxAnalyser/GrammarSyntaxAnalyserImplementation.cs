@@ -123,7 +123,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     ] | (async program => {
                         Variable variable = program.GetAccessibleSymbol<Variable>(program.PopCompilerVariable<string>());
                         program.UseVariable(variable);
-                        program.PeekCompilerVariable < FunctionCallBlockInfo >().AddParameter(new InOutParameter(variable));
+                        program.PeekCompilerVariable<FunctionCallBlockInfo>().AddParameter(new InOutParameter(variable));
                     }),
                 ];
 
@@ -682,7 +682,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     [
                         "\"return\" Keyword" % typeof(ReturnToken),
                         expressionMatcher,
-                    ] | (program => program.CreateInstruction((p, ct) => new ReturnInstruction(p, program.PopCompilerVariable < ExpressionBlockInfo >().Result))),
+                    ] | (program => program.CreateInstruction((p, ct) => new ReturnInstruction(p, program.PopCompilerVariable<ExpressionBlockInfo>().Result))),
                     "Input" %
                     [
                         "\"input\" Keyword" % typeof(InputToken),
@@ -696,8 +696,8 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                     [
                         "\"print\" Keyword" % typeof(PrintToken),
                         expressionMatcher,
-                    ] | (program => program.CreateInstruction((p, ct) => new OutputInstruction(p, program.PopCompilerVariable < ExpressionBlockInfo >().Result))),
-                    "Intermediate Language Instruction" %
+                    ] | (program => program.CreateInstruction((p, ct) => new OutputInstruction(p, program.PopCompilerVariable<ExpressionBlockInfo>().Result))),
+                    "Intermediate Language" %
                     [
                         "hash prefix" % typeof(HashToken),
                         "Instruction or Block" |
@@ -707,6 +707,7 @@ namespace CaseppCompiler.SyntaxAnalyser.GrammarSyntaxAnalyser
                                 "Instructions" * ILInstruction,
                         ],
                     ],
+                    "Final Code" % typeof(CodeToken) | (program => program.CreateInstruction((p, ct) => new CodeInstruction(p, program.PopCompilerVariable<ReadOnlyMemory<char>>()))),
                 ]);
 
             TokenMatcher statementsMatcher =

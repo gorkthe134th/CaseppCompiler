@@ -32,6 +32,7 @@ namespace CaseppCompilerTest.TestClasses
             new object[] { @"Call\CallFromParent" },
             new object[] { @"Call\CallFromSibling" },
             new object[] { @"Call\CallFromNephew" },
+            new object[] { @"CodeBlock" },
         ];
 
         private static readonly object[] sadTests =

@@ -75,6 +75,9 @@
     <Content Include="CodeOptimiserTests\RISCVCodeOptimiserTests\GlobalVariableOptimiserTests\UneffectedIn.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Happy\CodeBlock.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Happy\Conditions\InvertedCondition.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -385,6 +388,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="RISCVCodeGeneratorTests\Happy\Call\CallFromNephew.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\CodeBlock.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RISCVCodeGeneratorTests\Happy\CodeBlock.asm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="RISCVCodeGeneratorTests\Happy\Empty.asm">

@@ -23,6 +23,7 @@ namespace CaseppCompiler.LexicalAnalyser.SetLexicalAnalyser
             new UnderscoreTokenType(),
             new SingleLineCommentTokenType(),
             new MultiLineCommentTokenType(),
+            new CodeTokenType(),
         ];
 
         public async Task Analyse(Stream input, Stream<Token>? output = null, CancellationToken? cancellationToken = null)

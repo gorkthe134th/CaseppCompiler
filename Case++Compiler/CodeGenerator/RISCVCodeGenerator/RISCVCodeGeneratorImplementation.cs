@@ -315,6 +315,15 @@ namespace CaseppCompiler.CodeGenerator.RISCVCodeGenerator
                                         await output.AddAsync($"{comparisonMap[comparisonJumpInstruction.Operation]} t1, t2, {function.FullName}_{comparisonJumpInstruction.Target}");
                                     }
                                     break;
+                                case CodeInstruction codeInstruction:
+                                    if (output != null)
+                                    {
+                                        // The Ranges need to be precomputed because the SplitEnumerator cannot be preserved across await.
+                                        IEnumerable<Range> ranges = [.. codeInstruction.Code.Span.Split('\n')];
+                                        foreach (Range range in ranges)
+                                            await output.AddAsync(codeInstruction.Code.Span[range].ToString().Trim());
+                                    }
+                                    break;
                                 default:
                                     throw new ArgumentException($"Invalid Intermediate Language Instruction: {instruction}");
                             }

@@ -740,6 +740,12 @@ namespace CaseppCompilerTest.TestClasses
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
             } },
+            new object[] { @"CodeBlock.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                ("code", null, null, null),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
             new object[] { @"Scope\Scope.c++", null! },
             new object[] { @"Initialisation\Initialisation.c++", null! },
             new object[] { @"Initialisation\InitialiseFromFunction.c++", null! },

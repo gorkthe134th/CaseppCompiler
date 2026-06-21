@@ -22,6 +22,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
             SemiColonTokenType endTokenType = new();
             HashTokenType hashTokenType = new();
             UnderscoreTokenType underscoreTokenType = new();
+            CodeTokenType codeTokenType = new();
 
             tokenTypes =
             [
@@ -37,6 +38,7 @@ namespace CaseppCompiler.LexicalAnalyser.RegexLexicalAnalyser
                 endTokenType,
                 hashTokenType,
                 underscoreTokenType,
+                codeTokenType,
             ];
         }
 

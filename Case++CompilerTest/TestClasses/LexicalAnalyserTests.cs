@@ -1,5 +1,4 @@
 ﻿using CaseppCompiler;
-using CaseppCompiler.CodeGenerator;
 using CaseppCompiler.LexicalAnalyser;
 using CaseppCompiler.LexicalAnalyser.Tokens;
 using CaseppCompiler.LexicalAnalyser.Tokens.KeywordTokens;
@@ -101,11 +100,19 @@ namespace CaseppCompilerTest.TestClasses
                     "EOF" % typeof(EOFToken),
                 ]
             },
+            new object[] { "CodeBlock.c++",
+                "Matcher" %
+                [ -"",
+                    new CodeTokenMatcher("code", "@"),
+                    "EOF" % typeof(EOFToken),
+                ]
+            },
         ];
         private static readonly object[] sadTests =
         [
             new object[] { "InvalidCharacter.c++"  , new IResolveConstraint[] { Does.StartWith("Line 1, Column 1: Invalid Token") } },
             new object[] { "ConstantOutOfRange.c++", new IResolveConstraint[] { Is.EqualTo("Line 1, Column 1: Constants must be in range [-32767, 32767].") } },
+            new object[] { "CodeBlockNoBracket.c++", new IResolveConstraint[] { Does.StartWith("Line 1, Column 1: Invalid Token") } },
         ];
 
         [SetUp]
@@ -170,6 +177,19 @@ namespace CaseppCompilerTest.TestClasses
             public override async Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program)
             {
                 if (tokens.Current is not BoolConstantToken constant || constant.Constant != c) return false;
+
+                Position currentPosition = tokens.Current.Position;
+                if (!await tokens.MoveNextAsync()) throw new LexicalAnalyserException(currentPosition, $"Expected EOF Token");
+
+                return true;
+            }
+        }
+
+        private class CodeTokenMatcher(string name, string c) : TokenMatcher(name)
+        {
+            public override async Task<bool?> BaseTryMatch(IAsyncEnumerator<Token> tokens, IntermediateProgram? program)
+            {
+                if (tokens.Current is not CodeToken code || code.Code.ToString() != c) return false;
 
                 Position currentPosition = tokens.Current.Position;
                 if (!await tokens.MoveNextAsync()) throw new LexicalAnalyserException(currentPosition, $"Expected EOF Token");
