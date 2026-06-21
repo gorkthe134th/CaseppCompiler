@@ -38,6 +38,7 @@ namespace CaseppCompiler.SyntaxAnalyser.IntermediateLanguage
 
         internal override void ForgetFunction()
         {
+            // TODO: Consider adding Label Bubbling between Scopes to allow jumping to later labels.
             if (position == null) throw new InvalidOperationException("This Label has not been set.");
             base.ForgetFunction();
         }
