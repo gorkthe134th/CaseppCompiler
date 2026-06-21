@@ -4,11 +4,10 @@ A compiler for the made-up programming language Case++.<br>
 
 ## Description
 
-An in-development compiler created as part of a university course.<br>
+A fully functioning compiler created as part of a university course.<br>
 A minimum required language specification was provided by the associated professor, but I have also expanded the syntax and supported additional features when I deemed it appropriate.<br>
 The full language documentation can be viewed bellow.<br>
-The compiler's output language will be RISC-V assembly.<br>
-Current functionality is limited to Intermediate Code generation.<br>
+The compiler's output language is RISC-V assembly.<br>
 
 ## Case++ Documentation
 
@@ -470,9 +469,9 @@ function h(in a, out b, inout c)
 ```
 The meaning of each parameter type is as follows:
 * "in" parameters are a copy of the result of the expression that was used to call the function.
-* "out" parameters can only be assigned to a value and cannot be used in an expression. The value assigned to an out parameter is assigned to the variable whose id was used to call the function.
-* "inout" parameters give full access to the variable that was used to call the the function.<br>
-
+* "inout" parameters give full access to the variable that was used to call the the function. Assigning a value to an inout parameter also changes the value of the variable, and reading the parameter returns the current value of that variable.
+* "out" parameters behave similarly to inout parameters, but they are assumed to be uninitialized.
+<br>
 Every function has an integer return value. By default the return value is "0", but it can be changed using a "return" statement, consisting of the "return" keyword, followed by any expression.<br>
 ```
 function factorial(n)
@@ -484,13 +483,13 @@ function factorial(n)
 	return result;
 }
 ```
-When a return statement is executed, the execution of the function is stopped and the return value can be used immediately by the caller.<br>
+When a return statement is encountered, the execution of the function is terminated and the return value can be used immediately by the caller.<br>
 Before executing a return statement, all out parameters must have been assigned a value at least once.<br>
 ```
 function factorial(n)
 {
 	if n <= 0 return 1;
-	return n * factorial(n - 1);
+	return factorial(n - 1) * n;
 }
 ```
 A function can only be called as part of an expression, but it can be used freely in said expression.<br>
@@ -501,7 +500,7 @@ z := h(in 5*5, out x, inout y);
 if factorial(x)/factorial(y)/factorial(x-y) < 10
 	print 70;
 ```
-When a function appears many times, even if the parameters are the same or there are no parameters, the whole function will be executed each time the expression is evaluated.<br>
+When a function appears many times, even if the parameters are the same or there are no parameters, the whole function will be executed every time.<br>
 If a function takes out or inout parameters, the appropriate keyword must be used before the variable id.<br>
 The "in" keyword can also be used when specifying an "in" parameter, but it is not required.<br>
 <br>
@@ -511,3 +510,150 @@ function g(a, b, c) print 2*a + b - c
 function square(x) return x*x
 ```
 Such functions must not end with a semi-colon.<br>
+
+### Initialization
+
+The compiler offers limited static initialization checking for variables.<br>
+All variables (and "out" parameters) are assumed to be uninitialized until an assignment is encountered.<br>
+If an uninitialized variable is attempted to be read, an error is thrown.<br>
+```
+declare x;
+return x+5; // Error
+```
+The control flow is not taken into account when checking initialization.<br>
+```
+declare x;
+if false x := 0; // "x" is assumed to be initialized, despite the assignment being unable to be executed
+return x+5;
+```
+However, variable initialization is tracked through function calls.<br>
+```
+declare x, y, dummy;
+
+function f() x := 0 // the function "f" initializes "x"
+function g() y := 0 // the function "g" initializes "y"
+
+dummy := f();
+print x; // since "f" was called, "x" is initialized
+print y; // since "g" was never called, "y" is uninitialized
+```
+Similarly, functions may use variables without initializing them, as long as the variable is initialized when they are called.<br>
+```
+declare x, y, dummy;
+
+function f() print x // the function "f" uses "x"
+function g() print y // the function "g" uses "y"
+
+x := 0;
+dummy := f(); // "f" may called, since "x" is initialized
+dummy := g(); // "g" may not called, since "y" is uninitialized
+```
+The equivalent checks are also performed for function parameters:
+* A variable must be initialized before being used as an "in" or inout" parameter.
+* A variable does not need to be initialized before being used as an "out" parameter, and the function call causes it to be initialized.
+```
+declare x, dummy;
+
+function f(in a) print a // the function "f" uses "a"
+function g(inout b) b := b + 1 // the function "g" uses "b"
+function h(out c) c := 0 // the function "h" initializes "c"
+
+dummy := f(in x);    // "f" may not called using "x", since "x" is uninitialized
+dummy := g(inout x); // "g" may not called using "x", since "x" is uninitialized
+dummy := h(out x);   // "h" may be called using "x", since "x" will get initialized
+```
+
+### Intermediate Language Instructions
+
+Intermediate Language Instructions are allowed to be inserted in the form of a statement.<br>
+An Intermediate Language Statement is denoted with the '#' symbol.<br>
+```
+declare x;
+# :=, 0, _, x;
+```
+Multiple instructions may be inserted using curly brackets.<br>
+```
+declare x, t;
+# {
+	+, 1, 1, t
+	:=, t, _, x
+};
+```
+The supported Intermediate Language Instructions are the following:
+* ":=, [value], _, [var]" where [var] is a variable id and [value] is a constant of variable id.
+* "[op], [value1], [value2], [var] where [op] is one of "+", "-", "\*" or "/", [var] is a variable id, and each of [value1] and [value2] is a constant of variable id.
+* "in, [var], _, _" where [var] is a variable id.
+* "out, [value], _, _" where [value] is a constant of variable id.
+* "retv, [value], _, _" where [value] is a constant of variable id.
+* "halt, _, _, _".
+* "par, [value], cv, _" where [value] is a constant of variable id.
+* "par, [var], ref, _" where [var] is a variable id.
+* "par, [var], ret, _" where [var] is a variable id.
+* "call, [func], _, _" where [func] is a function id.
+* "jump, _, _, [label]" where [label] is a label id.
+* "[op], [value1], [value2], [label]" where [op] is one of ">", "<", "=" or "<>", each of [value1] and [value2] is a constant of variable id, and [label] is a label id.
+<br>
+Jump targets are determined using labels. Labels are defined using C-style colon notation.<br>
+```
+# {
+	blabel:
+	slabel: <>, lock, 0, slabel
+	:=, 1, _, lock
+	<, s, 10, flabel
+	:=, 0, _, lock
+	jump, _, _, blabel
+	flabel:
+	:=, 0, _, lock
+};
+```
+Note that, unlike C, identifiers are not allowed to contain underscores, which also applies to labels.<br>
+Labels don't need to be declared before use, but a used label must be defined before the end of the block that contains the Intermediate Language Statement.<br>
+It is possible to jump to labels defined within a different Intermediate Language Statement, but it is not recommended.<br>
+```
+# {
+	jump, _, _, l1
+	l2:
+};
+
+... // Unrelated statements
+
+# jump, _, _, l2;
+
+... // Unrelated statements
+
+# l1:;
+```
+Any inserted Intermediate Language Instructions are subject to Optimisation.
+
+### Final Code Instructions
+
+Equivalently to Intermediate Language Instructions, it is possible to insert Final Code Instructions using "${" and "$}".<br>
+```
+${
+	# Assembly Code
+	add t0, t1, t2
+$};
+```
+Unlike Intermediate Language Statements, the '$' symbol cannot be separated by whitespace characters from the curly brackets and single lines are not supported at all.<br>
+<br>
+This feature should be used sparingly and may have unintended side effects.<br>
+Its intended purpose is for small pieces of code that do not have an equivalent Case++ syntax.<br>
+Some potential applications include Hardware Interfaces for embedded systems:
+```
+${
+	# Hardware Interface
+	li t0, 0x6000
+	sw 1, 0(t0)
+$};
+```
+and System Calls:
+```
+${
+	# System Call
+	li a7, 9
+	ecall
+$};
+```
+Any inserted Final Code Instructions are subject to Optimisation.<br>
+Since the inserted code is expected to be short, the whole block is saved in memory during parsing, potentially causing memory capacity issues for long blocks.<br>
+If the use of this feature is necessary, it is recommended to create a wrapper function for the desired functionality.<br>
