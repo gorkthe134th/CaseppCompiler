@@ -730,6 +730,15 @@ namespace CaseppCompilerTest.TestClasses
                 ("halt", null, null, null),
                 ("end_block", "p", null, null),
             } },
+            new object[] { @"ILInstructions\Jump\JumpAcrossBlocks.c++", new (string?, string?, string?, string?)[] {
+                ("begin_block", "p", null, null),
+                ("jump", null, null, "5"),
+                (":=", "9", null, "x"),
+                ("jump", null, null, "2"),
+                (":=", "9", null, "x"),
+                ("halt", null, null, null),
+                ("end_block", "p", null, null),
+            } },
             new object[] { @"ILInstructions\Comparison\Comparison.c++", new (string?, string?, string?, string?)[] {
                 ("begin_block", "p", null, null),
                 (">", "x", "9", "2"),
@@ -747,6 +756,7 @@ namespace CaseppCompilerTest.TestClasses
                 ("end_block", "p", null, null),
             } },
             new object[] { @"Scope\Scope.c++", null! },
+            new object[] { @"Scope\ILInstructions.c++", null! },
             new object[] { @"Initialisation\Initialisation.c++", null! },
             new object[] { @"Initialisation\InitialiseFromFunction.c++", null! },
             new object[] { @"Initialisation\HaltInFunction.c++", null! },

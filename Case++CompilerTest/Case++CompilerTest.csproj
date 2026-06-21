@@ -105,6 +105,12 @@
     <Content Include="IntermediateLanguageTests\Happy\Functions\NestedFunctions.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Jump\JumpAcrossBlocks.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="IntermediateLanguageTests\Happy\Scope\ILInstructions.c++">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="IntermediateLanguageTests\Happy\ILInstructions\Comparison\Comparison.c++">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

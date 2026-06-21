@@ -74,15 +74,15 @@
         {
             lock (SymbolLock)
             {
-                if (!symbols.TryGetValue(name, out Symbol? symbol))
-                {
-                    symbol = symbolFactory.Invoke();
+                for (Scope? scope = this; scope != null; scope = scope.Parent)
+                    if (scope.symbols.TryGetValue(name, out Symbol? symbol))
+                        return symbol;
 
-                    symbols.Add(symbol.Name, symbol);
+                Symbol created = symbolFactory.Invoke();
+                symbols.Add(created.Name, created);
+                SymbolAdded?.Invoke(this, created);
 
-                    SymbolAdded?.Invoke(this, symbol);
-                }
-                return symbol;
+                return created;
             }
         }
 
