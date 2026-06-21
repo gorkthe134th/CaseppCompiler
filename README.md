@@ -44,7 +44,7 @@ program ExampleProgram
 }
 ```
 The program id is not required to have any relation to the file name.<br>
-Declarations, Functions and Statements are required to be defined in that order, but not all three, if any, need to be present.<br>
+Declarations, Functions and Statements are required to be defined in that order, but none of them need to be present.<br>
 
 ### Declarations
 
@@ -60,6 +60,8 @@ program Declarations
 Variable ids are separated by commas.<br>
 Every variable is an integer, so no type information is needed.<br>
 Extra semi-colons and declarations with no variable ids are ignored.<br>
+<br>
+Variable ids may only contain latin letters and digits, and cannnot start with a digit.<br>
 
 ### Statements
 
@@ -580,18 +582,18 @@ declare x, t;
 };
 ```
 The supported Intermediate Language Instructions are the following:
-* ":=, [value], _, [var]" where [var] is a variable id and [value] is a constant of variable id.
-* "[op], [value1], [value2], [var] where [op] is one of "+", "-", "\*" or "/", [var] is a variable id, and each of [value1] and [value2] is a constant of variable id.
+* ":=, [value], _, [var]" where [var] is a variable id and [value] is a constant or variable id.
+* "[op], [value1], [value2], [var]" where [op] is one of "+", "-", "\*" or "/", [var] is a variable id, and each of [value1] and [value2] is a constant or variable id.
 * "in, [var], _, _" where [var] is a variable id.
-* "out, [value], _, _" where [value] is a constant of variable id.
-* "retv, [value], _, _" where [value] is a constant of variable id.
+* "out, [value], _, _" where [value] is a constant or variable id.
+* "retv, [value], _, _" where [value] is a constant or variable id.
 * "halt, _, _, _".
-* "par, [value], cv, _" where [value] is a constant of variable id.
+* "par, [value], cv, _" where [value] is a constant or variable id.
 * "par, [var], ref, _" where [var] is a variable id.
 * "par, [var], ret, _" where [var] is a variable id.
 * "call, [func], _, _" where [func] is a function id.
 * "jump, _, _, [label]" where [label] is a label id.
-* "[op], [value1], [value2], [label]" where [op] is one of ">", "<", "=" or "<>", each of [value1] and [value2] is a constant of variable id, and [label] is a label id.
+* "[op], [value1], [value2], [label]" where [op] is one of ">", "<", "=" or "<>", each of [value1] and [value2] is a constant or variable id, and [label] is a label id.
 
 Jump targets are determined using labels. Labels are defined using C-style colon notation.<br>
 ```
@@ -634,7 +636,7 @@ ${
 	add t0, t1, t2
 $};
 ```
-Unlike Intermediate Language Statements, the '$' symbol cannot be separated by whitespace characters from the curly brackets and single lines are not supported at all.<br>
+Unlike Intermediate Language Statements, however, the '$' symbol cannot be separated by whitespace characters from the curly brackets and single lines are not supported at all.<br>
 <br>
 This feature should be used sparingly and may have unintended side effects.<br>
 Its intended purpose is for small pieces of code that do not have an equivalent Case++ syntax.<br>
