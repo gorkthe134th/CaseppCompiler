@@ -471,7 +471,7 @@ The meaning of each parameter type is as follows:
 * "in" parameters are a copy of the result of the expression that was used to call the function.
 * "inout" parameters give full access to the variable that was used to call the the function. Assigning a value to an inout parameter also changes the value of the variable, and reading the parameter returns the current value of that variable.
 * "out" parameters behave similarly to inout parameters, but they are assumed to be uninitialized.
-<br>
+
 Every function has an integer return value. By default the return value is "0", but it can be changed using a "return" statement, consisting of the "return" keyword, followed by any expression.<br>
 ```
 function factorial(n)
@@ -592,7 +592,7 @@ The supported Intermediate Language Instructions are the following:
 * "call, [func], _, _" where [func] is a function id.
 * "jump, _, _, [label]" where [label] is a label id.
 * "[op], [value1], [value2], [label]" where [op] is one of ">", "<", "=" or "<>", each of [value1] and [value2] is a constant of variable id, and [label] is a label id.
-<br>
+
 Jump targets are determined using labels. Labels are defined using C-style colon notation.<br>
 ```
 # {
