@@ -4,9 +4,9 @@ A compiler for the made-up programming language Case++.<br>
 
 ## Description
 
-A fully functioning compiler created as part of a university course.<br>
+A fully functional compiler created as part of a university course.<br>
 A minimum required language specification was provided by the associated professor, but I have also expanded the syntax and supported additional features when I deemed it appropriate.<br>
-The full language documentation can be viewed bellow.<br>
+The full language documentation can be viewed below.<br>
 The compiler's output language is RISC-V assembly.<br>
 
 ## Case++ Documentation
@@ -26,7 +26,7 @@ Comments are denoted with "//" or "/\*" and "\*/".<br>
 Multi Line Comment
 */
 ```
-Any characters in the same line and after "//" are ignored.<br>
+Any characters on the same line and after "//" are ignored.<br>
 Any characters between "/\*" and "\*/" are ignored.<br>
 Nested Comments are not taken into account.<br>
 ```
@@ -48,7 +48,7 @@ Declarations, Functions and Statements are required to be defined in that order,
 
 ### Declarations
 
-Declarations are made using the keyword "declare" and any number of variable ids, ending with a semi-colon.<br>
+Declarations are made using the keyword "declare" and any number of variable IDs, ending with a semi-colon.<br>
 ```
 program Declarations
 {
@@ -57,11 +57,11 @@ program Declarations
 	declare;
 }
 ```
-Variable ids are separated by commas.<br>
+Variable IDs are separated by commas.<br>
 Every variable is an integer, so no type information is needed.<br>
-Extra semi-colons and declarations with no variable ids are ignored.<br>
+Extra semi-colons and declarations with no variable IDs are ignored.<br>
 <br>
-Variable ids may only contain latin letters and digits, and cannnot start with a digit.<br>
+Variable IDs may only contain latin letters and digits, and cannot start with a digit.<br>
 
 ### Statements
 
@@ -94,7 +94,7 @@ program Blocks
 }
 ```
 When this statement is executed, all statements contained in the block will be executed, in order.<br>
-Blocks, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+Blocks, like any other statement, must be separated by a semi-colon from the following statement, if any.<br>
 
 ### Assignment
 
@@ -109,8 +109,8 @@ Expressions are allowed to use the four basic operations (+,-,\*,/) and parenthe
 ```
 x := t*a + (1-t)*(-y/2)
 ```
-Parentheses are processed before Multiplication and Division, which are processed before Addition and Subtraction.<br>
-Consecutive Multiplications and Divisions / Additions and Subtractions are processed from left to right.<br>
+Parentheses are processed before multiplication and division, which are processed before addition and subtraction.<br>
+Consecutive additions and subtractions are evaluated from left to right. Same for multiplications and divisions.<br>
 The unary operators "+" and "-" are allowed only at the beginning of an expression.<br>
 ```
 x := 1 + -y // Not allowed
@@ -123,13 +123,13 @@ The result of all operations is an integer.<br>
 
 ### Input-Output
 
-Input can be taken from the user of the end program using the "input" statement.<br>
+Input can be taken from the user of the compiled program using the "input" statement.<br>
 ```
 input x
 ```
 The "input" keyword can only be followed by a variable id.<br>
 <br>
-Output can be given to the user of the end program using the "print" statement.<br>
+Output can be given to the user of the compiled program using the "print" statement.<br>
 ```
 print x + y/2
 ```
@@ -139,7 +139,7 @@ The "print" keyword can be followed by any expression.<br>
 
 #### Conditions
 
-Conditions are allowed to use the two basic operations (or, and) and square brackets, on top of constants and comparisons.<br>
+Conditions are allowed to use the two basic arithmetic operations (or, and) and square brackets, on top of constants and comparisons.<br>
 ```
 t < 1 and false or not[t < 1] and [not[y = 2] and true]
 ```
@@ -148,7 +148,7 @@ The unary operator "not" is allowed only before a square bracket.<br>
 ```
 not false or y <> 2 // Not allowed
 ```
-Comparisons are allowed to use the six basic operations (=,>,<,<>,<=,>=), between any two expressions.<br>
+Comparisons may use the six basic relational operations (=,>,<,<>,<=,>=), between any two expressions.<br>
 ```
 47*x-x*x >= y/x+y*x
 ```
@@ -173,7 +173,7 @@ The "else" keyword may follow that statement, indicating that *its* subsequent s
 if x/2*2=x x:=x/2 else x:=3*x+1
 ```
 The statement between the "if" and "else" keywords must not end with a semi-colon.<br>
-The whole if statement, though, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+The whole if statement, though, like any other statement, must be separated by a semi-colon from the following statement, if any.<br>
 ```
 if x/2*2=x
 	x:=x/2; // Not allowed
@@ -199,7 +199,7 @@ while x < 100
 	x := y * y;
 }
 ```
-The whole while statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+The whole while statement, like any other statement, must be separated by a semi-colon from the following statement, if any.<br>
 
 #### Switchcase
 
@@ -213,7 +213,7 @@ default: print 89
 ```
 Every statement must be preceded by a colon and may be succeeded by a semi-colon.<br>
 Conditions after the first one that was true are not evaluated.<br>
-The whole switchcase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+The whole switchcase statement, like any other statement, must be separated by a semi-colon from the following statement, if any.<br>
 
 #### Whilecase
 
@@ -235,7 +235,7 @@ default: print x
 ```
 Every statement must be preceded by a colon and may be succeeded by a semi-colon.<br>
 Conditions after the first one that was true are not evaluated for that iteration.<br>
-The whole whilecase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+The whole whilecase statement, like any other statement, must be separated by a semi-colon from the following statement, if any.<br>
 
 #### Untilcase
 
@@ -266,7 +266,7 @@ untilcase
 until x = 0 and y = 0
 ```
 Every statement must be preceded by a colon and may be succeeded by a semi-colon.<br>
-The whole untilcase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+The whole untilcase statement, like any other statement, must be separated by a semi-colon from the following statement, if any.<br>
 
 #### Incase
 
@@ -281,12 +281,12 @@ incase
 print x;
 ```
 Every statement must be preceded by a colon and must NOT be succeeded by a semi-colon, except for the last one.<br>
-The whole incase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+The whole incase statement, like any other statement, must be separated by a semi-colon from the following statement, if any.<br>
 
 #### Forcase
 
 When this statement is executed, the expression after the equals sign is evaluated and the following steps will be repeated that many times:<br>
-* The specified variable will be set to current iteration number, i.e. "1" for the first iteration, "2" for the second, etc.
+* The specified variable will be set to the current iteration number, i.e. "1" for the first iteration, "2" for the second, etc.
 * The conditions after each "when" keyword will be checked, in order, and the statement after EVERY condition that is true will be executed.
 ```
 input x;
@@ -299,7 +299,7 @@ forcase i = 100
 The expression that determines the number of iterations is only evaluated once, before any iterations are performed.<br>
 The conditions are not required to contain the iteration variable.<br>
 Every statement must be preceded by a colon and must NOT be succeeded by a semi-colon, except for the last one.<br>
-The whole forcase statement, like any other statement, must be separated by a semi-colon from it's succeeding statement, if any.<br>
+The whole forcase statement, like any other statement, must be separated by a semi-colon from the following statement, if any.<br>
 
 #### Break
 
@@ -341,7 +341,7 @@ Any break statements with a count of "0" are ignored.<br>
 
 #### Repeat
 
-When this statement is executed, the program repeats the statements within a target loop. The loop to repeat is determined by the provided index.<br>
+When this statement is executed, the program repeats execution of a target loop. The loop to repeat is determined by the provided index.<br>
 When specifying an index of "x", the target loop is the one containing the repeat statement and starting x levels outside of the level of the repeat statement.<br>
 In other words, if "1" is specified, the target loop is the current loop, if "2" is specified, it is the loop that contains the current loop, etc.<br>
 ```
@@ -451,7 +451,7 @@ function f()
 Similarly to blocks, any variables declared in a function can only be used inside that function.<br>
 Function declarations are NOT separated by semi-colons.<br>
 <br>
-Functions can have parameters, which are declared by listing their ids separated by commas.<br>
+Functions can have parameters, which are declared by listing their IDs separated by commas.<br>
 Parameters don't need to be declared using the "declare" keyword.<br>
 ```
 function g(a, b, c)
@@ -459,8 +459,8 @@ function g(a, b, c)
 	print 2*a + b - c
 }
 ```
-Parameters can be used as input, output or both.<br>
-Each parameter can declare it's purpose using one of "in", "out" and "inout" keywords before its id.<br>
+Parameters can be used as input, output, or both.<br>
+Each parameter can declare its purpose using one of "in", "out" and "inout" keywords before its id.<br>
 If no keyword is added before a parameter id, the parameter is assumed to be an input.<br>
 ```
 function h(in a, out b, inout c)
@@ -470,8 +470,8 @@ function h(in a, out b, inout c)
 }
 ```
 The meaning of each parameter type is as follows:
-* "in" parameters are a copy of the result of the expression that was used to call the function.
-* "inout" parameters give full access to the variable that was used to call the the function. Assigning a value to an inout parameter also changes the value of the variable, and reading the parameter returns the current value of that variable.
+* "in" parameters receive a copy of the result of the expression that was used to call the function.
+* "inout" parameters give access to the variable that was used to call the the function. Assigning a value to an inout parameter also changes the value of the variable, and reading the parameter returns the current value of that variable.
 * "out" parameters behave similarly to inout parameters, but they are assumed to be uninitialized.
 
 Every function has an integer return value. By default the return value is "0", but it can be changed using a "return" statement, consisting of the "return" keyword, followed by any expression.<br>
@@ -485,7 +485,7 @@ function factorial(n)
 	return result;
 }
 ```
-When a return statement is encountered, the execution of the function is terminated and the return value can be used immediately by the caller.<br>
+When a return statement is encountered, execution of the function terminates and the return value can be used immediately by the caller.<br>
 Before executing a return statement, all out parameters must have been assigned a value at least once.<br>
 ```
 function factorial(n)
@@ -502,7 +502,7 @@ z := h(in 5*5, out x, inout y);
 if factorial(x)/factorial(y)/factorial(x-y) < 10
 	print 70;
 ```
-When a function appears many times, even if the parameters are the same or there are no parameters, the whole function will be executed every time.<br>
+When a function appears many times, even if the parameters are the same or there are no parameters, the function is executed each time it is encountered.<br>
 If a function takes out or inout parameters, the appropriate keyword must be used before the variable id.<br>
 The "in" keyword can also be used when specifying an "in" parameter, but it is not required.<br>
 <br>
@@ -547,8 +547,8 @@ function f() print x // the function "f" uses "x"
 function g() print y // the function "g" uses "y"
 
 x := 0;
-dummy := f(); // "f" may called, since "x" is initialized
-dummy := g(); // "g" may not called, since "y" is uninitialized
+dummy := f(); // "f" may be called, since "x" is initialized
+dummy := g(); // "g" may not be called, since "y" is uninitialized
 ```
 The equivalent checks are also performed for function parameters:
 * A variable must be initialized before being used as an "in" or inout" parameter.
@@ -560,14 +560,14 @@ function f(in a) print a // the function "f" uses "a"
 function g(inout b) b := b + 1 // the function "g" uses "b"
 function h(out c) c := 0 // the function "h" initializes "c"
 
-dummy := f(in x);    // "f" may not called using "x", since "x" is uninitialized
-dummy := g(inout x); // "g" may not called using "x", since "x" is uninitialized
+dummy := f(in x);    // "f" may not be called using "x", since "x" is uninitialized
+dummy := g(inout x); // "g" may not be called using "x", since "x" is uninitialized
 dummy := h(out x);   // "h" may be called using "x", since "x" will get initialized
 ```
 
 ### Intermediate Language Instructions
 
-Intermediate Language Instructions are allowed to be inserted in the form of a statement.<br>
+Intermediate Language Instructions may be inserted in the form of a statement.<br>
 An Intermediate Language Statement is denoted with the '#' symbol.<br>
 ```
 declare x;
@@ -609,7 +609,7 @@ Jump targets are determined using labels. Labels are defined using C-style colon
 };
 ```
 Note that, unlike C, identifiers are not allowed to contain underscores, which also applies to labels.<br>
-Labels don't need to be declared before use, but a used label must be defined before the end of the block that contains the Intermediate Language Statement.<br>
+Labels do not need to be defined before they are used, but a used label must be defined before the end of the block that contains the Intermediate Language Statement.<br>
 It is possible to jump to labels defined within a different Intermediate Language Statement, but it is not recommended.<br>
 ```
 # {
